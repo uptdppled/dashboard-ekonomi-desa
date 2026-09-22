@@ -88,8 +88,13 @@ function ScoreBar({ label, value, max }) {
   );
 }
 
+// Permendesa 9/2024's own dimension order, not the DB's insertion order.
+const DIMENSI_ORDER = ['LAYANAN DASAR', 'SOSIAL', 'EKONOMI', 'LINGKUNGAN', 'AKSESIBILITAS', 'TATA KELOLA PEMERINTAHAN DESA'];
+
 function ProfilDetail({ profil }) {
-  const { desa, skor, potensi, ekosistem } = profil;
+  const { desa, skor, potensi, ekosistem, indeksDimensi = [] } = profil;
+  const indeksByDimensi = new Map(indeksDimensi.map((d) => [d.dimensi, d]));
+  const indeksSorted = DIMENSI_ORDER.filter((d) => indeksByDimensi.has(d)).map((d) => indeksByDimensi.get(d));
   const topLevel = skor.filter((s) => s.sub_dimensi === '' || s.nama_indikator === s.sub_dimensi);
   const bySub = {};
   for (const s of skor) {
@@ -111,6 +116,18 @@ function ProfilDetail({ profil }) {
       </div>
 
       <RekomendasiAI kode={desa.kode_desa} />
+
+      {indeksSorted.length > 0 && (
+        <div className="panel">
+          <h2 className="panel-title">Indeks Desa (6 Dimensi)</h2>
+          <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
+            Skor komposit per dimensi Permendesa 9/2024. Rincian indikator per dimensi selain Ekonomi belum ditampilkan di sini.
+          </p>
+          {indeksSorted.map((d) => (
+            <ScoreBar key={d.dimensi} label={d.dimensi} value={d.skor} max={d.bobot_maks} />
+          ))}
+        </div>
+      )}
 
       <div className="grid-2">
         <div className="panel">

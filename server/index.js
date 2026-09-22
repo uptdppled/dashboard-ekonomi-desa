@@ -243,6 +243,43 @@ app.get('/api/dashboard/summary', requireAuth, (req, res) => {
   });
 });
 
+// ---------- indeks desa (6 dimensi, Permendesa 9/2024) ----------
+
+app.get('/api/indeks/ringkasan', requireAuth, (req, res) => {
+  req.query = mergeScope(req.user, req.query);
+  const { sql, params } = whereFromFilters(req.query);
+  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
+
+  const statusRows = db
+    .prepare(`SELECT status_desa, COUNT(*) AS n FROM desa d ${sql} GROUP BY status_desa ORDER BY n DESC`)
+    .all(...params);
+
+  const avgNilaiIndeks = db
+    .prepare(`SELECT AVG(nilai_indeks_desa) AS avg_nilai FROM desa d ${sql}`)
+    .get(...params).avg_nilai;
+
+  // Each dimension's own composite score is stored as a row where
+  // nama_indikator = dimensi (same convention as sub_dimensi's composite
+  // rows, see recommendKabupaten.js's buildKabupatenContext).
+  const dimensiFilter = whereFromFilters(req.query, 'd', [`si.nama_indikator = si.dimensi`]);
+  const dimensiRows = db
+    .prepare(
+      `SELECT si.dimensi, AVG(si.skor) AS avg_skor
+       FROM skor_indikator si
+       JOIN desa d ON d.kode_desa = si.kode_desa
+       ${dimensiFilter.sql}
+       GROUP BY si.dimensi`
+    )
+    .all(...dimensiFilter.params);
+
+  res.json({
+    totalDesa,
+    statusDesa: statusRows,
+    avgNilaiIndeks: avgNilaiIndeks !== null ? Math.round(avgNilaiIndeks * 100) / 100 : null,
+    dimensi: dimensiRows.map((r) => ({ dimensi: r.dimensi, avgSkor: Math.round(r.avg_skor * 100) / 100 })),
+  });
+});
+
 // ---------- profil / list desa ----------
 
 app.get('/api/desa', requireAuth, (req, res) => {
@@ -296,7 +333,13 @@ app.get('/api/desa/:kode', requireAuth, guard((req, res) => {
     .prepare(`SELECT pertanyaan, jawaban FROM jawaban_kuesioner WHERE kode_desa = ? ORDER BY id`)
     .all(kode);
 
-  res.json({ desa, skor, potensi, ekosistem, jawaban });
+  // Composite score per Permendesa 9/2024 dimension (the 6 marker rows -
+  // see /api/indeks/ringkasan for the same convention aggregated).
+  const indeksDimensi = db
+    .prepare(`SELECT dimensi, skor, bobot_maks FROM skor_indikator WHERE kode_desa = ? AND nama_indikator = dimensi ORDER BY id`)
+    .all(kode);
+
+  res.json({ desa, skor, potensi, ekosistem, jawaban, indeksDimensi });
 }));
 
 app.post('/api/desa/:kode/rekomendasi', requireAuth, guard(async (req, res) => {

@@ -29,6 +29,7 @@ export const api = {
   kabupaten: () => get('/wilayah/kabupaten'),
   kecamatan: (kabupaten) => get(`/wilayah/kecamatan${kabupaten ? `?kabupaten=${encodeURIComponent(kabupaten)}` : ''}`),
   dashboardSummary: (params) => get(`/dashboard/summary?${new URLSearchParams(params)}`),
+  indeksRingkasan: (params) => get(`/indeks/ringkasan?${new URLSearchParams(params)}`),
   desaList: (params) => get(`/desa?${new URLSearchParams(params)}`),
   desaProfil: (kode) => get(`/desa/${kode}`),
   potensiSektor: () => get('/potensi/sektor'),

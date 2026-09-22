@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import IndeksDesa from './pages/IndeksDesa';
 import DimensiEkonomi from './pages/DimensiEkonomi';
 import PotensiDesa from './pages/PotensiDesa';
 import PotensiSektorDetail from './pages/PotensiSektorDetail';
@@ -51,6 +52,7 @@ export default function App() {
         <main className="main">
           <Routes>
             <Route path="/" element={homeElement} />
+            <Route path="/indeks-desa" element={<IndeksDesa />} />
             <Route path="/dimensi-ekonomi" element={<DimensiEkonomi />} />
             <Route path="/potensi-desa" element={<PotensiDesa />} />
             <Route path="/potensi-desa/:sektor" element={<PotensiSektorDetail />} />

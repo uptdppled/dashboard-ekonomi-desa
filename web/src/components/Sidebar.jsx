@@ -6,6 +6,7 @@ import { useAuth, ROLE_LABEL } from '../auth';
 // below; `roles: [...]` restricts further (admin-only tools).
 const NAV = [
   { to: '/', label: 'Dashboard', icon: '▦', end: true },
+  { to: '/indeks-desa', label: 'Indeks Desa', icon: '◆' },
   { to: '/dimensi-ekonomi', label: 'Dimensi Ekonomi', icon: '▤' },
   { to: '/potensi-desa', label: 'Potensi Desa', icon: '⬢' },
   { to: '/profil-desa', label: 'Profil Desa', icon: '⌂' },
