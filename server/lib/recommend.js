@@ -10,10 +10,14 @@ function buildProfileContext(kode) {
   const desa = db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return null;
 
+  // Scoped to EKONOMI - this prompt reasons about BUM Desa product fit, so
+  // "masalah" should mean economic-facility gaps, not e.g. a low Kesehatan
+  // score. skor_indikator now also holds the other 5 Permendesa 9/2024
+  // dimensions (see server/lib/recommendKabupaten.js).
   const skor = db
     .prepare(
       `SELECT sub_dimensi, nama_indikator, skor, bobot_maks FROM skor_indikator
-       WHERE kode_desa = ? ORDER BY id`
+       WHERE kode_desa = ? AND dimensi = 'EKONOMI' ORDER BY id`
     )
     .all(kode);
 

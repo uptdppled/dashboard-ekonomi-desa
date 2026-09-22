@@ -265,10 +265,16 @@ app.get('/api/desa/:kode', requireAuth, guard((req, res) => {
   const desa = db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return res.status(404).json({ error: 'Desa tidak ditemukan' });
 
+  // Scoped to EKONOMI - the ProfilDesa page's "Skor Dimensi Ekonomi" panel
+  // only understands the 2-subdimensi Ekonomi shape. skor_indikator now also
+  // holds the other 5 Permendesa 9/2024 dimensions (see recommendKabupaten.js
+  // for the analogous kabupaten/provinsi-level breakdown); exposing them here
+  // is deferred until ProfilDesa's UI is extended to show all 6 (roadmap
+  // step 6), so this filter is intentional, not a leftover.
   const skor = db
     .prepare(
       `SELECT sub_dimensi, nama_indikator, skor, bobot_maks FROM skor_indikator
-       WHERE kode_desa = ? ORDER BY id`
+       WHERE kode_desa = ? AND dimensi = 'EKONOMI' ORDER BY id`
     )
     .all(kode);
 

@@ -13,6 +13,25 @@ function isIdentityHeader(h) {
   return IDENTITY_RE.test(h.trim());
 }
 
+// The master 'rekap' sheet has one bare-name marker column per Permendesa
+// 9/2024 dimension (e.g. a column literally header "SOSIAL"), immediately
+// followed by that dimension's "SUB-DIMENSI ..." marker columns - the same
+// convention already used for sub-dimensi, one level up. ekonomi.xlsx is a
+// column-subset of this same sheet, filtered to EKONOMI only.
+const DIMENSI_MARKERS = new Set([
+  'LAYANAN DASAR',
+  'SOSIAL',
+  'EKONOMI',
+  'LINGKUNGAN',
+  'AKSESIBILITAS',
+  'TATA KELOLA PEMERINTAHAN DESA',
+]);
+
+// Composite result columns at the end of the sheet (STATUS DESA, NILAI ID
+// 2026, ...) are Kemendes's own final output, not per-indicator scores -
+// excluded from skor_indikator and read separately for the desa row instead.
+const SUMMARY_EXCLUDE_RE = /^(status desa|nilai 2025|nilai id 2026|perkembangan|tingkat naik\/ turun status|cek)$/i;
+
 // 'Rekap Tambahan' bundles KDMP/Koperasi/BUM Desa fields together with
 // Kerentanan Sosial (poverty deciles) and Kehutanan (forest zoning) columns
 // that share the sheet but aren't "ekosistem ekonomi" in nature - excluded
@@ -39,6 +58,11 @@ const wbEko = XLSX.readFile(EKO_PATH);
 const wbRaw = XLSX.readFile(RAW_PATH);
 console.log('Selesai membaca. Memproses sheet...');
 
+// users/kode_registrasi reference desa(kode_desa) via FK (added after this
+// script was first written) - re-import deletes and re-inserts the SAME
+// kode_desa set, so FK checks are safely disabled for the duration rather
+// than needing a full CASCADE that would also wipe operator accounts.
+db.exec('PRAGMA foreign_keys = OFF;');
 db.exec('BEGIN');
 try {
   db.exec(
@@ -55,6 +79,7 @@ try {
   const idxNama = rekapRaw.headers.findIndex((h) => /^nama desa$/i.test(h));
   const idxStatusFinal = rekapRaw.headers.findIndex((h) => /^status desa$/i.test(h));
   const idxStatusAwal = rekapRaw.headers.findIndex((h) => /^status id 2025$/i.test(h));
+  const idxNilaiIndeks = rekapRaw.headers.findIndex((h) => /^nilai id 2026$/i.test(h));
 
   // koordinat GPS dari raw 'Rekap kuisioner 1' (tidak ada di versi ekonomi.xlsx yang sudah difilter)
   const kuisRaw = parseSheet(wbRaw.Sheets['Rekap kuisioner 1']);
@@ -70,8 +95,8 @@ try {
   let koordFound = 0;
 
   const insertDesa = db.prepare(
-    'INSERT INTO desa (kode_desa, provinsi, kabupaten, kecamatan, nama_desa, status_desa, lat, lng, tahun) ' +
-    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO desa (kode_desa, provinsi, kabupaten, kecamatan, nama_desa, status_desa, lat, lng, tahun, nilai_indeks_desa) ' +
+    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   );
   const seenKode = new Set();
   for (const row of rekapRaw.dataRows) {
@@ -89,34 +114,42 @@ try {
       String(row[idxStatusFinal] ?? row[idxStatusAwal] ?? '').trim(),
       koord ? koord.lat : null,
       koord ? koord.lng : null,
-      TAHUN
+      TAHUN,
+      idxNilaiIndeks !== -1 ? toNumberOrNull(row[idxNilaiIndeks]) : null
     );
   }
   logImport('raw', 'rekap (identitas desa)', seenKode.size);
   console.log(`  -> koordinat GPS berhasil diparse untuk ${koordFound} desa`);
 
-  // ---- 2. skor_indikator dari ekonomi.xlsx 'rekap' (sudah difilter dimensi Ekonomi) ----
-  const rekapEko = parseSheet(wbEko.Sheets['rekap']);
+  // ---- 2. skor_indikator dari raw 'rekap' (6 dimensi Permendesa 9/2024 lengkap) ----
+  // Sumber diganti dari ekonomi.xlsx (subset kolom Ekonomi saja) ke sheet
+  // master yang sama dipakai untuk identitas desa di atas - lihat kamus data
+  // "Catatan & Rekomendasi": ekonomi.xlsx adalah turunan kolom dari sheet ini.
   const insertSkor = db.prepare(
     'INSERT INTO skor_indikator (kode_desa, tahun, dimensi, sub_dimensi, nama_indikator, skor, bobot_maks) ' +
     'VALUES (?, ?, ?, ?, ?, ?, ?)'
   );
   let skorCount = 0;
-  for (const row of rekapEko.dataRows) {
-    const kode = String(row[rekapEko.kodeDesaIdx]).trim();
+  for (const row of rekapRaw.dataRows) {
+    const kode = String(row[rekapRaw.kodeDesaIdx]).trim();
+    let dimensi = '';
     let subDimensi = '';
-    for (let i = 0; i < rekapEko.headers.length; i++) {
-      const header = rekapEko.headers[i];
-      if (!header || isIdentityHeader(header)) continue;
+    for (let i = 0; i < rekapRaw.headers.length; i++) {
+      const header = rekapRaw.headers[i];
+      if (!header || isIdentityHeader(header) || SUMMARY_EXCLUDE_RE.test(header)) continue;
+      if (DIMENSI_MARKERS.has(header.trim().toUpperCase())) {
+        dimensi = header.trim();
+        subDimensi = ''; // reset - a new dimension's own sub-dimensi marker comes next
+      }
       if (/^sub-dimensi/i.test(header)) subDimensi = header;
       const skor = toNumberOrNull(row[i]);
       if (skor === null) continue;
-      const bobot = toNumberOrNull(rekapEko.weightRow[i]);
-      insertSkor.run(kode, TAHUN, 'EKONOMI', subDimensi, header, skor, bobot);
+      const bobot = toNumberOrNull(rekapRaw.weightRow[i]);
+      insertSkor.run(kode, TAHUN, dimensi, subDimensi, header, skor, bobot);
       skorCount++;
     }
   }
-  logImport('ekonomi.xlsx', 'rekap (skor indikator)', skorCount);
+  logImport('raw', 'rekap (skor indikator, 6 dimensi)', skorCount);
 
   // ---- 3. jawaban_kuesioner dari ekonomi.xlsx 'Rekap kuisioner 1' (blok Ekonomi) ----
   const kuisEko = parseSheet(wbEko.Sheets['Rekap kuisioner 1']);
@@ -191,4 +224,6 @@ try {
   db.exec('ROLLBACK');
   console.error('Import gagal, rollback:', err);
   process.exit(1);
+} finally {
+  db.exec('PRAGMA foreign_keys = ON;');
 }

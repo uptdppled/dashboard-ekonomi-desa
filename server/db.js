@@ -20,6 +20,18 @@ CREATE TABLE IF NOT EXISTS desa (
   lng REAL,
   tahun INTEGER
 );
+`);
+
+// Composite Indeks Desa score (from the master sheet's "NILAI ID 2026" column,
+// Kemendes's own computed value - not calculated by this app). Added after
+// the initial schema, so it needs an explicit migration guard rather than
+// just widening the CREATE TABLE above (which is a no-op on an existing db).
+const desaColumns = db.prepare("PRAGMA table_info(desa)").all().map((c) => c.name);
+if (!desaColumns.includes('nilai_indeks_desa')) {
+  db.exec('ALTER TABLE desa ADD COLUMN nilai_indeks_desa REAL;');
+}
+
+db.exec(`
 
 CREATE TABLE IF NOT EXISTS skor_indikator (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
