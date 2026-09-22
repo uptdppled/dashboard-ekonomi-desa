@@ -41,8 +41,8 @@ export default function Sidebar({ open, onClose }) {
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="sidebar-brand">
           <div>
-            <div className="sidebar-brand-title">Dashboard Ekonomi Desa</div>
-            <div className="sidebar-brand-sub">KALIMANTAN SELATAN</div>
+            <div className="sidebar-brand-title">Banua360</div>
+            <div className="sidebar-brand-sub">DASHBOARD EKONOMI DESA · KALSEL</div>
           </div>
           <button className="sidebar-close-btn" onClick={onClose} aria-label="Tutup menu">&times;</button>
         </div>
@@ -80,6 +80,9 @@ export default function Sidebar({ open, onClose }) {
                 <span aria-hidden="true">{m.icon}</span> {m.label}
               </button>
             ))}
+          </div>
+          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', marginTop: 12, textAlign: 'center' }}>
+            Dibangun oleh Dory Amanda Sari, S.Kom., M.M.
           </div>
         </div>
       </aside>

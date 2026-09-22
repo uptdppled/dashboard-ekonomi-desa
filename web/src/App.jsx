@@ -47,7 +47,7 @@ export default function App() {
           <button className="icon-btn" onClick={() => setSidebarOpen(true)} aria-label="Buka menu">
             &#9776;
           </button>
-          <span className="topbar-title">Dashboard Ekonomi Desa</span>
+          <span className="topbar-title">Banua360</span>
         </div>
         <main className="main">
           <Routes>

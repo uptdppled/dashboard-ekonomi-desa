@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with code in this direct
 
 ## Project overview
 
-Dashboard Ekonomi Desa Kalsel — dashboard analisis potensi & kinerja ekonomi desa se-Kalimantan Selatan, dibangun dari dua file Excel sumber (`ekonomi.xlsx` dan `row data ID Aplikasi final kirim.xlsx` di folder Downloads). Berisi 9 modul: Dashboard, Dimensi Ekonomi, Potensi Desa, Profil Desa (termasuk Rekomendasi Produk Unggulan berbasis AI), Ekosistem Ekonomi, Peta Ekonomi, Analisis Kuadran (Potensi x Kinerja), Analisis BUMDes (kondisi BUM Desa & rekomendasi kebijakan tingkat kabupaten ATAU provinsi sekaligus, berbasis AI), dan Data (admin/import).
+**Banua360** ("Dashboard Ekonomi Desa Kalsel") — dashboard analisis potensi & kinerja ekonomi desa se-Kalimantan Selatan, dibangun oleh Dory Amanda Sari, S.Kom., M.M., dari dua file Excel sumber (`ekonomi.xlsx` dan `row data ID Aplikasi final kirim.xlsx` di folder Downloads). Berisi 9 modul: Dashboard, Dimensi Ekonomi, Potensi Desa, Profil Desa (termasuk Rekomendasi Produk Unggulan berbasis AI), Ekosistem Ekonomi, Peta Ekonomi, Analisis Kuadran (Potensi x Kinerja), Analisis BUMDes (kondisi BUM Desa & rekomendasi kebijakan tingkat kabupaten ATAU provinsi sekaligus, berbasis AI), dan Data (admin/import).
 
 Lihat `../kamus-data/Kamus_Data_Ekonomi_Desa.xlsx` untuk kamus data lengkap (6.943 kolom, 24 sheet) yang mendasari desain skema database di bawah.
 

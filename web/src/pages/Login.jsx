@@ -32,8 +32,8 @@ export default function Login() {
       }}
     >
       <div className="panel" style={{ maxWidth: 420, width: '100%', marginBottom: 0 }}>
-        <h1 className="page-title" style={{ marginBottom: 2 }}>Dashboard Ekonomi Desa</h1>
-        <p className="page-desc" style={{ marginBottom: 20 }}>Kalimantan Selatan</p>
+        <h1 className="page-title" style={{ marginBottom: 2 }}>Banua360</h1>
+        <p className="page-desc" style={{ marginBottom: 20 }}>Dashboard Ekonomi Desa Kalimantan Selatan</p>
 
         {error && (
           <div className="state-msg state-error" style={{ textAlign: 'left', padding: '10px 0 16px' }}>
@@ -99,6 +99,10 @@ export default function Login() {
             </button>
           </div>
         )}
+
+        <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
+          Dibangun oleh Dory Amanda Sari, S.Kom., M.M.
+        </p>
       </div>
     </div>
   );
