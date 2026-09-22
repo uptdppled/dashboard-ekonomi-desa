@@ -31,7 +31,7 @@ export default function IndeksDesa() {
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Indeks Desa</h1>
+        <h1 className="page-title">BANUA INDEX</h1>
         <p className="page-desc">
           Ringkasan 6 dimensi Indeks Desa (Permendesa 9/2024) se-Kalimantan Selatan, tahun 2026.
         </p>

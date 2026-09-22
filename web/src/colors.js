@@ -36,6 +36,10 @@ export const QUADRAN_COLORS = {
   },
 };
 
-// Single-series chart accent (bars, primary series)
-export const ACCENT = { light: '#1baf7a', dark: '#199e70' };
-export const ACCENT_SECONDARY = { light: '#2a78d6', dark: '#3987e5' };
+// Single-series chart accent (bars, primary series) - Banua360 brand Teal,
+// swapping to the brighter Aqua in dark mode since that pairing only needs
+// to read against the dark panel surface (not against overlaid white text,
+// like a button would), where Aqua's contrast is actually strong; validated
+// with the dataviz skill's scripts/validate_palette.js.
+export const ACCENT = { light: '#167D8D', dark: '#2BB3A3' };
+export const ACCENT_SECONDARY = { light: '#123B5D', dark: '#4a80b0' };
