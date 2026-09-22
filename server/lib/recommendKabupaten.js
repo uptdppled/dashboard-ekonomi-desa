@@ -75,7 +75,7 @@ export function buildKabupatenContext(kabupaten) {
   const args = scoped ? [kabupaten] : [];
 
   const desaRows = db
-    .prepare(`SELECT kode_desa, nama_desa, kecamatan, status_desa FROM desa d ${kabWhere}`)
+    .prepare(`SELECT kode_desa, nama_desa, kecamatan, kabupaten, status_desa FROM desa d ${kabWhere}`)
     .all(...args);
   if (desaRows.length === 0) return null;
 
@@ -94,15 +94,18 @@ export function buildKabupatenContext(kabupaten) {
 
   const bumRows = db
     .prepare(
-      `SELECT e.nilai FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
+      `SELECT e.kode_desa, e.nilai FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
        WHERE e.komponen = ? ${kabWhereAnd}`
     )
     .all(BUM_DESA_KOMPONEN, ...args);
   const bumTier = countBy(bumRows, normalizeBumTier);
-  const desaBumDesaAktif = bumRows.filter((r) => {
-    const t = normalizeBumTier(r.nilai);
-    return t !== 'Tidak Ikut Pemeringkatan' && t !== 'Tidak Diketahui';
-  }).length;
+  const bumTierByDesa = new Map(bumRows.map((r) => [r.kode_desa, normalizeBumTier(r.nilai)]));
+  const isAktif = (t) => t && t !== 'Tidak Ikut Pemeringkatan' && t !== 'Tidak Diketahui';
+  const desaBumDesaAktif = bumRows.filter((r) => isAktif(normalizeBumTier(r.nilai))).length;
+  const desaInfo = (d) => ({ kode_desa: d.kode_desa, nama_desa: d.nama_desa, kecamatan: d.kecamatan, kabupaten: d.kabupaten });
+  const daftarTidakAktifBumdes = desaRows
+    .filter((d) => !isAktif(bumTierByDesa.get(d.kode_desa)))
+    .map(desaInfo);
 
   const kdmpRows = db
     .prepare(
@@ -142,6 +145,7 @@ export function buildKabupatenContext(kabupaten) {
     }
   }
   const desaBerbadanHukum = badanHukumDesa.size;
+  const daftarBelumBerbadanHukum = desaRows.filter((d) => !badanHukumDesa.has(d.kode_desa)).map(desaInfo);
   const hariOperasionalValues = [...hariOperasionalByDesa.values()];
   const hariOperasionalAvg = hariOperasionalValues.length
     ? hariOperasionalValues.reduce((a, n) => a + n, 0) / hariOperasionalValues.length
@@ -197,6 +201,8 @@ export function buildKabupatenContext(kabupaten) {
     desaBerbadanHukum,
     desaBumDesaAktif,
     hariOperasionalAvg,
+    daftarTidakAktifBumdes,
+    daftarBelumBerbadanHukum,
   };
 }
 

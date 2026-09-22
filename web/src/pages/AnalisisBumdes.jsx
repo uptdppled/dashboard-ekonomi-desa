@@ -22,11 +22,17 @@ function toChartData(countObj, order) {
   return [...known, ...extra];
 }
 
+const DRILLDOWN = {
+  aktif: { title: 'Desa dengan BUM Desa Belum Aktif (Tidak Ikut Pemeringkatan)', field: 'daftarTidakAktifBumdes' },
+  hukum: { title: 'Desa dengan BUM Desa Belum Berbadan Hukum', field: 'daftarBelumBerbadanHukum' },
+};
+
 export default function AnalisisBumdes() {
   const [kabupatenList, setKabupatenList] = useState([]);
   const [selected, setSelected] = useState('');
   const [ringkasan, setRingkasan] = useState(null);
   const [error, setError] = useState(null);
+  const [drilldown, setDrilldown] = useState(null);
   const { resolved } = useTheme();
   const statusColors = STATUS_COLORS[resolved];
   const accent = ACCENT_SECONDARY[resolved];
@@ -45,6 +51,7 @@ export default function AnalisisBumdes() {
     if (!selected) return;
     setRingkasan(null);
     setError(null);
+    setDrilldown(null);
     const req = selected === PROVINSI_VALUE ? api.ringkasanProvinsi() : api.ringkasanKabupaten(selected);
     req.then(setRingkasan).catch((e) => setError(e.message));
   }, [selected]);
@@ -79,14 +86,24 @@ export default function AnalisisBumdes() {
               <div className="kpi-label">Rata-rata Skor Dimensi Ekonomi</div>
               <div className="kpi-value">{ringkasan.avgSkor !== null ? ringkasan.avgSkor.toFixed(1) : '-'}</div>
             </div>
-            <div className="kpi-card">
+            <div
+              className="kpi-card"
+              onClick={() => setDrilldown(drilldown === 'aktif' ? null : 'aktif')}
+              style={{ cursor: 'pointer', outline: drilldown === 'aktif' ? `2px solid ${accent}` : undefined }}
+              title="Klik untuk lihat daftar desa yang belum aktif"
+            >
               <div className="kpi-label">BUM Desa Aktif (Ikut Pemeringkatan)</div>
               <div className="kpi-value">
                 {ringkasan.desaBumDesaAktif.toLocaleString('id-ID')}
                 <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}> / {ringkasan.jumlahDesa.toLocaleString('id-ID')} desa</span>
               </div>
             </div>
-            <div className="kpi-card">
+            <div
+              className="kpi-card"
+              onClick={() => setDrilldown(drilldown === 'hukum' ? null : 'hukum')}
+              style={{ cursor: 'pointer', outline: drilldown === 'hukum' ? `2px solid ${accent}` : undefined }}
+              title="Klik untuk lihat daftar desa yang belum berbadan hukum"
+            >
               <div className="kpi-label">BUM Desa Berbadan Hukum</div>
               <div className="kpi-value">
                 {ringkasan.desaBerbadanHukum.toLocaleString('id-ID')}
@@ -109,6 +126,41 @@ export default function AnalisisBumdes() {
               </div>
             ))}
           </div>
+
+          {drilldown && (
+            <div className="panel">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+                <h2 className="panel-title">{DRILLDOWN[drilldown].title}</h2>
+                <button className="btn" onClick={() => setDrilldown(null)}>Tutup</button>
+              </div>
+              {(() => {
+                const rows = ringkasan[DRILLDOWN[drilldown].field] || [];
+                if (rows.length === 0) return <p className="state-msg">Tidak ada desa - semua sudah memenuhi kriteria ini.</p>;
+                return (
+                  <div className="table-scroll">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>Desa</th>
+                          <th>Kecamatan</th>
+                          {isProvinsi && <th>Kabupaten</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((d) => (
+                          <tr key={d.kode_desa}>
+                            <td><Link to={`/profil-desa?kode=${d.kode_desa}`}>{d.nama_desa}</Link></td>
+                            <td>{d.kecamatan}</td>
+                            {isProvinsi && <td>{d.kabupaten}</td>}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
 
           <div className="grid-2">
             <div className="panel">
