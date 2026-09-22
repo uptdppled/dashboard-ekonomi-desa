@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import FilterBar from '../components/FilterBar';
@@ -84,6 +84,15 @@ function severityColor(ratio) {
   return 'var(--good)';
 }
 
+// Matches BANUA INDEX's DimensiDetail card severity exactly, so an
+// indicator reads the same wherever it's shown in the app.
+function severityCard(ratio) {
+  if (ratio === null) return { color: 'var(--text-faint)', bg: 'var(--panel-2)', label: '-' };
+  if (ratio < 0.6) return { color: 'var(--critical)', bg: 'var(--critical-soft)', label: 'Gap' };
+  if (ratio < 0.8) return { color: 'var(--warning)', bg: 'var(--warning-soft)', label: 'Sedang' };
+  return { color: 'var(--good)', bg: 'var(--good-soft)', label: 'Baik' };
+}
+
 function ScoreBar({ label, value, max }) {
   const pct = max ? Math.min(100, (value / max) * 100) : 0;
   const ratio = max ? value / max : null;
@@ -102,17 +111,37 @@ function ScoreBar({ label, value, max }) {
 // Permendesa 9/2024's own dimension order, not the DB's insertion order.
 const DIMENSI_ORDER = ['LAYANAN DASAR', 'SOSIAL', 'EKONOMI', 'LINGKUNGAN', 'AKSESIBILITAS', 'TATA KELOLA PEMERINTAHAN DESA'];
 
+const DIMENSI_LABEL = {
+  'LAYANAN DASAR': 'Layanan Dasar',
+  SOSIAL: 'Sosial',
+  EKONOMI: 'Ekonomi',
+  LINGKUNGAN: 'Lingkungan',
+  AKSESIBILITAS: 'Aksesibilitas',
+  'TATA KELOLA PEMERINTAHAN DESA': 'Tata Kelola',
+};
+
 function ProfilDetail({ profil }) {
-  const { desa, skor, potensi, ekosistem, indeksDimensi = [] } = profil;
+  const { desa, potensi, ekosistem, indeksDimensi = [] } = profil;
   const indeksByDimensi = new Map(indeksDimensi.map((d) => [d.dimensi, d]));
   const indeksSorted = DIMENSI_ORDER.filter((d) => indeksByDimensi.has(d)).map((d) => indeksByDimensi.get(d));
-  const topLevel = skor.filter((s) => s.sub_dimensi === '' || s.nama_indikator === s.sub_dimensi);
-  const bySub = {};
-  for (const s of skor) {
-    if (s.nama_indikator === s.sub_dimensi || s.sub_dimensi === '') continue;
-    if (!/^SKOR /i.test(s.nama_indikator)) continue;
-    (bySub[s.sub_dimensi] ||= []).push(s);
-  }
+  const [selectedDimensi, setSelectedDimensi] = useState(indeksSorted[0]?.dimensi || null);
+  const [dimensiDetail, setDimensiDetail] = useState(null);
+  const [dimensiError, setDimensiError] = useState(null);
+
+  useEffect(() => {
+    if (!selectedDimensi) return;
+    setDimensiDetail(null);
+    setDimensiError(null);
+    api.indeksDimensi(selectedDimensi, { kode_desa: desa.kode_desa }).then(setDimensiDetail).catch((e) => setDimensiError(e.message));
+  }, [selectedDimensi, desa.kode_desa]);
+
+  const bySub = useMemo(() => {
+    if (!dimensiDetail) return {};
+    const out = {};
+    for (const r of dimensiDetail.indikatorRows) (out[r.subDimensi] ||= []).push(r);
+    return out;
+  }, [dimensiDetail]);
+
   const sektorGroups = {};
   for (const p of potensi) (sektorGroups[p.sektor] ||= []).push(p);
 
@@ -132,28 +161,57 @@ function ProfilDetail({ profil }) {
         <div className="panel">
           <h2 className="panel-title">Indeks Desa (6 Dimensi)</h2>
           <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
-            Skor komposit per dimensi Permendesa 9/2024. Rincian indikator per dimensi selain Ekonomi belum ditampilkan di sini.
+            Klik salah satu dimensi untuk melihat rincian sampai ke tingkat indikator.
           </p>
-          {indeksSorted.map((d) => (
-            <ScoreBar key={d.dimensi} label={d.dimensi} value={d.skor} max={d.bobot_maks} />
-          ))}
+          {indeksSorted.map((d) => {
+            const active = d.dimensi === selectedDimensi;
+            const ratio = d.bobot_maks ? d.skor / d.bobot_maks : null;
+            const color = severityColor(ratio);
+            const pct = d.bobot_maks ? Math.min(100, (d.skor / d.bobot_maks) * 100) : 0;
+            return (
+              <button
+                key={d.dimensi}
+                onClick={() => setSelectedDimensi(d.dimensi)}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left', background: active ? 'var(--panel-2)' : 'transparent',
+                  border: active ? '1px solid var(--border-strong)' : '1px solid transparent', borderRadius: 8,
+                  padding: '8px 10px', margin: '0 -10px 4px', cursor: 'pointer',
+                }}
+              >
+                <div className="score-bar-label-row">
+                  <span className="score-bar-label" style={{ fontWeight: active ? 700 : 400, color: active ? 'var(--text)' : undefined }}>
+                    {DIMENSI_LABEL[d.dimensi] || d.dimensi}{active ? ' ▾' : ''}
+                  </span>
+                  <span className="score-bar-val" style={{ color }}>{d.skor} / {d.bobot_maks}</span>
+                </div>
+                <div className="score-bar-track"><div className="score-bar-fill" style={{ width: `${pct}%`, background: color }} /></div>
+              </button>
+            );
+          })}
         </div>
       )}
 
       <div className="grid-2">
         <div className="panel">
-          <h2 className="panel-title">Skor Dimensi Ekonomi</h2>
-          {topLevel.map((s) => (
-            <ScoreBar key={s.nama_indikator} label={s.nama_indikator.replace('SUB-DIMENSI ', '')} value={s.skor} max={s.bobot_maks} />
-          ))}
-          {Object.entries(bySub).map(([sub, items]) => (
-            <div key={sub} style={{ marginTop: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                {sub.replace('SUB-DIMENSI ', '')}
+          <h2 className="panel-title">Rincian {DIMENSI_LABEL[selectedDimensi] || selectedDimensi}</h2>
+          {dimensiError && <div className="state-msg state-error">{dimensiError}</div>}
+          {!dimensiDetail && !dimensiError && <p className="state-msg">Memuat...</p>}
+          {dimensiDetail && Object.entries(bySub).map(([sub, items]) => (
+            <div key={sub} style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
+                {sub.replace(/^SUB-DIMENSI /i, '')}
               </p>
-              {items.map((s) => (
-                <ScoreBar key={s.nama_indikator} label={s.nama_indikator.replace('SKOR ', '')} value={s.skor} max={s.bobot_maks} />
-              ))}
+              {items.map((it) => {
+                const sev = severityCard(it.ratio);
+                return (
+                  <div key={it.indikator} style={{ marginBottom: 8, paddingLeft: 8, borderLeft: `3px solid ${sev.color}` }}>
+                    <div className="score-bar-label-row">
+                      <span className="score-bar-label">{it.indikator.replace(/^SKOR /i, '')}</span>
+                      <span className="score-bar-val" style={{ color: sev.color }}>{it.avgSkor} / {it.avgBobot}</span>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
