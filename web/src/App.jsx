@@ -5,7 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import IndeksDesa from './pages/IndeksDesa';
 import BanuaInsight from './pages/BanuaInsight';
-import DimensiEkonomi from './pages/DimensiEkonomi';
+import DimensiDetail from './pages/DimensiDetail';
 import PotensiDesa from './pages/PotensiDesa';
 import PotensiSektorDetail from './pages/PotensiSektorDetail';
 import ProfilDesa from './pages/ProfilDesa';
@@ -55,7 +55,7 @@ export default function App() {
             <Route path="/" element={homeElement} />
             <Route path="/indeks-desa" element={<IndeksDesa />} />
             <Route path="/banua-insight" element={<BanuaInsight />} />
-            <Route path="/dimensi-ekonomi" element={<DimensiEkonomi />} />
+            <Route path="/banua-index/:dimensi" element={<DimensiDetail />} />
             <Route path="/potensi-desa" element={<PotensiDesa />} />
             <Route path="/potensi-desa/:sektor" element={<PotensiSektorDetail />} />
             <Route path="/profil-desa" element={<ProfilDesa />} />

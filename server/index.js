@@ -287,6 +287,68 @@ app.get('/api/indeks/ringkasan', requireAuth, (req, res) => {
   });
 });
 
+// Detail for a single dimension (BANUA INDEX submenu) - down to individual
+// "SKOR ..." indicators, generalizing the old Ekonomi-only page to all 6
+// dimensions. `dimensi` is a path param (arbitrary client input), so it's
+// always bound as a query parameter, never interpolated into SQL text.
+app.get('/api/indeks/dimensi/:dimensi', requireAuth, (req, res) => {
+  const { dimensi } = req.params;
+  req.query = mergeScope(req.user, req.query);
+  const { sql: baseSql, params: baseParams } = whereFromFilters(req.query);
+  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d ${baseSql}`).get(...baseParams).n;
+
+  const { clauses: scopeClauses, params: scopeParams } = filterClauses(req.query, 'd');
+  const scopeAnd = scopeClauses.length ? `AND ${scopeClauses.join(' AND ')}` : '';
+
+  const avgSkorRow = db
+    .prepare(
+      `SELECT AVG(si.skor) avg_skor FROM skor_indikator si JOIN desa d ON d.kode_desa = si.kode_desa
+       WHERE si.dimensi = ? AND si.nama_indikator = si.dimensi ${scopeAnd}`
+    )
+    .get(dimensi, ...scopeParams);
+
+  const subDimensiRows = db
+    .prepare(
+      `SELECT si.sub_dimensi, AVG(si.skor) avg_skor FROM skor_indikator si JOIN desa d ON d.kode_desa = si.kode_desa
+       WHERE si.dimensi = ? AND si.nama_indikator = si.sub_dimensi ${scopeAnd}
+       GROUP BY si.sub_dimensi`
+    )
+    .all(dimensi, ...scopeParams);
+
+  const indikatorRows = db
+    .prepare(
+      `SELECT si.sub_dimensi, si.nama_indikator, AVG(si.skor) avg_skor, AVG(si.bobot_maks) avg_bobot
+       FROM skor_indikator si JOIN desa d ON d.kode_desa = si.kode_desa
+       WHERE si.dimensi = ? AND si.nama_indikator LIKE 'SKOR %' ${scopeAnd}
+       GROUP BY si.sub_dimensi, si.nama_indikator
+       ORDER BY si.sub_dimensi, si.nama_indikator`
+    )
+    .all(dimensi, ...scopeParams);
+
+  const desaRows = db
+    .prepare(
+      `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa,
+              (SELECT skor FROM skor_indikator si2 WHERE si2.kode_desa = d.kode_desa
+                 AND si2.dimensi = ? AND si2.nama_indikator = si2.dimensi LIMIT 1) AS skor_dimensi
+       FROM desa d ${baseSql}`
+    )
+    .all(dimensi, ...baseParams);
+
+  res.json({
+    dimensi,
+    totalDesa,
+    avgSkor: avgSkorRow.avg_skor !== null ? Math.round(avgSkorRow.avg_skor * 100) / 100 : null,
+    subDimensiRows: subDimensiRows.map((r) => ({ subDimensi: r.sub_dimensi, avgSkor: Math.round(r.avg_skor * 100) / 100 })),
+    indikatorRows: indikatorRows.map((r) => ({
+      subDimensi: r.sub_dimensi,
+      indikator: r.nama_indikator,
+      avgSkor: Math.round(r.avg_skor * 100) / 100,
+      avgBobot: Math.round(r.avg_bobot * 100) / 100,
+    })),
+    desaRows,
+  });
+});
+
 // ---------- BANUA INSIGHT (Phase 1: Gap Analysis, Potensi Pengembangan,
 // Spatial Matching - deterministic, no AI, no invented scores; see
 // server/lib/insight.js) ----------

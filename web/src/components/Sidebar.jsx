@@ -4,10 +4,27 @@ import { useAuth, ROLE_LABEL } from '../auth';
 
 // `roles: undefined` = visible to everyone already past the desa-only cut
 // below; `roles: [...]` restricts further (admin-only tools).
+// BANUA INDEX has 6 dimension sub-pages (indent: true) - Ringkasan (the
+// parent link) stays the macro/aggregate view across all 6; each child
+// drills into that one dimension down to indicator level (DimensiDetail.jsx).
+const DIMENSI_SUBNAV = [
+  ['LAYANAN DASAR', 'Layanan Dasar'],
+  ['SOSIAL', 'Sosial'],
+  ['EKONOMI', 'Ekonomi'],
+  ['LINGKUNGAN', 'Lingkungan'],
+  ['AKSESIBILITAS', 'Aksesibilitas'],
+  ['TATA KELOLA PEMERINTAHAN DESA', 'Tata Kelola'],
+];
+
 const NAV = [
   { to: '/', label: 'Dashboard', icon: '▦', end: true },
-  { to: '/indeks-desa', label: 'BANUA INDEX', icon: '◆' },
-  { to: '/dimensi-ekonomi', label: 'Dimensi Ekonomi', icon: '▤' },
+  { to: '/indeks-desa', label: 'BANUA INDEX', icon: '◆', end: true },
+  ...DIMENSI_SUBNAV.map(([dimensi, label]) => ({
+    to: `/banua-index/${encodeURIComponent(dimensi)}`,
+    label,
+    icon: '',
+    indent: true,
+  })),
   { to: '/potensi-desa', label: 'Potensi Desa', icon: '⬢' },
   { to: '/profil-desa', label: 'Profil Desa', icon: '⌂' },
   { to: '/ekosistem-ekonomi', label: 'Ekosistem Ekonomi', icon: '⛁' },
@@ -54,9 +71,11 @@ export default function Sidebar({ open, onClose }) {
               to={item.to}
               end={item.end}
               onClick={onClose}
-              className={({ isActive }) => (isActive ? 'active' : '')}
+              className={({ isActive }) => `${isActive ? 'active' : ''} ${item.indent ? 'indent' : ''}`.trim()}
             >
-              <span className="sidebar-icon">{item.icon}</span>
+              {item.indent
+                ? <span className="sidebar-subdot" aria-hidden="true" />
+                : <span className="sidebar-icon">{item.icon}</span>}
               {item.label}
             </NavLink>
           ))}

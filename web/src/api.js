@@ -30,6 +30,7 @@ export const api = {
   kecamatan: (kabupaten) => get(`/wilayah/kecamatan${kabupaten ? `?kabupaten=${encodeURIComponent(kabupaten)}` : ''}`),
   dashboardSummary: (params) => get(`/dashboard/summary?${new URLSearchParams(params)}`),
   indeksRingkasan: (params) => get(`/indeks/ringkasan?${new URLSearchParams(params)}`),
+  indeksDimensi: (dimensi, params) => get(`/indeks/dimensi/${encodeURIComponent(dimensi)}?${new URLSearchParams(params)}`),
   insightRingkasan: (params) => get(`/insight/ringkasan?${new URLSearchParams(params)}`),
   insightGapDesa: (params) => get(`/insight/gap/desa?${new URLSearchParams(params)}`),
   insightTanpaKoordinat: (params) => get(`/insight/tanpa-koordinat?${new URLSearchParams(params)}`),
