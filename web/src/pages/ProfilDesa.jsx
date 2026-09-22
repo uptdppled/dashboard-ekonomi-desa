@@ -75,15 +75,26 @@ export default function ProfilDesa() {
   );
 }
 
+// Same threshold/coloring language as BANUA INDEX's dimension pages and
+// BANUA INSIGHT's Gap Analysis, so a red bar means the same thing everywhere.
+function severityColor(ratio) {
+  if (ratio === null) return 'var(--accent)';
+  if (ratio < 0.6) return 'var(--critical)';
+  if (ratio < 0.8) return 'var(--warning)';
+  return 'var(--good)';
+}
+
 function ScoreBar({ label, value, max }) {
   const pct = max ? Math.min(100, (value / max) * 100) : 0;
+  const ratio = max ? value / max : null;
+  const color = severityColor(ratio);
   return (
     <div className="score-bar-row">
       <div className="score-bar-label-row">
         <span className="score-bar-label">{label}</span>
-        <span className="score-bar-val">{value}{max ? ` / ${max}` : ''}</span>
+        <span className="score-bar-val" style={{ color }}>{value}{max ? ` / ${max}` : ''}</span>
       </div>
-      <div className="score-bar-track"><div className="score-bar-fill" style={{ width: `${pct}%` }} /></div>
+      <div className="score-bar-track"><div className="score-bar-fill" style={{ width: `${pct}%`, background: color }} /></div>
     </div>
   );
 }
