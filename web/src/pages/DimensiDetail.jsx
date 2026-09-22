@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { api } from '../api';
@@ -17,13 +17,21 @@ const DIMENSI_LABEL = {
   'TATA KELOLA PEMERINTAHAN DESA': 'Tata Kelola',
 };
 
+// ratio = avgSkor / avgBobot. Same threshold as insight.js's Gap Analysis,
+// so "gap" here means the same thing it means everywhere else in the app.
+function severity(ratio) {
+  if (ratio === null) return { color: 'var(--text-faint)', bg: 'var(--panel-2)', label: '-' };
+  if (ratio < 0.6) return { color: 'var(--critical)', bg: 'var(--critical-soft)', label: 'Gap' };
+  if (ratio < 0.8) return { color: 'var(--warning)', bg: 'var(--warning-soft)', label: 'Sedang' };
+  return { color: 'var(--good)', bg: 'var(--good-soft)', label: 'Baik' };
+}
+
 export default function DimensiDetail() {
   const { dimensi } = useParams();
   const label = DIMENSI_LABEL[dimensi] || dimensi;
   const [filter, setFilter] = useState({});
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
-  const [sort, setSort] = useState({ field: 'skor_dimensi', dir: 'desc' });
   const { resolved } = useTheme();
   const accent = ACCENT_SECONDARY[resolved];
 
@@ -33,36 +41,13 @@ export default function DimensiDetail() {
     api.indeksDimensi(dimensi, cleanParams(filter)).then(setData).catch((e) => setError(e.message));
   }, [dimensi, filter]);
 
-  const bySubDimensi = useMemo(() => {
-    if (!data) return {};
-    const out = {};
-    for (const r of data.indikatorRows) (out[r.subDimensi] ||= []).push(r);
-    return out;
-  }, [data]);
-
-  const sortedDesa = useMemo(() => {
-    if (!data) return [];
-    const copy = [...data.desaRows];
-    copy.sort((a, b) => {
-      const av = a[sort.field] ?? -Infinity;
-      const bv = b[sort.field] ?? -Infinity;
-      if (typeof av === 'string') return sort.dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
-      return sort.dir === 'asc' ? av - bv : bv - av;
-    });
-    return copy;
-  }, [data, sort]);
-
-  function toggleSort(field) {
-    setSort((s) => (s.field === field ? { field, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { field, dir: 'desc' }));
-  }
-
   return (
     <div>
       <div className="page-header">
         <h1 className="page-title">BANUA INDEX &middot; {label}</h1>
-        <p className="page-desc">Skor dimensi {label} sampai ke tingkat indikator, per desa se-Kalimantan Selatan.</p>
+        <p className="page-desc">Indikator diurutkan dari yang paling butuh perhatian, untuk mendukung pengambilan kebijakan.</p>
       </div>
-      <FilterBar value={filter} onChange={setFilter} showSearch />
+      <FilterBar value={filter} onChange={setFilter} />
 
       {error && <div className="state-msg state-error">{error}</div>}
       {!data && !error && <div className="state-msg">Memuat data...</div>}
@@ -78,87 +63,84 @@ export default function DimensiDetail() {
               <div className="kpi-label">Rata-rata Skor {label}</div>
               <div className="kpi-value">{data.avgSkor ?? '-'}</div>
             </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Indikator dengan Gap (&lt;60%)</div>
+              <div className="kpi-value" style={{ color: data.jumlahIndikatorGap > 0 ? 'var(--critical)' : undefined }}>
+                {data.jumlahIndikatorGap} <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}>/ {data.indikatorRows.length} indikator</span>
+              </div>
+            </div>
           </div>
 
           <div className="panel">
-            <h2 className="panel-title">Komposisi Sub-Dimensi (rata-rata skor)</h2>
-            <ResponsiveContainer width="100%" height={Math.max(140, data.subDimensiRows.length * 50)}>
+            <h2 className="panel-title">Komposisi Sub-Dimensi</h2>
+            <ResponsiveContainer width="100%" height={Math.max(120, data.subDimensiRows.length * 44)}>
               <BarChart data={data.subDimensiRows} layout="vertical" margin={{ left: 20 }}>
                 <XAxis type="number" hide />
                 <YAxis
                   type="category"
                   dataKey="subDimensi"
-                  width={220}
+                  width={200}
                   tickFormatter={(v) => v.replace(/^SUB-DIMENSI /i, '')}
                   tick={{ fontSize: 11 }}
                 />
                 <Tooltip formatter={(v) => v.toFixed(2)} />
-                <Bar dataKey="avgSkor" fill={accent} radius={[0, 4, 4, 0]} barSize={28} />
+                <Bar dataKey="avgSkor" fill={accent} radius={[0, 4, 4, 0]} barSize={22} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           <div className="panel">
-            <h2 className="panel-title">Rincian per Indikator</h2>
+            <h2 className="panel-title">Indikator - Paling Butuh Perhatian Dulu</h2>
             <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
-              Rata-rata skor tiap indikator individual, dikelompokkan per sub-dimensi.
+              Diurutkan dari skor terendah (relatif terhadap bobot maksimalnya). Merah = di bawah 60% bobot maks.
             </p>
-            {Object.entries(bySubDimensi).map(([sub, items]) => (
-              <div key={sub} style={{ marginBottom: 16 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
-                  {sub.replace(/^SUB-DIMENSI /i, '')}
-                </p>
-                <div className="table-scroll">
-                  <table className="data-table">
-                    <thead><tr><th>Indikator</th><th>Rata-rata Skor</th><th>Bobot Maks</th></tr></thead>
-                    <tbody>
-                      {items.map((it) => (
-                        <tr key={it.indikator}>
-                          <td>{it.indikator.replace(/^SKOR /i, '')}</td>
-                          <td>{it.avgSkor}</td>
-                          <td>{it.avgBobot}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+              {data.indikatorRows.map((it) => {
+                const sev = severity(it.ratio);
+                return (
+                  <div
+                    key={it.indikator}
+                    style={{ border: `1px solid ${sev.color}`, borderRadius: 10, padding: '10px 12px', background: sev.bg }}
+                  >
+                    <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
+                      {it.subDimensi.replace(/^SUB-DIMENSI /i, '')}
+                    </div>
+                    <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 8, minHeight: 32 }}>
+                      {it.indikator.replace(/^SKOR /i, '')}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                      <span style={{ fontSize: 18, fontWeight: 700, color: sev.color }}>{it.avgSkor}<span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}> / {it.avgBobot}</span></span>
+                      <span style={{ fontSize: 10.5, fontWeight: 700, color: sev.color }}>{sev.label}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <div className="panel">
-            <h2 className="panel-title">Daftar Desa</h2>
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 0 }}>{sortedDesa.length} desa</p>
-            <div className="table-scroll">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Desa</th>
-                    <th>Kabupaten</th>
-                    <th>Kecamatan</th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('skor_dimensi')}>
-                      Skor {label} {sort.field === 'skor_dimensi' ? (sort.dir === 'asc' ? '↑' : '↓') : ''}
-                    </th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedDesa.slice(0, 300).map((d) => (
-                    <tr key={d.kode_desa}>
-                      <td><Link to={`/profil-desa?kode=${d.kode_desa}`}>{d.nama_desa}</Link></td>
-                      <td>{d.kabupaten}</td>
-                      <td>{d.kecamatan}</td>
-                      <td>{d.skor_dimensi ?? '-'}</td>
-                      <td><StatusBadge status={d.status_desa} /></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {sortedDesa.length > 300 && (
-              <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                Menampilkan 300 dari {sortedDesa.length} desa. Persempit dengan filter untuk melihat lebih spesifik.
-              </p>
+            <h2 className="panel-title">Desa Prioritas (Skor {label} Terendah)</h2>
+            <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
+              12 desa dengan skor komposit dimensi ini paling rendah pada filter saat ini.
+            </p>
+            {data.desaTerendah.length === 0 && <p className="state-msg">Tidak ada data pada filter ini.</p>}
+            {data.desaTerendah.length > 0 && (
+              <div className="table-scroll">
+                <table className="data-table">
+                  <thead><tr><th>Desa</th><th>Kabupaten</th><th>Kecamatan</th><th>Skor {label}</th><th>Status</th></tr></thead>
+                  <tbody>
+                    {data.desaTerendah.map((d) => (
+                      <tr key={d.kode_desa}>
+                        <td><Link to={`/profil-desa?kode=${d.kode_desa}`}>{d.nama_desa}</Link></td>
+                        <td>{d.kabupaten}</td>
+                        <td>{d.kecamatan}</td>
+                        <td>{d.skor_dimensi ?? '-'}</td>
+                        <td><StatusBadge status={d.status_desa} /></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </>

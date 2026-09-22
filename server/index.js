@@ -325,27 +325,44 @@ app.get('/api/indeks/dimensi/:dimensi', requireAuth, (req, res) => {
     )
     .all(dimensi, ...scopeParams);
 
-  const desaRows = db
+  // Worst-scoring 12 desa on this dimension's composite score - a curated
+  // "desa prioritas" list (same idea as recommendKabupaten.js's priorityDesa)
+  // instead of dumping every desa, which is what made this page unusable
+  // for actually spotting a problem.
+  const desaTerendah = db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa,
               (SELECT skor FROM skor_indikator si2 WHERE si2.kode_desa = d.kode_desa
                  AND si2.dimensi = ? AND si2.nama_indikator = si2.dimensi LIMIT 1) AS skor_dimensi
        FROM desa d ${baseSql}`
     )
-    .all(dimensi, ...baseParams);
+    .all(dimensi, ...baseParams)
+    .filter((r) => r.skor_dimensi !== null)
+    .sort((a, b) => a.skor_dimensi - b.skor_dimensi)
+    .slice(0, 12);
+
+  // Sorted worst-first (lowest ratio of skor/bobot_maks) so the indicators
+  // that most need attention are what the user sees first, not an
+  // alphabetical/insertion-order dump. GAP_THRESHOLD matches insight.js.
+  const GAP_THRESHOLD = 0.6;
+  const indikatorWithRatio = indikatorRows
+    .map((r) => ({
+      subDimensi: r.sub_dimensi,
+      indikator: r.nama_indikator,
+      avgSkor: Math.round(r.avg_skor * 100) / 100,
+      avgBobot: Math.round(r.avg_bobot * 100) / 100,
+      ratio: r.avg_bobot ? r.avg_skor / r.avg_bobot : null,
+    }))
+    .sort((a, b) => (a.ratio ?? 1) - (b.ratio ?? 1));
 
   res.json({
     dimensi,
     totalDesa,
     avgSkor: avgSkorRow.avg_skor !== null ? Math.round(avgSkorRow.avg_skor * 100) / 100 : null,
     subDimensiRows: subDimensiRows.map((r) => ({ subDimensi: r.sub_dimensi, avgSkor: Math.round(r.avg_skor * 100) / 100 })),
-    indikatorRows: indikatorRows.map((r) => ({
-      subDimensi: r.sub_dimensi,
-      indikator: r.nama_indikator,
-      avgSkor: Math.round(r.avg_skor * 100) / 100,
-      avgBobot: Math.round(r.avg_bobot * 100) / 100,
-    })),
-    desaRows,
+    indikatorRows: indikatorWithRatio,
+    jumlahIndikatorGap: indikatorWithRatio.filter((r) => r.ratio !== null && r.ratio < GAP_THRESHOLD).length,
+    desaTerendah,
   });
 });
 
