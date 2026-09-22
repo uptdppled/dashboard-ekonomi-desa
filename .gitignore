@@ -1,0 +1,7 @@
+node_modules/
+server/.env
+server/data/*.db
+server/server-out.log
+server/server-err.log
+server/pid.txt
+web/dist/

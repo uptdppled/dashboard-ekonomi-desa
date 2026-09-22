@@ -1,0 +1,21 @@
+{
+  "name": "dashboard-ekonomi-desa-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch-path=index.js --watch-path=db.js --watch-path=lib --watch-path=scripts index.js",
+    "start": "cross-env NODE_ENV=production node index.js",
+    "import": "node scripts/import-excel.js"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.3",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0"
+  }
+}

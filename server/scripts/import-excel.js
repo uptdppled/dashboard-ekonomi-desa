@@ -1,0 +1,194 @@
+import XLSX from 'xlsx';
+import { db } from '../db.js';
+import { parseSheet, parseCoordinate } from '../lib/excel-parse.js';
+import { categorizeSektor } from '../lib/categorize.js';
+
+const EKO_PATH = process.env.EKONOMI_XLSX || 'C:\\Users\\doryt\\Downloads\\ekonomi.xlsx';
+const RAW_PATH = process.env.RAW_XLSX || 'C:\\Users\\doryt\\Downloads\\row data ID Aplikasi final kirim.xlsx';
+const TAHUN = 2026;
+
+const IDENTITY_RE = /^(kode desa|provinsi|kabupaten|kecamatan|^desa$|nama desa|tanggal upload kuesioner)$/i;
+
+function isIdentityHeader(h) {
+  return IDENTITY_RE.test(h.trim());
+}
+
+// 'Rekap Tambahan' bundles KDMP/Koperasi/BUM Desa fields together with
+// Kerentanan Sosial (poverty deciles) and Kehutanan (forest zoning) columns
+// that share the sheet but aren't "ekosistem ekonomi" in nature - excluded
+// here so the ekosistem_desa table stays scoped to what the module is about.
+const EKOSISTEM_EXCLUDE_RE = /desil|SKTM|Surat Keterangan Tidak Mampu|Hutan|Kawasan Hutan/i;
+
+function toNumberOrNull(v) {
+  if (v === null || v === undefined || v === '') return null;
+  const n = typeof v === 'number' ? v : parseFloat(String(v).replace(',', '.'));
+  return Number.isFinite(n) ? n : null;
+}
+
+function logImport(sumber, sheet, jumlah) {
+  db.prepare(
+    'INSERT INTO import_log (sumber_file, sheet, waktu_import, jumlah_baris) VALUES (?, ?, ?, ?)'
+  ).run(sumber, sheet, new Date().toISOString(), jumlah);
+  console.log(`  -> ${sheet}: ${jumlah} baris`);
+}
+
+console.log('Membaca file sumber...');
+console.log(`  ekonomi.xlsx: ${EKO_PATH}`);
+console.log(`  raw:          ${RAW_PATH}`);
+const wbEko = XLSX.readFile(EKO_PATH);
+const wbRaw = XLSX.readFile(RAW_PATH);
+console.log('Selesai membaca. Memproses sheet...');
+
+db.exec('BEGIN');
+try {
+  db.exec(
+    'DELETE FROM skor_indikator; DELETE FROM jawaban_kuesioner; ' +
+    'DELETE FROM potensi_desa; DELETE FROM ekosistem_desa; ' +
+    'DELETE FROM import_log; DELETE FROM desa;'
+  );
+
+  // ---- 1. desa (identitas) dari raw 'rekap' ----
+  const rekapRaw = parseSheet(wbRaw.Sheets['rekap']);
+  const idxKab = rekapRaw.headers.findIndex((h) => /^kabupaten$/i.test(h));
+  const idxKec = rekapRaw.headers.findIndex((h) => /^kecamatan$/i.test(h));
+  const idxKode = rekapRaw.kodeDesaIdx;
+  const idxNama = rekapRaw.headers.findIndex((h) => /^nama desa$/i.test(h));
+  const idxStatusFinal = rekapRaw.headers.findIndex((h) => /^status desa$/i.test(h));
+  const idxStatusAwal = rekapRaw.headers.findIndex((h) => /^status id 2025$/i.test(h));
+
+  // koordinat GPS dari raw 'Rekap kuisioner 1' (tidak ada di versi ekonomi.xlsx yang sudah difilter)
+  const kuisRaw = parseSheet(wbRaw.Sheets['Rekap kuisioner 1']);
+  const idxKoord = kuisRaw.headers.findIndex((h) => /titik koordinat desa/i.test(h));
+  const koordMap = new Map();
+  if (idxKoord !== -1) {
+    for (const row of kuisRaw.dataRows) {
+      const kode = String(row[kuisRaw.kodeDesaIdx]).trim();
+      const parsed = parseCoordinate(row[idxKoord]);
+      if (parsed && !koordMap.has(kode)) koordMap.set(kode, parsed);
+    }
+  }
+  let koordFound = 0;
+
+  const insertDesa = db.prepare(
+    'INSERT INTO desa (kode_desa, provinsi, kabupaten, kecamatan, nama_desa, status_desa, lat, lng, tahun) ' +
+    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+  );
+  const seenKode = new Set();
+  for (const row of rekapRaw.dataRows) {
+    const kode = String(row[idxKode]).trim();
+    if (seenKode.has(kode)) continue; // guard against stray duplicate rows
+    seenKode.add(kode);
+    const koord = koordMap.get(kode);
+    if (koord) koordFound++;
+    insertDesa.run(
+      kode,
+      'KALIMANTAN SELATAN',
+      String(row[idxKab] ?? '').trim(),
+      String(row[idxKec] ?? '').trim(),
+      String(row[idxNama] ?? '').trim(),
+      String(row[idxStatusFinal] ?? row[idxStatusAwal] ?? '').trim(),
+      koord ? koord.lat : null,
+      koord ? koord.lng : null,
+      TAHUN
+    );
+  }
+  logImport('raw', 'rekap (identitas desa)', seenKode.size);
+  console.log(`  -> koordinat GPS berhasil diparse untuk ${koordFound} desa`);
+
+  // ---- 2. skor_indikator dari ekonomi.xlsx 'rekap' (sudah difilter dimensi Ekonomi) ----
+  const rekapEko = parseSheet(wbEko.Sheets['rekap']);
+  const insertSkor = db.prepare(
+    'INSERT INTO skor_indikator (kode_desa, tahun, dimensi, sub_dimensi, nama_indikator, skor, bobot_maks) ' +
+    'VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
+  let skorCount = 0;
+  for (const row of rekapEko.dataRows) {
+    const kode = String(row[rekapEko.kodeDesaIdx]).trim();
+    let subDimensi = '';
+    for (let i = 0; i < rekapEko.headers.length; i++) {
+      const header = rekapEko.headers[i];
+      if (!header || isIdentityHeader(header)) continue;
+      if (/^sub-dimensi/i.test(header)) subDimensi = header;
+      const skor = toNumberOrNull(row[i]);
+      if (skor === null) continue;
+      const bobot = toNumberOrNull(rekapEko.weightRow[i]);
+      insertSkor.run(kode, TAHUN, 'EKONOMI', subDimensi, header, skor, bobot);
+      skorCount++;
+    }
+  }
+  logImport('ekonomi.xlsx', 'rekap (skor indikator)', skorCount);
+
+  // ---- 3. jawaban_kuesioner dari ekonomi.xlsx 'Rekap kuisioner 1' (blok Ekonomi) ----
+  const kuisEko = parseSheet(wbEko.Sheets['Rekap kuisioner 1']);
+  const insertJawaban = db.prepare(
+    'INSERT INTO jawaban_kuesioner (kode_desa, tahun, pertanyaan, jawaban) VALUES (?, ?, ?, ?)'
+  );
+  let jawabanCount = 0;
+  for (const row of kuisEko.dataRows) {
+    const kode = String(row[kuisEko.kodeDesaIdx]).trim();
+    for (let i = 0; i < kuisEko.headers.length; i++) {
+      const header = kuisEko.headers[i];
+      if (!header || isIdentityHeader(header)) continue;
+      const val = row[i];
+      if (val === null || val === undefined || String(val).trim() === '') continue;
+      insertJawaban.run(kode, TAHUN, header, String(val).trim());
+      jawabanCount++;
+    }
+  }
+  logImport('ekonomi.xlsx', 'Rekap kuisioner 1 (jawaban)', jawabanCount);
+
+  // ---- 4. potensi_desa dari raw 'Rekap Isu' (lengkap, dikategorikan per sektor) ----
+  const isuRaw = parseSheet(wbRaw.Sheets['Rekap Isu']);
+  const insertPotensi = db.prepare(
+    'INSERT INTO potensi_desa (kode_desa, tahun, sektor, subsektor, nilai) VALUES (?, ?, ?, ?, ?)'
+  );
+  let potensiCount = 0;
+  const sektorCache = new Map();
+  for (const row of isuRaw.dataRows) {
+    const kode = String(row[isuRaw.kodeDesaIdx]).trim();
+    for (let i = 0; i < isuRaw.headers.length; i++) {
+      const header = isuRaw.headers[i];
+      if (!header || isIdentityHeader(header)) continue;
+      const val = row[i];
+      if (val === null || val === undefined || String(val).trim() === '') continue;
+      let sektor = sektorCache.get(header);
+      if (sektor === undefined) {
+        sektor = categorizeSektor(header);
+        sektorCache.set(header, sektor);
+      }
+      if (!sektor) continue; // kolom belum terkategori -> di luar cakupan v1 (lihat kamus data)
+      insertPotensi.run(kode, TAHUN, sektor, header, String(val).trim());
+      potensiCount++;
+    }
+  }
+  logImport('raw', 'Rekap Isu (potensi desa)', potensiCount);
+
+  // ---- 5. ekosistem_desa dari raw 'Rekap Tambahan' ----
+  // 'Tambahan 2026' punya skema lebih baru (+ Kerentanan Sosial/Kehutanan) tapi
+  // baru terisi ~6% (5.613/87.937 sel) - datanya belum dikumpulkan penuh.
+  // 'Rekap Tambahan' terisi ~99.9% (74.839/74.840 sel), dipakai sebagai sumber v1.
+  const tambahan = parseSheet(wbRaw.Sheets['Rekap Tambahan']);
+  const insertEkosistem = db.prepare(
+    'INSERT INTO ekosistem_desa (kode_desa, tahun, komponen, nilai) VALUES (?, ?, ?, ?)'
+  );
+  let ekosistemCount = 0;
+  for (const row of tambahan.dataRows) {
+    const kode = String(row[tambahan.kodeDesaIdx]).trim();
+    for (let i = 0; i < tambahan.headers.length; i++) {
+      const header = tambahan.headers[i];
+      if (!header || isIdentityHeader(header) || EKOSISTEM_EXCLUDE_RE.test(header)) continue;
+      const val = row[i];
+      if (val === null || val === undefined || String(val).trim() === '') continue;
+      insertEkosistem.run(kode, TAHUN, header, String(val).trim());
+      ekosistemCount++;
+    }
+  }
+  logImport('raw', 'Rekap Tambahan (ekosistem)', ekosistemCount);
+
+  db.exec('COMMIT');
+  console.log('\nImport selesai.');
+} catch (err) {
+  db.exec('ROLLBACK');
+  console.error('Import gagal, rollback:', err);
+  process.exit(1);
+}
