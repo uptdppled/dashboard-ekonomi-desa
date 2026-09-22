@@ -45,6 +45,14 @@ export function assertKabupatenAccess(user, kabupatenName) {
   throw forbidden();
 }
 
+// Province-wide view (all kabupaten at once) - only admin/provinsi ever see
+// beyond a single kabupaten, so desa and kabupaten accounts are always
+// rejected here regardless of which kabupaten they're pinned to.
+export function assertProvinsiAccess(user) {
+  if (!user || user.role === 'admin' || user.role === 'provinsi') return;
+  throw forbidden();
+}
+
 // Express error-handling wrapper for the two assert* helpers above, so
 // route handlers can just call assertX(...) and let this catch/respond.
 // Wraps with Promise.resolve().catch() rather than a plain try/catch because

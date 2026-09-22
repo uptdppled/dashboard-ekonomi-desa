@@ -23,7 +23,7 @@ import {
   registerWithKode,
   touchLogin,
 } from './lib/auth.js';
-import { mergeScope, assertDesaAccess, assertKabupatenAccess, guard } from './lib/scope.js';
+import { mergeScope, assertDesaAccess, assertKabupatenAccess, assertProvinsiAccess, guard } from './lib/scope.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 try {
@@ -326,6 +326,30 @@ app.post('/api/kabupaten/:nama/rekomendasi', requireAuth, guard(async (req, res)
       return res.status(503).json({ error: err.message, code: 'NO_API_KEY' });
     }
     console.error('Gagal membuat analisis kabupaten:', err);
+    res.status(500).json({ error: 'Gagal membuat analisis AI: ' + err.message });
+  }
+}));
+
+// Province-wide view of the same BUM Desa analysis - same context builder
+// with kabupaten=null, only admin/provinsi may reach it.
+app.get('/api/provinsi/ringkasan', requireAuth, guard((req, res) => {
+  assertProvinsiAccess(req.user);
+  const ctx = buildKabupatenContext(null);
+  if (!ctx) return res.status(404).json({ error: 'Data provinsi tidak ditemukan' });
+  res.json(ctx);
+}));
+
+app.post('/api/provinsi/rekomendasi', requireAuth, guard(async (req, res) => {
+  assertProvinsiAccess(req.user);
+  try {
+    const result = await getRekomendasiKabupaten(null, { forceRefresh: !!req.body?.forceRefresh });
+    if (result.notFound) return res.status(404).json({ error: 'Data provinsi tidak ditemukan' });
+    res.json(result);
+  } catch (err) {
+    if (err.code === 'NO_API_KEY') {
+      return res.status(503).json({ error: err.message, code: 'NO_API_KEY' });
+    }
+    console.error('Gagal membuat analisis provinsi:', err);
     res.status(500).json({ error: 'Gagal membuat analisis AI: ' + err.message });
   }
 }));

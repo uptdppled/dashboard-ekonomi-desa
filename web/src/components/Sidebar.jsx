@@ -12,7 +12,7 @@ const NAV = [
   { to: '/ekosistem-ekonomi', label: 'Ekosistem Ekonomi', icon: '⛁' },
   { to: '/peta-ekonomi', label: 'Peta Ekonomi', icon: '⚑' },
   { to: '/analisis', label: 'Analisis Kuadran', icon: '✦' },
-  { to: '/analisis-kabupaten', label: 'Analisis Kabupaten', icon: '⛛' },
+  { to: '/analisis-bumdes', label: 'Analisis BUMDes', icon: '⛛' },
   { to: '/data', label: 'Data', icon: '⚙', roles: ['admin'] },
   { to: '/pengguna', label: 'Manajemen Pengguna', icon: '⚉', roles: ['admin'] },
 ];

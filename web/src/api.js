@@ -42,6 +42,8 @@ export const api = {
   ringkasanKabupaten: (nama) => get(`/kabupaten/${encodeURIComponent(nama)}/ringkasan`),
   rekomendasiKabupaten: (nama, forceRefresh) =>
     post(`/kabupaten/${encodeURIComponent(nama)}/rekomendasi`, { forceRefresh: !!forceRefresh }),
+  ringkasanProvinsi: () => get('/provinsi/ringkasan'),
+  rekomendasiProvinsi: (forceRefresh) => post('/provinsi/rekomendasi', { forceRefresh: !!forceRefresh }),
   kodeRegistrasiList: () => get('/admin/kode-registrasi'),
   kodeRegistrasiBuat: (data) => post('/admin/kode-registrasi', data),
   usersList: () => get('/admin/users'),

@@ -9,6 +9,11 @@ import { STATUS_COLORS, ACCENT_SECONDARY } from '../colors';
 const BUM_TIER_ORDER = ['Perintis', 'Pemula', 'Berkembang', 'Maju', 'Tidak Ikut Pemeringkatan', 'Tidak Diketahui'];
 const KDMP_ORDER = ['Tidak Ada', 'Ada, Belum Berbadan Hukum', 'Ada, Sudah Berbadan Hukum', 'Tidak Diketahui'];
 
+// Sentinel select value representing "all kabupaten at once" - only ever
+// offered when the wilayah list has more than one entry, which server-side
+// scoping already guarantees is true only for admin/provinsi accounts.
+const PROVINSI_VALUE = '__PROVINSI__';
+
 function toChartData(countObj, order) {
   const known = order.filter((k) => countObj[k] != null).map((k) => ({ name: k, n: countObj[k] }));
   const extra = Object.entries(countObj)
@@ -17,38 +22,43 @@ function toChartData(countObj, order) {
   return [...known, ...extra];
 }
 
-export default function AnalisisKabupaten() {
+export default function AnalisisBumdes() {
   const [kabupatenList, setKabupatenList] = useState([]);
-  const [kabupaten, setKabupaten] = useState('');
+  const [selected, setSelected] = useState('');
   const [ringkasan, setRingkasan] = useState(null);
   const [error, setError] = useState(null);
   const { resolved } = useTheme();
   const statusColors = STATUS_COLORS[resolved];
   const accent = ACCENT_SECONDARY[resolved];
 
+  const isProvinsi = selected === PROVINSI_VALUE;
+  const canSeeProvinsi = kabupatenList.length > 1;
+
   useEffect(() => {
     api.kabupaten().then((list) => {
       setKabupatenList(list);
-      if (list.length) setKabupaten(list[0]);
+      if (list.length) setSelected(list[0]);
     }).catch((e) => setError(e.message));
   }, []);
 
   useEffect(() => {
-    if (!kabupaten) return;
+    if (!selected) return;
     setRingkasan(null);
     setError(null);
-    api.ringkasanKabupaten(kabupaten).then(setRingkasan).catch((e) => setError(e.message));
-  }, [kabupaten]);
+    const req = selected === PROVINSI_VALUE ? api.ringkasanProvinsi() : api.ringkasanKabupaten(selected);
+    req.then(setRingkasan).catch((e) => setError(e.message));
+  }, [selected]);
 
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Analisis Kabupaten</h1>
-        <p className="page-desc">Kondisi BUM Desa dan rekomendasi kebijakan tingkat kabupaten.</p>
+        <h1 className="page-title">Analisis BUMDes</h1>
+        <p className="page-desc">Kondisi BUM Desa dan rekomendasi kebijakan tingkat kabupaten atau provinsi.</p>
       </div>
 
       <div className="filter-bar">
-        <select value={kabupaten} onChange={(e) => setKabupaten(e.target.value)} disabled={kabupatenList.length <= 1}>
+        <select value={selected} onChange={(e) => setSelected(e.target.value)} disabled={kabupatenList.length <= 1}>
+          {canSeeProvinsi && <option value={PROVINSI_VALUE}>Provinsi (Semua Kabupaten)</option>}
           {kabupatenList.map((k) => (
             <option key={k} value={k}>{k}</option>
           ))}
@@ -68,6 +78,27 @@ export default function AnalisisKabupaten() {
             <div className="kpi-card">
               <div className="kpi-label">Rata-rata Skor Dimensi Ekonomi</div>
               <div className="kpi-value">{ringkasan.avgSkor !== null ? ringkasan.avgSkor.toFixed(1) : '-'}</div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">BUM Desa Aktif (Ikut Pemeringkatan)</div>
+              <div className="kpi-value">
+                {ringkasan.desaBumDesaAktif.toLocaleString('id-ID')}
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}> / {ringkasan.jumlahDesa.toLocaleString('id-ID')} desa</span>
+              </div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">BUM Desa Berbadan Hukum</div>
+              <div className="kpi-value">
+                {ringkasan.desaBerbadanHukum.toLocaleString('id-ID')}
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}> / {ringkasan.jumlahDesa.toLocaleString('id-ID')} desa</span>
+              </div>
+            </div>
+            <div className="kpi-card">
+              <div className="kpi-label">Rata-rata Hari Operasional BUM Desa</div>
+              <div className="kpi-value">
+                {ringkasan.hariOperasionalAvg !== null ? ringkasan.hariOperasionalAvg.toFixed(1) : '-'}
+                <span style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 400 }}> hari/minggu</span>
+              </div>
             </div>
             {Object.entries(ringkasan.statusCount).map(([status, n]) => (
               <div className="kpi-card" key={status}>
@@ -119,7 +150,7 @@ export default function AnalisisKabupaten() {
             </ResponsiveContainer>
           </div>
 
-          <RekomendasiKabupatenAI kabupaten={kabupaten} />
+          <RekomendasiKabupatenAI kabupaten={isProvinsi ? null : selected} isProvinsi={isProvinsi} />
 
           <div className="panel">
             <h2 className="panel-title">Desa Prioritas (Potensi Tinggi, Kinerja Rendah)</h2>

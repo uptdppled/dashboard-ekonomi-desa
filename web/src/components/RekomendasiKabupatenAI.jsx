@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { api } from '../api';
 
 const KATEGORI_LABEL = {
@@ -9,18 +9,28 @@ const KATEGORI_LABEL = {
   kebijakan_anggaran: 'Kebijakan & Anggaran',
 };
 
-export default function RekomendasiKabupatenAI({ kabupaten }) {
+export default function RekomendasiKabupatenAI({ kabupaten, isProvinsi }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [errorCode, setErrorCode] = useState(null);
+
+  // Reset any previously-generated analysis when the selected scope changes,
+  // otherwise a stale kabupaten's result stays on screen after switching.
+  useEffect(() => {
+    setData(null);
+    setError(null);
+    setErrorCode(null);
+  }, [kabupaten, isProvinsi]);
 
   async function generate(forceRefresh) {
     setLoading(true);
     setError(null);
     setErrorCode(null);
     try {
-      const res = await api.rekomendasiKabupaten(kabupaten, forceRefresh);
+      const res = isProvinsi
+        ? await api.rekomendasiProvinsi(forceRefresh)
+        : await api.rekomendasiKabupaten(kabupaten, forceRefresh);
       setData(res);
     } catch (e) {
       setError(e.message);
@@ -36,7 +46,9 @@ export default function RekomendasiKabupatenAI({ kabupaten }) {
         <div>
           <h2 className="panel-title" style={{ marginBottom: 2 }}>Analisis Kondisi BUM Desa & Rekomendasi (AI)</h2>
           <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: 0 }}>
-            Analisis kondisi BUM Desa se-kabupaten dan rekomendasi kebijakan/program tingkat kabupaten.
+            {isProvinsi
+              ? 'Analisis kondisi BUM Desa se-provinsi dan rekomendasi kebijakan lintas kabupaten.'
+              : 'Analisis kondisi BUM Desa se-kabupaten dan rekomendasi kebijakan/program tingkat kabupaten.'}
           </p>
         </div>
         {!loading && (
@@ -46,7 +58,11 @@ export default function RekomendasiKabupatenAI({ kabupaten }) {
         )}
       </div>
 
-      {loading && <p className="state-msg">AI sedang menganalisis kondisi kabupaten ini...</p>}
+      {loading && (
+        <p className="state-msg">
+          AI sedang menganalisis kondisi {isProvinsi ? 'provinsi' : 'kabupaten'} ini...
+        </p>
+      )}
 
       {error && !loading && (
         <div className="state-msg state-error" style={{ textAlign: 'left', padding: '14px 0' }}>

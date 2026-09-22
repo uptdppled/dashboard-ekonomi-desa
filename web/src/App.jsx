@@ -10,7 +10,7 @@ import ProfilDesa from './pages/ProfilDesa';
 import EkosistemEkonomi from './pages/EkosistemEkonomi';
 import PetaEkonomi from './pages/PetaEkonomi';
 import Analisis from './pages/Analisis';
-import AnalisisKabupaten from './pages/AnalisisKabupaten';
+import AnalisisBumdes from './pages/AnalisisBumdes';
 import DataImport from './pages/DataImport';
 import ManajemenPengguna from './pages/ManajemenPengguna';
 import { useAuth } from './auth';
@@ -58,7 +58,7 @@ export default function App() {
             <Route path="/ekosistem-ekonomi" element={<EkosistemEkonomi />} />
             <Route path="/peta-ekonomi" element={<PetaEkonomi />} />
             <Route path="/analisis" element={<Analisis />} />
-            <Route path="/analisis-kabupaten" element={<AnalisisKabupaten />} />
+            <Route path="/analisis-bumdes" element={<AnalisisBumdes />} />
             {user.role === 'admin' && <Route path="/data" element={<DataImport />} />}
             {user.role === 'admin' && <Route path="/pengguna" element={<ManajemenPengguna />} />}
             <Route path="*" element={<Navigate to="/" replace />} />
