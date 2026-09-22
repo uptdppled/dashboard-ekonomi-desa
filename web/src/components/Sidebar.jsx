@@ -42,7 +42,7 @@ export default function Sidebar({ open, onClose }) {
         <div className="sidebar-brand">
           <div>
             <div className="sidebar-brand-title">Banua360</div>
-            <div className="sidebar-brand-sub">DASHBOARD EKONOMI DESA · KALSEL</div>
+            <div className="sidebar-brand-sub">SISTEM INTELLIGENCE PEMBANGUNAN DESA KALIMANTAN SELATAN</div>
           </div>
           <button className="sidebar-close-btn" onClick={onClose} aria-label="Tutup menu">&times;</button>
         </div>
