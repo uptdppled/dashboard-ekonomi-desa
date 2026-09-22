@@ -8,6 +8,13 @@ import { db } from './db.js';
 import { getRekomendasi } from './lib/recommend.js';
 import { getRekomendasiKabupaten, buildKabupatenContext } from './lib/recommendKabupaten.js';
 import {
+  buildGapAnalysis,
+  listDesaGapUntukIndikator,
+  buildPotensiPengembangan,
+  buildSpatialMatching,
+  listDesaTanpaKoordinat,
+} from './lib/insight.js';
+import {
   bootstrapAdmin,
   generateKode,
   setSessionCookie,
@@ -278,6 +285,36 @@ app.get('/api/indeks/ringkasan', requireAuth, (req, res) => {
     avgNilaiIndeks: avgNilaiIndeks !== null ? Math.round(avgNilaiIndeks * 100) / 100 : null,
     dimensi: dimensiRows.map((r) => ({ dimensi: r.dimensi, avgSkor: Math.round(r.avg_skor * 100) / 100 })),
   });
+});
+
+// ---------- BANUA INSIGHT (Phase 1: Gap Analysis, Potensi Pengembangan,
+// Spatial Matching - deterministic, no AI, no invented scores; see
+// server/lib/insight.js) ----------
+
+app.get('/api/insight/ringkasan', requireAuth, (req, res) => {
+  const scope = mergeScope(req.user, req.query);
+  const gapAnalysis = buildGapAnalysis(scope);
+  const potensiPengembangan = buildPotensiPengembangan(scope);
+  const spatial = buildSpatialMatching(scope);
+
+  res.json({
+    coverage: spatial.coverage,
+    gapAnalysis,
+    potensiPengembangan,
+    spatialMatching: spatial.matches,
+  });
+});
+
+app.get('/api/insight/gap/desa', requireAuth, (req, res) => {
+  const scope = mergeScope(req.user, req.query);
+  const { indikator } = req.query;
+  if (!indikator) return res.status(400).json({ error: 'Parameter indikator wajib diisi' });
+  res.json(listDesaGapUntukIndikator(scope, indikator));
+});
+
+app.get('/api/insight/tanpa-koordinat', requireAuth, (req, res) => {
+  const scope = mergeScope(req.user, req.query);
+  res.json(listDesaTanpaKoordinat(scope));
 });
 
 // ---------- profil / list desa ----------

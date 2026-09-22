@@ -14,6 +14,7 @@ const NAV = [
   { to: '/peta-ekonomi', label: 'Peta Ekonomi', icon: '⚑' },
   { to: '/analisis', label: 'Analisis Kuadran', icon: '✦' },
   { to: '/analisis-bumdes', label: 'Analisis BUMDes', icon: '⛛' },
+  { to: '/banua-insight', label: 'BANUA INSIGHT', icon: '⟡' },
   { to: '/data', label: 'Data', icon: '⚙', roles: ['admin'] },
   { to: '/pengguna', label: 'Manajemen Pengguna', icon: '⚉', roles: ['admin'] },
 ];
