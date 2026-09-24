@@ -27,8 +27,7 @@ export default function PetaEkonomi() {
       <div className="page-header">
         <h1 className="page-title">Peta Ekonomi</h1>
         <p className="page-desc">
-          Titik lokasi desa berdasarkan koordinat GPS hasil pendataan kuesioner. Tidak semua desa memiliki koordinat
-          yang bisa diparse (format entri bervariasi) - lihat catatan di halaman Data.
+          Titik lokasi seluruh desa berdasarkan koordinat GPS hasil geocoding alamat desa.
         </p>
       </div>
       <FilterBar value={filter} onChange={setFilter} />

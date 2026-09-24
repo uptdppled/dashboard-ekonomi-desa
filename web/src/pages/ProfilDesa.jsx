@@ -5,6 +5,7 @@ import FilterBar from '../components/FilterBar';
 import StatusBadge from '../components/StatusBadge';
 import RekomendasiAI from '../components/RekomendasiAI';
 import { cleanParams } from '../utils';
+import { useDefinisiSkor, formatTooltip } from '../definisi';
 
 export default function ProfilDesa() {
   const [params, setParams] = useSearchParams();
@@ -121,18 +122,45 @@ const DIMENSI_LABEL = {
 };
 
 function ProfilDetail({ profil }) {
-  const { desa, potensi, ekosistem, indeksDimensi = [] } = profil;
+  const { desa, ekosistem, indeksDimensi = [] } = profil;
+  const definisiSkor = useDefinisiSkor();
   const indeksByDimensi = new Map(indeksDimensi.map((d) => [d.dimensi, d]));
   const indeksSorted = DIMENSI_ORDER.filter((d) => indeksByDimensi.has(d)).map((d) => indeksByDimensi.get(d));
-  const [selectedDimensi, setSelectedDimensi] = useState(indeksSorted[0]?.dimensi || null);
+  const [selectedDimensi, setSelectedDimensi] = useState(null);
   const [dimensiDetail, setDimensiDetail] = useState(null);
   const [dimensiError, setDimensiError] = useState(null);
+  const [narasi, setNarasi] = useState(null);
+  const [narasiLoading, setNarasiLoading] = useState(true);
+  const [narasiError, setNarasiError] = useState(null);
+  const [narasiErrorCode, setNarasiErrorCode] = useState(null);
 
   useEffect(() => {
-    if (!selectedDimensi) return;
+    if (!selectedDimensi) { setDimensiDetail(null); return; }
     setDimensiDetail(null);
     setDimensiError(null);
     api.indeksDimensi(selectedDimensi, { kode_desa: desa.kode_desa }).then(setDimensiDetail).catch((e) => setDimensiError(e.message));
+  }, [selectedDimensi, desa.kode_desa]);
+
+  // Auto-refreshes with the same dimension selection the "Rincian" panel
+  // above reacts to - a short AI-written summary of exactly what's shown
+  // there (or the whole-village picture when nothing is selected), not a
+  // separate thing to click for.
+  useEffect(() => {
+    let cancelled = false;
+    setNarasi(null);
+    setNarasiLoading(true);
+    setNarasiError(null);
+    setNarasiErrorCode(null);
+    api
+      .narasiDesa(desa.kode_desa, selectedDimensi)
+      .then((res) => { if (!cancelled) setNarasi(res); })
+      .catch((e) => {
+        if (cancelled) return;
+        setNarasiError(e.message);
+        setNarasiErrorCode(e.code);
+      })
+      .finally(() => { if (!cancelled) setNarasiLoading(false); });
+    return () => { cancelled = true; };
   }, [selectedDimensi, desa.kode_desa]);
 
   const bySub = useMemo(() => {
@@ -141,9 +169,6 @@ function ProfilDetail({ profil }) {
     for (const r of dimensiDetail.indikatorRows) (out[r.subDimensi] ||= []).push(r);
     return out;
   }, [dimensiDetail]);
-
-  const sektorGroups = {};
-  for (const p of potensi) (sektorGroups[p.sektor] ||= []).push(p);
 
   return (
     <div>
@@ -161,7 +186,7 @@ function ProfilDetail({ profil }) {
         <div className="panel">
           <h2 className="panel-title">Indeks Desa (6 Dimensi)</h2>
           <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
-            Klik salah satu dimensi untuk melihat rincian sampai ke tingkat indikator.
+            Klik salah satu dimensi untuk melihat rincian sampai ke tingkat indikator (klik lagi untuk kembali ke ringkasan menyeluruh).
           </p>
           {indeksSorted.map((d) => {
             const active = d.dimensi === selectedDimensi;
@@ -171,7 +196,7 @@ function ProfilDetail({ profil }) {
             return (
               <button
                 key={d.dimensi}
-                onClick={() => setSelectedDimensi(d.dimensi)}
+                onClick={() => setSelectedDimensi(active ? null : d.dimensi)}
                 style={{
                   display: 'block', width: '100%', textAlign: 'left', background: active ? 'var(--panel-2)' : 'transparent',
                   border: active ? '1px solid var(--border-strong)' : '1px solid transparent', borderRadius: 8,
@@ -191,46 +216,66 @@ function ProfilDetail({ profil }) {
         </div>
       )}
 
-      <div className="grid-2">
-        <div className="panel">
-          <h2 className="panel-title">Rincian {DIMENSI_LABEL[selectedDimensi] || selectedDimensi}</h2>
-          {dimensiError && <div className="state-msg state-error">{dimensiError}</div>}
-          {!dimensiDetail && !dimensiError && <p className="state-msg">Memuat...</p>}
-          {dimensiDetail && Object.entries(bySub).map(([sub, items]) => (
-            <div key={sub} style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
-                {sub.replace(/^SUB-DIMENSI /i, '')}
-              </p>
-              {items.map((it) => {
-                const sev = severityCard(it.ratio);
-                return (
-                  <div key={it.indikator} style={{ marginBottom: 8, paddingLeft: 8, borderLeft: `3px solid ${sev.color}` }}>
-                    <div className="score-bar-label-row">
-                      <span className="score-bar-label">{it.indikator.replace(/^SKOR /i, '')}</span>
-                      <span className="score-bar-val" style={{ color: sev.color }}>{it.avgSkor} / {it.avgBobot}</span>
-                    </div>
-                  </div>
-                );
-              })}
+      <div className="panel">
+        <h2 className="panel-title" style={{ marginBottom: 6 }}>
+          {selectedDimensi ? `Analisis & Rekomendasi · ${DIMENSI_LABEL[selectedDimensi] || selectedDimensi}` : 'Analisis & Rekomendasi · Desa Secara Menyeluruh'}
+        </h2>
+        {narasiLoading && <p className="state-msg">AI sedang menganalisis data...</p>}
+        {narasiError && !narasiLoading && (
+          <div className="state-msg state-error" style={{ textAlign: 'left', padding: '10px 0' }}>
+            {narasiErrorCode === 'NO_API_KEY'
+              ? 'Fitur ini belum aktif: admin perlu mengisi GROQ_API_KEY atau GEMINI_API_KEY (gratis) di server/.env (lihat server/.env.example), lalu restart server.'
+              : narasiError}
+          </div>
+        )}
+        {narasi && !narasiLoading && (
+          <div>
+            <p style={{ fontSize: 13.5, marginBottom: 16 }}>{narasi.analisis}</p>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {(narasi.rekomendasi || []).map((r, i) => (
+                <div key={i} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '12px 14px' }}>
+                  <span className="badge" style={{ background: 'var(--panel-2)', color: 'var(--text-muted)', marginBottom: 6, display: 'inline-block' }}>
+                    {DIMENSI_LABEL[r.dimensi] || r.dimensi}
+                  </span>
+                  <p style={{ fontSize: 13.5, fontWeight: 600, margin: '4px 0 6px' }}>{r.aktivitas}</p>
+                  {r.alasan && <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: 0 }}>{r.alasan}</p>}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        <div className="panel">
-          <h2 className="panel-title">Potensi Ekonomi</h2>
-          {Object.keys(sektorGroups).length === 0 && <p className="state-msg">Belum ada potensi tercatat.</p>}
-          {Object.entries(sektorGroups).map(([sektor, items]) => (
-            <div key={sektor} style={{ marginBottom: 14 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)', marginBottom: 6 }}>{sektor}</p>
-              <div className="tag-list">
-                {items.map((p) => (
-                  <span className="tag" key={p.subsektor} title={p.nilai}>{p.subsektor.replace(/^Terdapat /i, '')}</span>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
+
+      {selectedDimensi && (
+      <div className="panel">
+        <h2 className="panel-title">Rincian {DIMENSI_LABEL[selectedDimensi] || selectedDimensi}</h2>
+        {dimensiError && <div className="state-msg state-error">{dimensiError}</div>}
+        {!dimensiDetail && !dimensiError && <p className="state-msg">Memuat...</p>}
+        {dimensiDetail && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '0 28px' }}>
+            {Object.entries(bySub).map(([sub, items]) => (
+              <div key={sub} style={{ marginBottom: 14 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 6 }}>
+                  {sub.replace(/^SUB-DIMENSI /i, '')}
+                </p>
+                {items.map((it) => {
+                  const sev = severityCard(it.ratio);
+                  const tooltip = formatTooltip(definisiSkor[it.indikator]);
+                  return (
+                    <div key={it.indikator} title={tooltip} style={{ marginBottom: 8, paddingLeft: 8, borderLeft: `3px solid ${sev.color}`, cursor: tooltip ? 'help' : undefined }}>
+                      <div className="score-bar-label-row">
+                        <span className="score-bar-label">{it.indikator.replace(/^SKOR /i, '')}{tooltip ? ' ⓘ' : ''}</span>
+                        <span className="score-bar-val" style={{ color: sev.color }}>{it.avgSkor} / {it.avgBobot}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      )}
 
       <div className="panel">
         <h2 className="panel-title">Ekosistem Ekonomi Pendukung</h2>

@@ -4,9 +4,11 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { api } from '../api';
 import FilterBar from '../components/FilterBar';
 import StatusBadge from '../components/StatusBadge';
+import AnalisisIndeksAI from '../components/AnalisisIndeksAI';
 import { cleanParams } from '../utils';
 import { useTheme } from '../theme';
 import { ACCENT_SECONDARY } from '../colors';
+import { useDefinisiSkor, formatTooltip } from '../definisi';
 
 const DIMENSI_LABEL = {
   'LAYANAN DASAR': 'Layanan Dasar',
@@ -32,14 +34,23 @@ export default function DimensiDetail() {
   const [filter, setFilter] = useState({});
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [selectedSubDimensi, setSelectedSubDimensi] = useState(null);
   const { resolved } = useTheme();
   const accent = ACCENT_SECONDARY[resolved];
+  const definisiSkor = useDefinisiSkor();
 
   useEffect(() => {
     setData(null);
     setError(null);
+    setSelectedSubDimensi(null);
     api.indeksDimensi(dimensi, cleanParams(filter)).then(setData).catch((e) => setError(e.message));
   }, [dimensi, filter]);
+
+  const indikatorRows = data
+    ? selectedSubDimensi
+      ? data.indikatorRows.filter((it) => it.subDimensi === selectedSubDimensi)
+      : data.indikatorRows
+    : [];
 
   return (
     <div>
@@ -73,6 +84,18 @@ export default function DimensiDetail() {
 
           <div className="panel">
             <h2 className="panel-title">Komposisi Sub-Dimensi</h2>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 0 }}>
+              Klik bar untuk mempersempit daftar indikator di bawah ke sub-dimensi itu saja.
+              {selectedSubDimensi && (
+                <button
+                  className="link-button"
+                  style={{ marginLeft: 8 }}
+                  onClick={() => setSelectedSubDimensi(null)}
+                >
+                  Tampilkan semua sub-dimensi
+                </button>
+              )}
+            </p>
             <ResponsiveContainer width="100%" height={Math.max(120, data.subDimensiRows.length * 44)}>
               <BarChart data={data.subDimensiRows} layout="vertical" margin={{ left: 20 }}>
                 <XAxis type="number" hide />
@@ -84,29 +107,46 @@ export default function DimensiDetail() {
                   tick={{ fontSize: 11 }}
                 />
                 <Tooltip formatter={(v) => v.toFixed(2)} />
-                <Bar dataKey="avgSkor" fill={accent} radius={[0, 4, 4, 0]} barSize={22} />
+                <Bar
+                  dataKey="avgSkor"
+                  fill={accent}
+                  radius={[0, 4, 4, 0]}
+                  barSize={22}
+                  cursor="pointer"
+                  onClick={(d) => setSelectedSubDimensi((prev) => (prev === d.subDimensi ? null : d.subDimensi))}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
+          <AnalisisIndeksAI
+            scope={{ ...cleanParams(filter), dimensi }}
+            desc={`Analisis kondisi dimensi ${label} di atas dan rekomendasi kegiatan untuk meningkatkan indikator yang masih lemah.`}
+          />
+
           <div className="panel">
-            <h2 className="panel-title">Indikator - Paling Butuh Perhatian Dulu</h2>
+            <h2 className="panel-title">
+              Indikator - Paling Butuh Perhatian Dulu
+              {selectedSubDimensi && ` · ${selectedSubDimensi.replace(/^SUB-DIMENSI /i, '')}`}
+            </h2>
             <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
               Diurutkan dari skor terendah (relatif terhadap bobot maksimalnya). Merah = di bawah 60% bobot maks.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
-              {data.indikatorRows.map((it) => {
+              {indikatorRows.map((it) => {
                 const sev = severity(it.ratio);
+                const tooltip = formatTooltip(definisiSkor[it.indikator]);
                 return (
                   <div
                     key={it.indikator}
-                    style={{ border: `1px solid ${sev.color}`, borderRadius: 10, padding: '10px 12px', background: sev.bg }}
+                    title={tooltip}
+                    style={{ border: `1px solid ${sev.color}`, borderRadius: 10, padding: '10px 12px', background: sev.bg, cursor: tooltip ? 'help' : undefined }}
                   >
                     <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
                       {it.subDimensi.replace(/^SUB-DIMENSI /i, '')}
                     </div>
                     <div style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 8, minHeight: 32 }}>
-                      {it.indikator.replace(/^SKOR /i, '')}
+                      {it.indikator.replace(/^SKOR /i, '')}{tooltip ? ' ⓘ' : ''}
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                       <span style={{ fontSize: 18, fontWeight: 700, color: sev.color }}>{it.avgSkor}<span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 400 }}> / {it.avgBobot}</span></span>

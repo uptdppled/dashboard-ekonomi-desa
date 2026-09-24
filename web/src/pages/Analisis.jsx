@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from 'recharts';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import FilterBar from '../components/FilterBar';
 import StatusBadge from '../components/StatusBadge';
@@ -9,6 +9,7 @@ import { useTheme } from '../theme';
 import { QUADRAN_COLORS } from '../colors';
 
 export default function Analisis() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState({});
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -35,7 +36,7 @@ export default function Analisis() {
         <h1 className="page-title">Analisis Potensi x Kinerja</h1>
         <p className="page-desc">
           Setiap desa diplot berdasarkan jumlah sektor potensi ekonomi (sumbu X) dan skor Dimensi Ekonomi (sumbu Y).
-          Kuadran II (potensi tinggi, kinerja rendah) adalah kandidat utama untuk intervensi.
+          Kuadran II (potensi tinggi, kinerja rendah) adalah kandidat utama untuk intervensi. Klik satu titik untuk membuka profil desa itu.
         </p>
       </div>
       <FilterBar value={filter} onChange={setFilter} />
@@ -78,7 +79,14 @@ export default function Analisis() {
                   }}
                 />
                 {Object.entries(byKuadran).map(([kuadran, items]) => (
-                  <Scatter key={kuadran} name={kuadran} data={items} fill={kuadranColors[kuadran]} />
+                  <Scatter
+                    key={kuadran}
+                    name={kuadran}
+                    data={items}
+                    fill={kuadranColors[kuadran]}
+                    cursor="pointer"
+                    onClick={(d) => navigate(`/profil-desa?kode=${d.kode_desa}`)}
+                  />
                 ))}
               </ScatterChart>
             </ResponsiveContainer>

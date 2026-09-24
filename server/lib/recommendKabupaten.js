@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { db } from '../db.js';
 import { callLLM } from './llm.js';
+import { listPrioritasDesa } from './kuadran.js';
 
 const BUM_DESA_KOMPONEN = 'Status Pemeringkatan BUM Desa (Sesuai Keputusan Menteri Desa Nomor 145 Tahun 2022)';
 const KDMP_KOMPONEN = 'Keberadaan Koperasi Desa Merah Putih di Desa';
@@ -31,6 +32,42 @@ function normalizeKdmp(v) {
   if (/belum berbadan hukum/.test(s)) return 'Ada, Belum Berbadan Hukum';
   if (/sudah berbadan hukum/.test(s)) return 'Ada, Sudah Berbadan Hukum';
   return (v || '').trim() || 'Tidak Diketahui';
+}
+
+// Drill-down for the "Kondisi BUM Desa"/"Kondisi KDMP" bar charts - same
+// scoping and normalization as buildKabupatenContext's bumTier/kdmpStatus
+// aggregates above, but returning the desa list for one specific bar
+// instead of just the count.
+export function listDesaByBumTier(kabupaten, tier) {
+  const scoped = kabupaten != null;
+  const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
+  const args = scoped ? [kabupaten] : [];
+  const rows = db
+    .prepare(
+      `SELECT e.kode_desa, e.nilai, d.nama_desa, d.kecamatan, d.kabupaten, d.status_desa
+       FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
+       WHERE e.komponen = ? ${kabWhereAnd}`
+    )
+    .all(BUM_DESA_KOMPONEN, ...args);
+  return rows
+    .filter((r) => normalizeBumTier(r.nilai) === tier)
+    .map((r) => ({ kode_desa: r.kode_desa, nama_desa: r.nama_desa, kecamatan: r.kecamatan, kabupaten: r.kabupaten, status_desa: r.status_desa }));
+}
+
+export function listDesaByKdmpStatus(kabupaten, status) {
+  const scoped = kabupaten != null;
+  const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
+  const args = scoped ? [kabupaten] : [];
+  const rows = db
+    .prepare(
+      `SELECT e.kode_desa, e.nilai, d.nama_desa, d.kecamatan, d.kabupaten, d.status_desa
+       FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
+       WHERE e.komponen = ? ${kabWhereAnd}`
+    )
+    .all(KDMP_KOMPONEN, ...args);
+  return rows
+    .filter((r) => normalizeKdmp(r.nilai) === status)
+    .map((r) => ({ kode_desa: r.kode_desa, nama_desa: r.nama_desa, kecamatan: r.kecamatan, kabupaten: r.kabupaten, status_desa: r.status_desa }));
 }
 
 function countBy(rows, normalize) {
@@ -170,22 +207,14 @@ export function buildKabupatenContext(kabupaten) {
     .all(...args);
   const potensiMap = new Map(potensiCountRows.map((r) => [r.kode_desa, r.n]));
 
-  const median = (arr) => {
-    if (!arr.length) return 0;
-    const sorted = [...arr].sort((a, b) => a - b);
-    return sorted[Math.floor(sorted.length / 2)];
-  };
-  const potensiMedian = median([...potensiMap.values()]);
-  const skorMedian = median([...skorMap.values()]);
-
-  // "Priority" = at/above median potential but below median performance -
-  // the same Kuadran II logic as the province-wide Analisis Kuadran page,
-  // scoped to this kabupaten (or the whole province).
-  const priorityDesa = desaRows
-    .map((d) => ({ ...d, potensi: potensiMap.get(d.kode_desa) || 0, skor: skorMap.get(d.kode_desa) ?? null }))
-    .filter((d) => d.skor !== null && d.potensi >= potensiMedian && d.skor < skorMedian)
-    .sort((a, b) => b.potensi - a.potensi || a.skor - b.skor)
-    .slice(0, 12);
+  // "Priority" = kuadran II (at/above median potential, below median
+  // performance) - the same shared definition the province-wide Analisis
+  // Kuadran page uses, scoped to this kabupaten (or the whole province).
+  const priorityDesa = listPrioritasDesa(
+    desaRows
+      .map((d) => ({ ...d, potensi: potensiMap.get(d.kode_desa) || 0, skor: skorMap.get(d.kode_desa) ?? null }))
+      .filter((d) => d.skor !== null)
+  );
 
   return {
     kabupaten: scoped ? kabupaten : null,

@@ -19,7 +19,7 @@ Import/re-import data dari file Excel sumber:
 ```bash
 npm run import
 ```
-(atau lewat UI: menu Data → "Jalankan Import Ulang"). Path file sumber default ke `C:\Users\doryt\Downloads\ekonomi.xlsx` dan `...\row data ID Aplikasi final kirim.xlsx`, bisa dioverride lewat env var `EKONOMI_XLSX` / `RAW_XLSX`.
+(atau lewat UI: menu Data → "Jalankan Import Ulang"). Path file sumber default ke `C:\Users\doryt\Downloads\ekonomi.xlsx` dan `...\row data ID Aplikasi final kirim.xlsx`, bisa dioverride lewat env var `EKONOMI_XLSX` / `RAW_XLSX`. Koordinat GPS desa diambil dari file CSV terpisah (lihat "Koordinat GPS" di bawah), default `C:\Users\doryt\Downloads\Posyandu 6 SPM - MW.csv`, dioverride lewat `KOORDINAT_DESA_CSV` - opsional, import tetap jalan tanpanya (fallback ke parse teks bebas, cakupan lebih rendah).
 
 ## Arsitektur
 
@@ -48,7 +48,7 @@ Lihat tabel `desa`, `skor_indikator`, `jawaban_kuesioner`, `potensi_desa`, `ekos
 - Sumber potensi sektor: sheet `Rekap Isu` di file master (1.416 kolom, lengkap).
 - Sumber ekosistem pendukung: sheet `Rekap Tambahan` di file master — **bukan** `Tambahan 2026` meski skemanya lebih baru, karena `Tambahan 2026` baru terisi ~6% (lihat komentar di `import-excel.js`).
 - **Tidak diimpor**: sheet `rekap ISU DESA PERDESAAN` (2.283 kolom, tata kelola & modal sosial desa — mayoritas di luar cakupan ekonomi), dan sheet duplikat/QA lainnya (`rekap KUISIONER`, `Kuisioner`, `Info Grafis`, dll).
-- Koordinat GPS (untuk Peta Ekonomi) di-parse best-effort dari field teks bebas "Titik Koordinat Desa" — sekitar 75% desa berhasil terparse; sisanya format entrinya terlalu tidak konsisten untuk diparse otomatis.
+- **Koordinat GPS** (untuk Peta Ekonomi, BANUA OPPORTUNITY, BANUA INSIGHT, dll): sumber utama adalah file CSV geocoded-by-address terpisah (`KOORDINAT_DESA_CSV`, default `Posyandu 6 SPM - MW.csv` di Downloads) — mencakup 1.871/1.871 desa (100%), kode_desa cocok persis, divalidasi 2026-09-24 terhadap hasil parse teks bebas lama: mengisi 445 desa yang dulu tidak punya koordinat sama sekali, dan mengoreksi ~305 desa lain yang koordinat hasil parse-nya meleset >5km (bukan cuma kurang presisi — salah desa/lokasi). Field teks bebas "Titik Koordinat Desa" (parse best-effort, ~75% berhasil) masih dipertahankan sebagai fallback kalau file CSV ini tidak tersedia.
 
 ## Rekomendasi AI (Profil Desa & Analisis BUMDes)
 

@@ -8,14 +8,7 @@ import { db } from '../db.js';
 const GAP_THRESHOLD = 0.6; // same threshold already used by recommend.js's gapIndikator
 const FASILITAS_EKONOMI_SUBDIMENSI = 'SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI';
 
-// Production sectors (raw material) vs. processing/market-access sectors -
-// the closest real mapping to "producer <-> processor" using the sector
-// taxonomy that actually exists in categorize.js (there is no literal
-// "Pengolahan" sector in the source data).
-const PRODUKSI_SEKTOR = new Set(['Pertanian', 'Perikanan', 'Peternakan', 'Perkebunan', 'Pertambangan']);
-const PROSES_PASAR_SEKTOR = new Set(['Kerajinan/Industri', 'Fasilitas Perdagangan/Keuangan', 'Pemasaran/Ekspor']);
-
-function haversineKm(lat1, lng1, lat2, lng2) {
+export function haversineKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLng = ((lng2 - lng1) * Math.PI) / 180;
@@ -132,81 +125,114 @@ export function buildPotensiPengembangan(scope) {
   return [...bySektor.values()].sort((a, b) => b.jumlahDesaPotensi - a.jumlahDesaPotensi);
 }
 
-// ---------- 3. Spatial Matching ----------
-// Haversine distance between every desa with a "produksi" sektor and every
-// desa with a "proses/pasar" sektor within radiusKm. O(n^2) over ~1,400
-// geocoded desa is a few million cheap float ops - no spatial index needed
-// at this scale.
-// 30 of the 1,426 geocoded desa (15 pairs) share an exact duplicate
-// lat/lng with another desa - almost certainly a data-entry artifact (e.g.
-// a kecamatan-center coordinate copied across villages), not two distinct
-// village centroids genuinely 0m apart. Excluding anything under this floor
-// keeps the "closest matches" list from being dominated by that artifact.
-const MIN_JARAK_KM = 0.5;
+// ---------- 3. Cakupan Data ----------
+// Just the coverage KPIs for the "Cakupan Data" panel - direct COUNT
+// queries, not a byproduct of running the spatial-matching engine (that
+// engine now lives in opportunity.js, see BANUA OPPORTUNITY below).
+export function buildCoverage(scope) {
+  const totalWhere = scopeWhere(scope);
+  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d WHERE 1=1 ${totalWhere.sql}`).get(...totalWhere.params).n;
 
-export function buildSpatialMatching(scope, { radiusKm = 15, maxResults = 30 } = {}) {
-  const where = scopeWhere(scope);
-  const desaRows = db
-    .prepare(`SELECT kode_desa, nama_desa, kecamatan, kabupaten, lat, lng FROM desa d WHERE 1=1 ${where.sql}`)
-    .all(...where.params);
+  const koordinatWhere = scopeWhere(scope);
+  const desaDenganKoordinat = db
+    .prepare(`SELECT COUNT(*) AS n FROM desa d WHERE d.lat IS NOT NULL AND d.lng IS NOT NULL ${koordinatWhere.sql}`)
+    .get(...koordinatWhere.params).n;
 
-  const totalDesa = desaRows.length;
-  const withKoordinat = desaRows.filter((d) => d.lat !== null && d.lng !== null);
-  const tanpaKoordinat = totalDesa - withKoordinat.length;
-
-  const sektorWhere = scopeWhere(scope);
-  const sektorRows = db
+  const potensiWhere = scopeWhere(scope);
+  const desaDenganPotensi = db
     .prepare(
-      `SELECT DISTINCT p.kode_desa, p.sektor FROM potensi_desa p
+      `SELECT COUNT(DISTINCT p.kode_desa) AS n
+       FROM potensi_desa p
        JOIN desa d ON d.kode_desa = p.kode_desa
-       WHERE p.nilai = 'Ada' ${sektorWhere.sql}`
+       WHERE p.nilai = 'Ada' ${potensiWhere.sql}`
     )
-    .all(...sektorWhere.params);
-  const sektorByDesa = new Map();
-  for (const r of sektorRows) {
-    (sektorByDesa.get(r.kode_desa) || sektorByDesa.set(r.kode_desa, new Set()).get(r.kode_desa)).add(r.sektor);
+    .get(...potensiWhere.params).n;
+
+  return { totalDesa, desaDenganKoordinat, desaTanpaKoordinat: totalDesa - desaDenganKoordinat, desaDenganPotensi };
+}
+
+// ---------- 4. Kandidat Naik Status ----------
+// desa.nilai_indeks_desa is just a numeric encoding of status_desa itself
+// (BERKEMBANG=3, MAJU=4, MANDIRI=5 - constant within a tier, verified
+// against the live data), not a real composite score, so it can't say who's
+// CLOSE to the next tier. Kemendes's exact promotion formula isn't in our
+// data either. The closest defensible, data-driven proxy: rank desa within
+// their own tier by the sum of their own 6 BANUA INDEX dimension scores (as
+// a fraction of max) - the best performers within a lower tier are the most
+// plausible quick-win promotion candidates. This is explicitly OUR ranking,
+// not a reproduction of Kemendes's official cutoff - the UI must say so.
+const NAIK_STATUS_PAIRS = [
+  { dari: 'BERKEMBANG', ke: 'MAJU' },
+  { dari: 'MAJU', ke: 'MANDIRI' },
+];
+
+export function buildKandidatNaikStatus(scope, { perTier = 30 } = {}) {
+  const statusList = NAIK_STATUS_PAIRS.map((p) => p.dari);
+  const placeholders = statusList.map(() => '?').join(',');
+
+  const where = scopeWhere(scope);
+  const komposit = db
+    .prepare(
+      `SELECT d.kode_desa, d.nama_desa, d.kecamatan, d.kabupaten, d.status_desa,
+              SUM(si.skor) AS totalSkor, SUM(si.bobot_maks) AS totalBobot
+       FROM desa d
+       JOIN skor_indikator si ON si.kode_desa = d.kode_desa AND si.nama_indikator = si.dimensi
+       WHERE d.status_desa IN (${placeholders}) ${where.sql}
+       GROUP BY d.kode_desa`
+    )
+    .all(...statusList, ...where.params);
+
+  const gapWhere = scopeWhere(scope);
+  const indikatorRows = db
+    .prepare(
+      `SELECT d.kode_desa, si.nama_indikator, si.skor, si.bobot_maks
+       FROM skor_indikator si
+       JOIN desa d ON d.kode_desa = si.kode_desa
+       WHERE si.nama_indikator LIKE 'SKOR %' AND si.bobot_maks > 0 AND d.status_desa IN (${placeholders}) ${gapWhere.sql}`
+    )
+    .all(...statusList, ...gapWhere.params);
+  const gapByDesa = new Map();
+  for (const r of indikatorRows) {
+    const ratio = r.skor / r.bobot_maks;
+    if (ratio >= GAP_THRESHOLD) continue;
+    if (!gapByDesa.has(r.kode_desa)) gapByDesa.set(r.kode_desa, []);
+    gapByDesa.get(r.kode_desa).push({
+      indikator: r.nama_indikator.replace(/^SKOR /i, ''),
+      skor: r.skor,
+      bobotMaks: r.bobot_maks,
+      ratio,
+    });
+  }
+  for (const list of gapByDesa.values()) {
+    list.sort((a, b) => a.ratio - b.ratio);
+    list.length = Math.min(list.length, 3);
   }
 
-  const produsen = withKoordinat.filter((d) =>
-    [...(sektorByDesa.get(d.kode_desa) || [])].some((s) => PRODUKSI_SEKTOR.has(s))
-  );
-  const prosesor = withKoordinat.filter((d) =>
-    [...(sektorByDesa.get(d.kode_desa) || [])].some((s) => PROSES_PASAR_SEKTOR.has(s))
-  );
-
-  // A village pair where both sides independently qualify as producer AND
-  // market/processing (a common overlap) would otherwise appear twice, once
-  // per direction - dedupe by the unordered pair so each pair is reported once.
-  const seenPairs = new Set();
-  const matches = [];
-  for (const a of produsen) {
-    const sektorA = [...(sektorByDesa.get(a.kode_desa) || [])].filter((s) => PRODUKSI_SEKTOR.has(s));
-    for (const b of prosesor) {
-      if (a.kode_desa === b.kode_desa) continue;
-      const pairKey = [a.kode_desa, b.kode_desa].sort().join('|');
-      if (seenPairs.has(pairKey)) continue;
-      const jarakKm = haversineKm(a.lat, a.lng, b.lat, b.lng);
-      if (jarakKm > radiusKm || jarakKm < MIN_JARAK_KM) continue;
-      seenPairs.add(pairKey);
-      const sektorB = [...(sektorByDesa.get(b.kode_desa) || [])].filter((s) => PROSES_PASAR_SEKTOR.has(s));
-      matches.push({
-        desaA: { kode_desa: a.kode_desa, nama_desa: a.nama_desa, kecamatan: a.kecamatan, kabupaten: a.kabupaten, sektor: sektorA },
-        desaB: { kode_desa: b.kode_desa, nama_desa: b.nama_desa, kecamatan: b.kecamatan, kabupaten: b.kabupaten, sektor: sektorB },
-        jarakKm: Math.round(jarakKm * 10) / 10,
-      });
-    }
+  const byStatus = {};
+  for (const status of statusList) byStatus[status] = [];
+  for (const r of komposit) {
+    if (!r.totalBobot) continue;
+    byStatus[r.status_desa].push({
+      kode_desa: r.kode_desa,
+      nama_desa: r.nama_desa,
+      kecamatan: r.kecamatan,
+      kabupaten: r.kabupaten,
+      totalSkor: Math.round(r.totalSkor * 100) / 100,
+      totalBobot: r.totalBobot,
+      ratio: r.totalSkor / r.totalBobot,
+      gapIndikator: gapByDesa.get(r.kode_desa) || [],
+    });
   }
-  matches.sort((a, b) => a.jarakKm - b.jarakKm);
+  for (const status of statusList) {
+    byStatus[status].sort((a, b) => b.ratio - a.ratio);
+  }
 
-  return {
-    coverage: {
-      totalDesa,
-      desaDenganKoordinat: withKoordinat.length,
-      desaTanpaKoordinat: tanpaKoordinat,
-      desaDenganPotensi: sektorByDesa.size,
-    },
-    matches: matches.slice(0, maxResults),
-  };
+  return NAIK_STATUS_PAIRS.map(({ dari, ke }) => ({
+    dari,
+    ke,
+    totalDiTier: byStatus[dari].length,
+    kandidat: byStatus[dari].slice(0, perTier),
+  }));
 }
 
 export function listDesaTanpaKoordinat(scope) {

@@ -96,6 +96,33 @@ CREATE TABLE IF NOT EXISTS rekomendasi_produk (
 );
 CREATE INDEX IF NOT EXISTS idx_rekomendasi_desa ON rekomendasi_produk(kode_desa, input_hash);
 
+-- Same caching pattern as rekomendasi_produk, but for the short descriptive
+-- narrative shown on Profil Desa (per-dimension, or 'RINGKASAN' for the
+-- whole-village summary shown when no dimension is selected).
+CREATE TABLE IF NOT EXISTS narasi_desa (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  kode_desa TEXT NOT NULL REFERENCES desa(kode_desa),
+  dimensi TEXT NOT NULL,
+  input_hash TEXT NOT NULL,
+  model TEXT,
+  narasi TEXT,
+  dibuat_pada TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_narasi_desa ON narasi_desa(kode_desa, dimensi, input_hash);
+
+-- Same caching pattern as narasi_desa, but for BANUA INDEX's 6-dimension
+-- summary narrative (province-wide, or scoped to whatever kabupaten/
+-- kecamatan/status filter is active - see scopeKey() in lib/narasiIndeks.js).
+CREATE TABLE IF NOT EXISTS narasi_indeks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  scope_key TEXT NOT NULL,
+  input_hash TEXT NOT NULL,
+  model TEXT,
+  hasil_json TEXT,
+  dibuat_pada TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_narasi_indeks ON narasi_indeks(scope_key, input_hash);
+
 -- Same caching pattern as rekomendasi_produk, but for the kabupaten-level
 -- BUMDes-condition analysis (aggregated across all desa in that kabupaten).
 CREATE TABLE IF NOT EXISTS rekomendasi_kabupaten (
@@ -135,5 +162,259 @@ CREATE TABLE IF NOT EXISTS users (
   kabupaten TEXT,
   dibuat_pada TEXT NOT NULL,
   login_terakhir TEXT
+);
+
+-- BANUA ECOSYSTEM > Review RPKP (Sprint 1: CRUD + dokumen + versi + status,
+-- BELUM ada AI - lihat server/lib/rpkp.js). Kabupaten mengajukan, provinsi/
+-- admin menelaah - dipetakan langsung ke role yang sudah ada (kabupaten/
+-- provinsi/admin), bukan sistem role terpisah.
+CREATE TABLE IF NOT EXISTS rpkp_review (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nama_kawasan TEXT NOT NULL,
+  kabupaten TEXT NOT NULL,
+  periode TEXT,
+  tahun_dokumen INTEGER,
+  keterangan TEXT,
+  status TEXT NOT NULL DEFAULT 'DRAFT'
+    CHECK(status IN ('DRAFT','SUBMITTED','IN_REVIEW','NEED_CLARIFICATION','REVIEW_COMPLETED')),
+  dibuat_oleh TEXT NOT NULL,
+  dibuat_pada TEXT NOT NULL,
+  diperbarui_pada TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rpkp_review_kabupaten ON rpkp_review(kabupaten);
+
+-- Setiap upload menambah versi baru per document_type (RPKP/RTRW/RPJMD/
+-- MASTERPLAN/PETA/LAMPIRAN/LAINNYA) - versi lama tetap disimpan (tidak
+-- ditimpa) supaya perbandingan antar versi (Sprint 5 di blueprint) bisa
+-- dibangun tanpa migrasi ulang nanti.
+CREATE TABLE IF NOT EXISTS rpkp_document (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  review_id INTEGER NOT NULL REFERENCES rpkp_review(id),
+  document_type TEXT NOT NULL,
+  version INTEGER NOT NULL,
+  original_filename TEXT NOT NULL,
+  stored_filename TEXT NOT NULL,
+  file_size INTEGER,
+  mime_type TEXT,
+  diunggah_oleh TEXT NOT NULL,
+  diunggah_pada TEXT NOT NULL,
+  gemini_file_uri TEXT,
+  gemini_file_expires_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_rpkp_document_review ON rpkp_document(review_id);
+
+CREATE TABLE IF NOT EXISTS rpkp_review_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  review_id INTEGER NOT NULL REFERENCES rpkp_review(id),
+  event_type TEXT NOT NULL,
+  detail TEXT,
+  aktor TEXT NOT NULL,
+  dibuat_pada TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rpkp_history_review ON rpkp_review_history(review_id);
+
+-- Sprint 2: AI Document Assistant. Gemini reads the review's PDF documents
+-- directly (multimodal inline_data), no separate OCR/chunking/embedding/
+-- vector DB - see server/lib/rpkpAi.js. Every question+answer is persisted
+-- (not just returned) so reviewers can revisit past answers without
+-- re-asking and re-spending free-tier quota - same "durable, auditable AI
+-- output" principle as rekomendasi_produk/narasi_desa, but here keyed by
+-- review_id + insertion order rather than an input hash, since questions
+-- are ad-hoc exploration, not a fixed recurring prompt template.
+CREATE TABLE IF NOT EXISTS rpkp_ai_qa (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  review_id INTEGER NOT NULL REFERENCES rpkp_review(id),
+  pertanyaan TEXT NOT NULL,
+  ditemukan INTEGER NOT NULL,
+  jawaban TEXT,
+  sumber_dokumen TEXT,
+  halaman INTEGER,
+  kutipan TEXT,
+  model TEXT,
+  prompt_version TEXT,
+  ditanya_oleh TEXT NOT NULL,
+  dibuat_pada TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rpkp_ai_qa_review ON rpkp_ai_qa(review_id);
+`);
+
+// prompt_version was added to rpkp_ai_qa after this table's CREATE TABLE had
+// already run once during development - CREATE TABLE IF NOT EXISTS is a
+// no-op on an existing table, so (same as nilai_indeks_desa above) it needs
+// an explicit migration guard rather than relying on the statement above.
+const rpkpAiQaColumns = db.prepare('PRAGMA table_info(rpkp_ai_qa)').all().map((c) => c.name);
+if (!rpkpAiQaColumns.includes('prompt_version')) {
+  db.exec('ALTER TABLE rpkp_ai_qa ADD COLUMN prompt_version TEXT;');
+}
+
+// gemini_file_uri/gemini_file_expires_at were added to rpkp_document after
+// real-world RPKP documents (tens of MB, one over 60MB) showed Gemini's
+// ~20MB inline-data limit isn't enough - lib/rpkpAi.js now uploads via
+// Gemini's Files API instead and caches the resulting uri here (files stay
+// live on Google's side for ~48h) so a large document isn't re-uploaded on
+// every single question. Same no-op-on-existing-table reason as above.
+const rpkpDocumentColumns = db.prepare('PRAGMA table_info(rpkp_document)').all().map((c) => c.name);
+if (!rpkpDocumentColumns.includes('gemini_file_uri')) {
+  db.exec('ALTER TABLE rpkp_document ADD COLUMN gemini_file_uri TEXT;');
+}
+if (!rpkpDocumentColumns.includes('gemini_file_expires_at')) {
+  db.exec('ALTER TABLE rpkp_document ADD COLUMN gemini_file_expires_at TEXT;');
+}
+
+// Sprint 3: Completeness/Kelengkapan engine - the first of the "Review"
+// workspace's evidence-producing engines (IPKP/Readiness/RTRW/RPJMD/
+// BANUA360 follow the same rpkp_finding/rpkp_evidence shape later). Master
+// checklist is DATA, not hardcoded app logic (per blueprint: "jangan hard-
+// code... simpan sebagai master data") - seeded below from the real
+// structure of the Tabalong RPKP-P document (BAB I-IV), not invented
+// generically, so an admin can add/relabel items later without a code
+// change.
+db.exec(`
+CREATE TABLE IF NOT EXISTS rpkp_completeness_item (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  kode TEXT UNIQUE NOT NULL,
+  kategori TEXT NOT NULL DEFAULT 'COMPLETENESS' CHECK(kategori IN ('COMPLETENESS','IPKP','READINESS')),
+  label TEXT NOT NULL,
+  deskripsi TEXT,
+  urutan INTEGER NOT NULL DEFAULT 0,
+  aktif INTEGER NOT NULL DEFAULT 1
+);
+
+-- One row per (review, category, item) - AI proposes a status + evidence,
+-- reviewer verifies/rejects. category is COMPLETENESS today; IPKP/
+-- READINESS/RTRW/RPJMD/BANUA360 reuse this same table later (item_kode
+-- stays NULL for those, since only COMPLETENESS has a master checklist).
+CREATE TABLE IF NOT EXISTS rpkp_finding (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  review_id INTEGER NOT NULL REFERENCES rpkp_review(id),
+  category TEXT NOT NULL CHECK(category IN ('COMPLETENESS','IPKP','READINESS','RTRW','RPJMD','BANUA360')),
+  item_kode TEXT,
+  title TEXT NOT NULL,
+  ai_status TEXT NOT NULL CHECK(ai_status IN ('FOUND','PARTIAL','NOT_FOUND')),
+  ai_summary TEXT,
+  reviewer_status TEXT NOT NULL DEFAULT 'PENDING' CHECK(reviewer_status IN ('PENDING','VERIFIED','REJECTED')),
+  reviewer_note TEXT,
+  model TEXT,
+  prompt_version TEXT,
+  dibuat_pada TEXT NOT NULL,
+  diperbarui_pada TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_rpkp_finding_review ON rpkp_finding(review_id, category);
+
+CREATE TABLE IF NOT EXISTS rpkp_evidence (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  finding_id INTEGER NOT NULL REFERENCES rpkp_finding(id),
+  document_id INTEGER REFERENCES rpkp_document(id),
+  sumber_dokumen TEXT,
+  halaman INTEGER,
+  kutipan TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_rpkp_evidence_finding ON rpkp_evidence(finding_id);
+
+-- The reviewer's formal decision - deliberately separate from rpkp_review.status:
+-- "REVIEW_COMPLETED" just means the reviewer is done looking; the
+-- Recommendation Gate is the actual decision of whether Provinsi can issue
+-- a recommendation, which is a distinct, auditable record (one current
+-- decision per review; resubmitting replaces it, old value stays in
+-- rpkp_review_history via logHistory).
+CREATE TABLE IF NOT EXISTS rpkp_recommendation (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  review_id INTEGER UNIQUE NOT NULL REFERENCES rpkp_review(id),
+  keputusan TEXT NOT NULL CHECK(keputusan IN ('DAPAT_DIREKOMENDASIKAN','DENGAN_CATATAN','BELUM_DAPAT')),
+  catatan TEXT,
+  dibuat_oleh TEXT NOT NULL,
+  dibuat_pada TEXT NOT NULL
+);
+`);
+
+const completenessSeed = db.prepare('SELECT COUNT(*) AS n FROM rpkp_completeness_item').get();
+if (completenessSeed.n === 0) {
+  const insertItem = db.prepare(
+    'INSERT INTO rpkp_completeness_item (kode, label, deskripsi, urutan) VALUES (?, ?, ?, ?)'
+  );
+  const items = [
+    ['IDENTITAS_KAWASAN', 'Identitas Kawasan', 'Nama kawasan, kabupaten/kecamatan, dan dasar hukum penetapan kawasan'],
+    ['LATAR_BELAKANG', 'Latar Belakang & Tujuan', 'Latar belakang pembentukan kawasan dan tujuan RPKP'],
+    ['LANDASAN_HUKUM', 'Landasan Hukum', 'Daftar peraturan perundang-undangan yang menjadi dasar RPKP'],
+    ['DELINEASI', 'Delineasi Kawasan', 'Batas wilayah, desa-desa anggota kawasan, dan luas kawasan'],
+    ['KONDISI_FISIK', 'Kondisi Fisik & Lingkungan', 'Topografi, penggunaan lahan, kebencanaan, geologi, sumber daya air, iklim'],
+    ['KONDISI_EKONOMI_SOSIAL', 'Kondisi Ekonomi & Sosial', 'Mata pencaharian, kependudukan, dan sosial budaya kawasan'],
+    ['SARANA_PRASARANA', 'Sarana & Prasarana', 'Sarana produksi, irigasi, pendidikan, dan kesehatan di kawasan'],
+    ['KELEMBAGAAN', 'Kelembagaan', 'BUM Desa/BUMDesma, kerja sama antar desa, BKAD, dan lembaga masyarakat'],
+    ['POTENSI_PRODUK', 'Potensi Produk Kawasan', 'Produk unggulan dan produk pendukung kawasan'],
+    ['TUJUAN_SASARAN_STRATEGI', 'Tujuan, Sasaran & Strategi', 'Isu strategis, tujuan, sasaran, strategi, dan arah kebijakan'],
+    ['PROGRAM_KEGIATAN', 'Program & Kegiatan', 'Matriks program, kegiatan, dan indikator kinerja'],
+    ['PEMBIAYAAN', 'Pembiayaan', 'Sumber dan skema pendanaan program/kegiatan'],
+    ['MONITORING_EVALUASI', 'Monitoring & Evaluasi', 'Mekanisme pemantauan dan evaluasi pelaksanaan RPKP'],
+  ];
+  items.forEach(([kode, label, deskripsi], i) => insertItem.run(kode, label, deskripsi, i));
+}
+
+// kategori was added to rpkp_completeness_item after it already existed
+// (same no-op-on-existing-table reason as elsewhere in this file) - needed
+// so IPKP's 5 dimensions and Kesiapan's 4 aspects can share this same
+// checklist-item table instead of duplicating it, since both are just as
+// much a fixed "master checklist, not hardcoded app logic" as Completeness
+// is (per blueprint - these are official Kemendes/RPKP-P frameworks, not
+// invented here).
+const completenessItemColumns = db.prepare('PRAGMA table_info(rpkp_completeness_item)').all().map((c) => c.name);
+if (!completenessItemColumns.includes('kategori')) {
+  db.exec("ALTER TABLE rpkp_completeness_item ADD COLUMN kategori TEXT NOT NULL DEFAULT 'COMPLETENESS';");
+}
+
+const ipkpSeed = db.prepare("SELECT COUNT(*) AS n FROM rpkp_completeness_item WHERE kategori = 'IPKP'").get();
+if (ipkpSeed.n === 0) {
+  const insertItem = db.prepare(
+    "INSERT INTO rpkp_completeness_item (kode, kategori, label, deskripsi, urutan) VALUES (?, 'IPKP', ?, ?, ?)"
+  );
+  // First item is deliberately NOT a 6th dimension - it's the "IPKP
+  // Existing" check from the blueprint (section 13-15): whether a measured
+  // IPKP score already exists for this kawasan. Its absence must NEVER be
+  // read as a gap/defect - lib/rpkpAi.js's prompt for this specific item
+  // enforces that framing explicitly. The 5 dimensions below are Kemendes's
+  // own IPKP measurement framework (confirmed against the real Tabalong
+  // RPKP-P document's own IPKP section: skor 60,02, status Mandiri).
+  const items = [
+    ['IPKP_EXISTING', 'Hasil Pengukuran IPKP', 'Apakah sudah ada hasil pengukuran Indeks Perkembangan Kawasan Perdesaan (skor & tahun pengukuran) untuk kawasan ini'],
+    ['IPKP_EKONOMI', 'Dimensi Ekonomi', 'Substansi dimensi Ekonomi dalam kerangka pengukuran IPKP'],
+    ['IPKP_SOSIAL_BUDAYA', 'Dimensi Sosial Budaya', 'Substansi dimensi Sosial Budaya dalam kerangka pengukuran IPKP'],
+    ['IPKP_LINGKUNGAN', 'Dimensi Lingkungan', 'Substansi dimensi Lingkungan dalam kerangka pengukuran IPKP'],
+    ['IPKP_KELEMBAGAAN', 'Dimensi Kelembagaan', 'Substansi dimensi Kelembagaan dalam kerangka pengukuran IPKP'],
+    ['IPKP_JEJARING_PRASARANA', 'Dimensi Jejaring Prasarana', 'Substansi dimensi Jejaring Prasarana dalam kerangka pengukuran IPKP'],
+  ];
+  items.forEach(([kode, label, deskripsi], i) => insertItem.run(kode, label, deskripsi, i));
+}
+
+const readinessSeed = db.prepare("SELECT COUNT(*) AS n FROM rpkp_completeness_item WHERE kategori = 'READINESS'").get();
+if (readinessSeed.n === 0) {
+  const insertItem = db.prepare(
+    "INSERT INTO rpkp_completeness_item (kode, kategori, label, deskripsi, urutan) VALUES (?, 'READINESS', ?, ?, ?)"
+  );
+  // From the real Tabalong RPKP-P document's own "Kelayakan" analysis
+  // (BAB IV.D) - 4 aspects, narrative (not scored) - matches the
+  // blueprint's Readiness Engine vocabulary (Teridentifikasi/Perlu
+  // Verifikasi/Belum Teridentifikasi).
+  const items = [
+    ['KESIAPAN_OPERASIONAL', 'Kelayakan Operasional', 'Kesiapan operasional pengembangan kawasan (proses produksi, kapasitas pelaku usaha, dll)'],
+    ['KESIAPAN_SOSIAL_BUDAYA', 'Kelayakan Sosial Budaya', 'Kesiapan/penerimaan sosial budaya masyarakat terhadap pengembangan kawasan'],
+    ['KESIAPAN_LINGKUNGAN', 'Kelayakan Lingkungan', 'Dampak dan mitigasi lingkungan dari pengembangan kawasan'],
+    ['KESIAPAN_EKONOMI_FINANSIAL', 'Kelayakan Ekonomi Finansial', 'Kelayakan ekonomi finansial (pasar, distribusi, keberlanjutan usaha) pengembangan kawasan'],
+  ];
+  items.forEach(([kode, label, deskripsi], i) => insertItem.run(kode, label, deskripsi, i));
+}
+
+// Sprint 4: RTRW/RPJMD/BANUA360 alignment engines. RTRW and RPJMD reuse
+// rpkp_finding/rpkp_evidence as single (not itemized) checks - see
+// lib/rpkpAi.js. BANUA360 cross-check needs to know WHICH desa make up the
+// kawasan (not stored anywhere until now - Completeness's "Delineasi"
+// finding only has it as free text inside an AI summary) to query this
+// app's own desa/potensi/ekosistem tables directly, so it's the one
+// category that's a deterministic rule-engine fact lookup, not a Gemini
+// call - consistent with "rule engine produces facts, AI only explains".
+db.exec(`
+CREATE TABLE IF NOT EXISTS rpkp_review_desa (
+  review_id INTEGER NOT NULL REFERENCES rpkp_review(id),
+  kode_desa TEXT NOT NULL REFERENCES desa(kode_desa),
+  PRIMARY KEY (review_id, kode_desa)
 );
 `);

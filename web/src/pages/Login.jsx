@@ -1,5 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { api } from '../api';
+
+const DEV_ROLES = [
+  { role: 'admin', label: 'Admin' },
+  { role: 'provinsi', label: 'Provinsi' },
+  { role: 'kabupaten', label: 'Kabupaten (contoh)' },
+  { role: 'desa', label: 'Desa (contoh)' },
+];
 
 const ERROR_MESSAGES = {
   belum_terdaftar: 'Email Google Anda belum terdaftar. Masukkan kode registrasi terlebih dahulu untuk mendaftar.',
@@ -13,11 +21,28 @@ export default function Login() {
   const [params] = useSearchParams();
   const [kode, setKode] = useState('');
   const [mode, setMode] = useState('masuk'); // 'masuk' | 'daftar'
+  const [devLoginEnabled, setDevLoginEnabled] = useState(false);
+  const [devBusy, setDevBusy] = useState(null);
   const error = params.get('error');
+
+  useEffect(() => {
+    api.devConfig().then((c) => setDevLoginEnabled(c.devLoginEnabled)).catch(() => {});
+  }, []);
 
   function startGoogle(withKode) {
     const url = withKode ? `/api/auth/google/start?kode=${encodeURIComponent(kode.trim())}` : '/api/auth/google/start';
     window.location.href = url;
+  }
+
+  async function devLogin(role) {
+    setDevBusy(role);
+    try {
+      await api.devLogin(role);
+      window.location.href = '/';
+    } catch (e) {
+      setDevBusy(null);
+      alert(e.message);
+    }
   }
 
   return (
@@ -97,6 +122,27 @@ export default function Login() {
             <button className="btn" style={{ width: '100%' }} disabled={!kode.trim()} onClick={() => startGoogle(true)}>
               Lanjut dengan Google
             </button>
+          </div>
+        )}
+
+        {devLoginEnabled && (
+          <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px dashed var(--border-strong)' }}>
+            <p style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--warning)', marginBottom: 8 }}>
+              MODE UJI COBA (Google belum dikonfigurasi)
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+              {DEV_ROLES.map(({ role, label }) => (
+                <button
+                  key={role}
+                  className="btn btn-secondary"
+                  disabled={!!devBusy}
+                  onClick={() => devLogin(role)}
+                  style={{ fontSize: 12.5 }}
+                >
+                  {devBusy === role ? '...' : label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 

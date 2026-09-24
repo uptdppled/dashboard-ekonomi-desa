@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import IndeksDesa from './pages/IndeksDesa';
 import BanuaInsight from './pages/BanuaInsight';
+import BanuaOpportunity from './pages/BanuaOpportunity';
 import DimensiDetail from './pages/DimensiDetail';
 import PotensiDesa from './pages/PotensiDesa';
 import PotensiSektorDetail from './pages/PotensiSektorDetail';
@@ -15,6 +16,9 @@ import Analisis from './pages/Analisis';
 import AnalisisBumdes from './pages/AnalisisBumdes';
 import DataImport from './pages/DataImport';
 import ManajemenPengguna from './pages/ManajemenPengguna';
+import RpkpReview from './pages/RpkpReview';
+import RpkpReviewDetail from './pages/RpkpReviewDetail';
+import RpkpReviewCetak from './pages/RpkpReviewCetak';
 import { useAuth } from './auth';
 
 export default function App() {
@@ -55,11 +59,15 @@ export default function App() {
             <Route path="/" element={homeElement} />
             <Route path="/indeks-desa" element={<IndeksDesa />} />
             <Route path="/banua-insight" element={<BanuaInsight />} />
+            <Route path="/banua-opportunity" element={<BanuaOpportunity />} />
             <Route path="/banua-index/:dimensi" element={<DimensiDetail />} />
             <Route path="/potensi-desa" element={<PotensiDesa />} />
             <Route path="/potensi-desa/:sektor" element={<PotensiSektorDetail />} />
             <Route path="/profil-desa" element={<ProfilDesa />} />
             <Route path="/ekosistem-ekonomi" element={<EkosistemEkonomi />} />
+            {user.role !== 'desa' && <Route path="/rpkp/review" element={<RpkpReview />} />}
+            {user.role !== 'desa' && <Route path="/rpkp/review/:id" element={<RpkpReviewDetail />} />}
+            {user.role !== 'desa' && <Route path="/rpkp/review/:id/cetak" element={<RpkpReviewCetak />} />}
             <Route path="/peta-ekonomi" element={<PetaEkonomi />} />
             <Route path="/analisis" element={<Analisis />} />
             <Route path="/analisis-bumdes" element={<AnalisisBumdes />} />

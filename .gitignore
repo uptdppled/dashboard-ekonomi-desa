@@ -1,6 +1,8 @@
 node_modules/
 server/.env
 server/data/*.db
+server/data/*.db.bak-*
+server/data/rpkp-uploads/
 server/server-out.log
 server/server-err.log
 server/pid.txt

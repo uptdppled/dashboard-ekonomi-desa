@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { api } from '../api';
 import FilterBar from '../components/FilterBar';
+import AnalisisIndeksAI from '../components/AnalisisIndeksAI';
 import { cleanParams } from '../utils';
 import { useTheme } from '../theme';
 import { STATUS_COLORS, ACCENT_SECONDARY } from '../colors';
@@ -16,6 +18,7 @@ function toChartData(rows) {
 }
 
 export default function IndeksDesa() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState({});
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -65,19 +68,30 @@ export default function IndeksDesa() {
           <div className="panel">
             <h2 className="panel-title">Rata-rata Skor per Dimensi</h2>
             <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
-              Skor komposit tiap dimensi (bukan skor per indikator individual) - klik "Dimensi Ekonomi" di menu untuk rincian indikator Ekonomi.
+              Skor komposit tiap dimensi (bukan skor per indikator individual) - klik salah satu bar untuk rincian indikator dimensi itu.
             </p>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={toChartData(data.dimensi)} layout="vertical" margin={{ left: 20 }}>
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="dimensi" width={190} tick={{ fontSize: 11 }} />
                 <Tooltip formatter={(v) => v.toFixed(2)} />
-                <Bar dataKey="avgSkor" radius={[0, 4, 4, 0]} barSize={26}>
+                <Bar
+                  dataKey="avgSkor"
+                  radius={[0, 4, 4, 0]}
+                  barSize={26}
+                  cursor="pointer"
+                  onClick={(d) => navigate(`/banua-index/${encodeURIComponent(d.dimensi)}`)}
+                >
                   {toChartData(data.dimensi).map((d) => <Cell key={d.dimensi} fill={accent} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          <AnalisisIndeksAI
+            scope={cleanParams(filter)}
+            desc="Analisis kondisi 6 dimensi di atas dan rekomendasi kegiatan untuk meningkatkan skor yang masih lemah."
+          />
         </>
       )}
     </div>

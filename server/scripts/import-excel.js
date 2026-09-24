@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import XLSX from 'xlsx';
 import { db } from '../db.js';
 import { parseSheet, parseCoordinate } from '../lib/excel-parse.js';
@@ -5,6 +6,14 @@ import { categorizeSektor } from '../lib/categorize.js';
 
 const EKO_PATH = process.env.EKONOMI_XLSX || 'C:\\Users\\doryt\\Downloads\\ekonomi.xlsx';
 const RAW_PATH = process.env.RAW_XLSX || 'C:\\Users\\doryt\\Downloads\\row data ID Aplikasi final kirim.xlsx';
+// A separately-sourced, address-geocoded coordinate list (one row per desa,
+// used originally for Posyandu/SPM mapping) - covers all 1,871 desa with
+// status_geocode=OK, verified 2026-09-24 against the free-text "Titik
+// Koordinat Desa" parse: fills all 445 desa that parse couldn't cover AND
+// disagrees by >5km on ~300 of the desa the parse DID cover (i.e. the old
+// parse was wrong there, not just imprecise). Optional file - if missing,
+// import falls back to the free-text parse alone like before.
+const KOORDINAT_CSV_PATH = process.env.KOORDINAT_DESA_CSV || 'C:\\Users\\doryt\\Downloads\\Posyandu 6 SPM - MW.csv';
 const TAHUN = 2026;
 
 const IDENTITY_RE = /^(kode desa|provinsi|kabupaten|kecamatan|^desa$|nama desa|tanggal upload kuesioner)$/i;
@@ -37,6 +46,33 @@ const SUMMARY_EXCLUDE_RE = /^(status desa|nilai 2025|nilai id 2026|perkembangan|
 // that share the sheet but aren't "ekosistem ekonomi" in nature - excluded
 // here so the ekosistem_desa table stays scoped to what the module is about.
 const EKOSISTEM_EXCLUDE_RE = /desil|SKTM|Surat Keterangan Tidak Mampu|Hutan|Kawasan Hutan/i;
+
+// Minimal quoted-field CSV line parser (KOORDINAT_CSV_PATH's label_wilayah
+// column embeds commas inside quotes) - no need for a full CSV library for
+// one small, simple source file.
+function parseCsvLine(line) {
+  const out = [];
+  let cur = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (line[i + 1] === '"') { cur += '"'; i++; }
+        else inQuotes = false;
+      } else cur += c;
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      out.push(cur);
+      cur = '';
+    } else {
+      cur += c;
+    }
+  }
+  out.push(cur);
+  return out;
+}
 
 function toNumberOrNull(v) {
   if (v === null || v === undefined || v === '') return null;
@@ -92,7 +128,34 @@ try {
       if (parsed && !koordMap.has(kode)) koordMap.set(kode, parsed);
     }
   }
+
+  // Address-geocoded coordinate CSV takes priority over the free-text parse
+  // above wherever both exist (see KOORDINAT_CSV_PATH comment) - the parse
+  // stays as a fallback for any desa the CSV doesn't cover.
+  const csvKoordMap = new Map();
+  if (fs.existsSync(KOORDINAT_CSV_PATH)) {
+    const lines = fs.readFileSync(KOORDINAT_CSV_PATH, 'utf8').split(/\r?\n/).filter(Boolean);
+    const csvHeader = parseCsvLine(lines[0]);
+    const idIdx = csvHeader.indexOf('id_desa');
+    const latIdx = csvHeader.indexOf('latitude');
+    const lngIdx = csvHeader.indexOf('longitude');
+    const statusIdx = csvHeader.indexOf('status_geocode');
+    if (idIdx !== -1 && latIdx !== -1 && lngIdx !== -1) {
+      for (const line of lines.slice(1)) {
+        const cols = parseCsvLine(line);
+        if (statusIdx !== -1 && cols[statusIdx] !== 'OK') continue;
+        const lat = parseFloat(cols[latIdx]);
+        const lng = parseFloat(cols[lngIdx]);
+        if (Number.isFinite(lat) && Number.isFinite(lng)) csvKoordMap.set(cols[idIdx].trim(), { lat, lng });
+      }
+    }
+    console.log(`  -> koordinat CSV (${KOORDINAT_CSV_PATH}): ${csvKoordMap.size} desa`);
+  } else {
+    console.log(`  -> koordinat CSV tidak ditemukan di ${KOORDINAT_CSV_PATH}, pakai hasil parse teks bebas saja`);
+  }
+
   let koordFound = 0;
+  let koordFromCsv = 0;
 
   const insertDesa = db.prepare(
     'INSERT INTO desa (kode_desa, provinsi, kabupaten, kecamatan, nama_desa, status_desa, lat, lng, tahun, nilai_indeks_desa) ' +
@@ -103,8 +166,10 @@ try {
     const kode = String(row[idxKode]).trim();
     if (seenKode.has(kode)) continue; // guard against stray duplicate rows
     seenKode.add(kode);
-    const koord = koordMap.get(kode);
-    if (koord) koordFound++;
+    const csvKoord = csvKoordMap.get(kode);
+    const koord = csvKoord || koordMap.get(kode);
+    if (csvKoord) koordFromCsv++;
+    else if (koord) koordFound++;
     insertDesa.run(
       kode,
       'KALIMANTAN SELATAN',
@@ -119,7 +184,7 @@ try {
     );
   }
   logImport('raw', 'rekap (identitas desa)', seenKode.size);
-  console.log(`  -> koordinat GPS berhasil diparse untuk ${koordFound} desa`);
+  console.log(`  -> koordinat dari CSV: ${koordFromCsv} desa, dari parse teks bebas (fallback): ${koordFound} desa`);
 
   // ---- 2. skor_indikator dari raw 'rekap' (6 dimensi Permendesa 9/2024 lengkap) ----
   // Sumber diganti dari ekonomi.xlsx (subset kolom Ekonomi saja) ke sheet

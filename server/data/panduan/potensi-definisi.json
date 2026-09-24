@@ -1,0 +1,846 @@
+{
+ "Buruh Pabrik Laki-Laki": {
+  "definisi": "Jumlah penduduk laki -laki desa yang memiliki perkerjaan sebagai buruh pabrik (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja laki -laki harus kurang dari jumlah penduduk laki-laki (No. 94)",
+  "sumber_no": 907
+ },
+ "Buruh Pabrik Perempuan": {
+  "definisi": "Jumlah penduduk perempuan desa yang memiliki perkerjaan sebagai buruh pabrik (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja perempuan harus kurang dari jumlah penduduk perempuan (No. 95)",
+  "sumber_no": 908
+ },
+ "Buruh Tani/Buruh Nelayan Laki-Laki": {
+  "definisi": "Jumlah penduduk laki -laki desa yang memiliki perkerjaan sebagai buruh tani/buruh nelayan (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja laki-laki harus kurang dari jumlah penduduk laki-laki (No. 94)",
+  "sumber_no": 905
+ },
+ "Buruh Tani/Buruh Nelayan Perempuan": {
+  "definisi": "Jumlah penduduk perempuan desa yang memiliki perkerjaan sebagai buruh tani/buruh nelayan (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja perempuan harus kurang dari jumlah penduduk perempuan (No. 95)",
+  "sumber_no": 906
+ },
+ "Nelayan Laki-Laki": {
+  "definisi": "Jumlah penduduk laki -laki desa yang memiliki perkerjaan sebagai nelayan (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja laki-laki harus kurang dari jumlah penduduk laki-laki (No. 94)",
+  "sumber_no": 903
+ },
+ "Nelayan Perempuan": {
+  "definisi": "Jumlah penduduk perempuan desa yang memiliki perkerjaan sebagai nelayan (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja perempuan harus kurang dari jumlah penduduk perempuan (No. 95)",
+  "sumber_no": 904
+ },
+ "PNS Laki-Laki": {
+  "definisi": "Jumlah penduduk laki-laki desa yang memiliki perkerjaan sebagai PNS (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja laki-laki harus kurang dari jumlah penduduk laki-laki (No. 94)",
+  "sumber_no": 909
+ },
+ "PNS Perempuan": {
+  "definisi": "Jumlah penduduk perempuan desa yang memiliki perkerjaan sebagai PNS (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja perempuan harus kurang dari jumlah penduduk perempuan (No. 95)",
+  "sumber_no": 910
+ },
+ "Pegawai Swasta Laki-Laki": {
+  "definisi": "Jumlah penduduk laki-laki desa yang memiliki perkerjaan sebagai pegawai swasta (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja laki -laki harus kurang dari jumlah penduduk laki-laki (No. 94)",
+  "sumber_no": 911
+ },
+ "Pegawai Swasta Perempuan": {
+  "definisi": "Jumlah penduduk perempuan desa yang memiliki perkerjaan sebagai pegawai swasta (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja perempuan harus kurang dari jumlah penduduk perempuan (No. 95)",
+  "sumber_no": 912
+ },
+ "Petani Laki-Laki": {
+  "definisi": "Jumlah penduduk laki-laki desa yang memiliki perkerjaan sebagai petani (Jiwa) jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja laki -laki harus kurang dari jumlah penduduk laki-laki (No. 94)",
+  "sumber_no": 901
+ },
+ "Petani Perempuan": {
+  "definisi": "Jumlah penduduk Perempuan desa yang memiliki perkerjaan sebagai petani (Ji wa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja perempuan harus kurang dari jumlah penduduk perempuan (No. 95)",
+  "sumber_no": 902
+ },
+ "Wiraswasta / pedagang Laki-Laki": {
+  "definisi": "Jumlah penduduk laki-laki desa yang memiliki perkerjaan sebagai wiraswasta / pedagang (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja laki -laki harus kurang dari jumlah penduduk laki-laki (No. 94)",
+  "sumber_no": 913
+ },
+ "Wiraswasta / pedagang Perempuan": {
+  "definisi": "Jumlah penduduk perempuan desa yang memiliki perkerjaan sebagai wiraswasta / pedagang (Jiwa), jika tidak ada diisi “ 0 “ (Nol), dimana jumlah total pekerja perempuan harus kurang dari jumlah penduduk perempuan (No. 95)",
+  "sumber_no": 914
+ },
+ ". Aktivitas Wisata Embung (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di embung desa, seperti memancing, rekreasi air, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 702
+ },
+ "Aktivitas Wisata Air Terjun (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di air terjun desa, seperti berenang, fotografi, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 675
+ },
+ "Aktivitas Wisata Alam Lainya (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di wisata alam lainnya, seperti bird watching, berkemah, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 693
+ },
+ "Aktivitas Wisata Buatan Lainnya (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di wisata buatan lainnya, seperti wahana permainan, outbound, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 729
+ },
+ "Aktivitas Wisata Budaya Desa Wisata (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata budaya yang ada di desa, seperti pertunjukan seni, festival budaya, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 738
+ },
+ "Aktivitas Wisata Budaya Lainnya (Sebutkan)": {
+  "definisi": "Sebutkan jenis aktivitas wisata budaya lainnya yang ada, jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 774
+ },
+ "Aktivitas Wisata Hutan (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di hutan desa, seperti tracking, camping, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 657
+ },
+ "Aktivitas Wisata Kuliner (Sebutkan)": {
+  "definisi": "Jenis aktivitas wisata kuliner yang ada (Sejarah Makanan, Rempah, Membuat Masakan Tradisional), jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 756
+ },
+ "Aktivitas Wisata Laut/ Danau (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di laut atau danau desa, seperti berlayar, memancing, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 648
+ },
+ "Aktivitas Wisata Pantai": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di pantai desa, seperti berenang, memancing, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 630
+ },
+ "Aktivitas Wisata Pegunungan (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di pegunungan desa, seperti pendakian, camping, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 639
+ },
+ "Aktivitas Wisata Pemandian Sumber Air Panas (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di pemandian sumber air panas desa, seperti berendam, terapi kesehatan, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 684
+ },
+ "Aktivitas Wisata Sejarah dan Religi (Sebutkan)": {
+  "definisi": "Jenis aktivitas wisata sejarah dan religi yang ada (Ziarah, Acara Keagamaan, Tempat Ibadah/ Candi, Retreat, Museum, Penelitian), jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 747
+ },
+ "Aktivitas Wisata Seni dan Tradisi (Sebutkan)": {
+  "definisi": "Jenis aktivitas wisata seni dan tradisi yang ada (Musik Daerah, Pertunjukan Tari Tradisional, Upacara Adat, Ritual, Kerajinan Tradisional), jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 765
+ },
+ "Aktivitas Wisata Sungai (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di sungai desa, seperti arung jeram, memancing, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 666
+ },
+ "Aktivitas Wisata Taman (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di taman desa, seperti jogging, piknik, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 720
+ },
+ "Aktivitas Wisata kolam pemandian umum (Sebutkan)": {
+  "definisi": "Sebutkan aktivitas wisata yang ada di kolam pemandian umum, seperti berenang, rekreasi keluarga, atau lainnya, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 711
+ },
+ "Bidang Pengembangan Desa Wisata di fasilitasi pihak ke 3": {
+  "definisi": "Memastikan ADA atau TIDAK berdasarkan keterlibatan pihak ke-3 dalam pengembangan desa wisata.",
+  "sumber_no": 575
+ },
+ "Nama Wisata Alam Lainnya (Sebutkan)": {
+  "definisi": "Tuliskan nama tempat wisata tersebut, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 692
+ },
+ "Nama Wisata Buatan Lainnya (Sebutkan)": {
+  "definisi": "Jika ada wisata buatan lainnya, Tuliskan nama tempat wisata tersebut, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 728
+ },
+ "Nama Wisata Budaya Lainnya": {
+  "definisi": "Sebutkan nama wisata budaya lainnya yang ada di desa, jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 773
+ },
+ "Pengelola Desa Wisata Budaya": {
+  "definisi": "Siapakah pihak yang menjadi pengelola Wisata Budaya Pilihan Jawaban: (Pemerintah, BUMDes, BUMDes Bersama, Pokdarwis, Pelaku Usaha/UMKM Lokal, LSM, Investor/Swasta, Akademisi/Peneliti, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 740
+ },
+ "Pengelola Wisata Air Terjun": {
+  "definisi": "Tuliskan pihak yang mengelola wisata pantai seperti - Pemerintah - BUMDes - BUMDes Bersama - Pokdarwis - Pelaku Usaha/UMKM Lokal - Investorr/Swasta - Akademisi/Peneliti - Lainnya Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 677
+ },
+ "Pengelola Wisata Embung": {
+  "definisi": "Tuliskan pihak yang mengelola wisata pantai seperti - Pemerintah - BUMDes - BUMDes Bersama - Pokdarwis - Pelaku Usaha/UMKM Lokal - Investorr/Swasta - Akademisi/Peneliti - Lainnya Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 704
+ },
+ "Pengelola Wisata Hutan": {
+  "definisi": "Tuliskan pihak yang mengelola wisata pantai seperti - Pemerintah - BUMDes - BUMDes Bersama - Pokdarwis - Pelaku Usaha/UMKM Lokal - Investorr/Swasta - Akademisi/Peneliti - Lainnya Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 659
+ },
+ "Pengelola Wisata Kuliner": {
+  "definisi": "Siapakah pihak yang menjadi pengelola wisata kuliner Pilihan Jawaban: (Pemerintah, BUMDes, BUMDes Bersama, Pokdarwis, Pelaku Usaha/UMKM Lokal, LSM, Investor/Swasta, Akademisi/Peneliti, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 758
+ },
+ "Pengelola Wisata Laut/ Danau": {
+  "definisi": "Tuliskan pihak yang mengelola wisata pantai seperti - Pemerintah - BUMDes - BUMDes Bersama - Pokdarwis - Pelaku Usaha/UMKM Lokal - Investorr/Swasta - Akademisi/Peneliti - Lainnya Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 650
+ },
+ "Pengelola Wisata Pengunungan": {
+  "definisi": "Tuliskan pihak yang mengelola wisata pantai seperti - Pemerintah - BUMDes - BUMDes Bersama - Pokdarwis - Pelaku Usaha/UMKM Lokal - Investorr/Swasta - Akademisi/Peneliti - Lainnya Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 641
+ },
+ "Pengelola Wisata Sejarah dan Religi": {
+  "definisi": "Siapakah pihak yang menjadi pengelola wisata sejarah dan religi Pilihan Jawaban: (Pemerintah, BUMDes, BUMDes Bersama, Pokdarwis, Pelaku Usaha/UMKM Lokal, LSM, Investor/Swasta, Akademisi/Peneliti, Lainnya) Jika tidak ada dapat memilih Tidak ada",
+  "sumber_no": 749
+ },
+ "Pengelola Wisata Seni dan Tradisi": {
+  "definisi": "Siapakah pihak yang menjadi pengelola wisata Seni dan Tradisi Pilihan Jawaban: (Pemerintah, BUMDes, BUMDes Bersama, Pokdarwis, Pelaku Usaha/UMKM Lokal, LSM, Investor/Swasta, Akademisi/Peneliti, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 767
+ },
+ "Pengelola Wisata Sungai": {
+  "definisi": "Tuliskan pihak yang mengelola wisata pantai seperti - Pemerintah - BUMDes - BUMDes Bersama - Pokdarwis - Pelaku Usaha/UMKM Lokal - Investorr/Swasta - Akademisi/Peneliti - Lainnya Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 668
+ },
+ "Pihak Pengelola Wisata Pantai": {
+  "definisi": "Tuliskan pihak yang mengelola wisata pantai seperti - Pemerintah - BUMDes - BUMDes Bersama - Pokdarwis - Pelaku Usaha/UMKM Lokal - Investorr/Swasta - Akademisi/Peneliti - Lainnya Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 632
+ },
+ "Terdapat Wisata Air Terjun": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata air terjun.",
+  "sumber_no": 673
+ },
+ "Terdapat Wisata Alam Lainnya": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata alam selain yang sudah disebutkan sebelumnya",
+  "sumber_no": 691
+ },
+ "Terdapat Wisata Buatan Lainnya": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata buatan lainnya, seperti taman rekreasi atau wahana permainan.",
+  "sumber_no": 727
+ },
+ "Terdapat Wisata Budaya Desa Wisata": {
+  "definisi": "Jika ada wisata budaya, tuliskan nama desa wisata tersebut.",
+  "sumber_no": 736
+ },
+ "Terdapat Wisata Budaya Lainnya": {
+  "definisi": "Apakah terdapat desa yang memiliki wisata budaya lainnya (ada/tidak)",
+  "sumber_no": 772
+ },
+ "Terdapat Wisata Embung": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata embung.",
+  "sumber_no": 700
+ },
+ "Terdapat Wisata Hutan": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata hutan, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 655
+ },
+ "Terdapat Wisata Kolam Pemandian Umum": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata kolam pemandian umum.",
+  "sumber_no": 709
+ },
+ "Terdapat Wisata Kuliner": {
+  "definisi": "Apakah terdapat desa yang memiliki tempat wisata kuliner (ada/tidak)",
+  "sumber_no": 754
+ },
+ "Terdapat Wisata Laut/ Danau": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata laut atau danau.",
+  "sumber_no": 646
+ },
+ "Terdapat Wisata Pantai": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata pantai",
+  "sumber_no": 628
+ },
+ "Terdapat Wisata Pegunungan": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata pegunungan.",
+  "sumber_no": 637
+ },
+ "Terdapat Wisata Pemandian Sumber Air Panas": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata pemandian sumber air panas",
+  "sumber_no": 682
+ },
+ "Terdapat Wisata Sejarah dan Religi": {
+  "definisi": "Apakah terdapat desa yang memiliki tempat wisata sejarah dan religi (ada/tidak)",
+  "sumber_no": 745
+ },
+ "Terdapat Wisata Seni dan Tradisi": {
+  "definisi": "Apakah terdapat desa yang memiliki tempat wisata seni dan tradisi (ada/tidak)",
+  "sumber_no": 763
+ },
+ "Terdapat Wisata Sungai": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata sungai, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 664
+ },
+ "Terdapat Wisata Taman": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA desa yang memiliki wisata taman, jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 718
+ },
+ "Apakah desa memproduksi garam yang bersumber dari air laut": {
+  "definisi": "Memastikan ada atau tidak ada desa memproduksi garam yang bersumber dari air laut",
+  "sumber_no": 893
+ },
+ "Berbatasan langsung dengan laut (Tepi Laut)": {
+  "definisi": "Apakah lokasi desa berbatasan langsung dengan laut/di tepi laut? (iya/tidak)",
+  "sumber_no": 891
+ },
+ "Jika YA, Berapa Panjang Garis Pantai": {
+  "definisi": "Jika lokasi desa di tepi laut, berapa panjang garis pantai (dalam Kilometer), jika tidak ada dapat diisikan “ 0 “ (Nol)",
+  "sumber_no": 892
+ },
+ "Terdapat Budidaya Abalon": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya abalon.",
+  "sumber_no": 592
+ },
+ "Terdapat Budidaya Bandeng": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya bandeng",
+  "sumber_no": 607
+ },
+ "Terdapat Budidaya Gurame": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Gurame",
+  "sumber_no": 605
+ },
+ "Terdapat Budidaya Ikan Hias": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya ikan hias Potensi Peternakan",
+  "sumber_no": 609
+ },
+ "Terdapat Budidaya Ikan Mas": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya ikan mas",
+  "sumber_no": 606
+ },
+ "Terdapat Budidaya Kakap": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Kakap",
+  "sumber_no": 594
+ },
+ "Terdapat Budidaya Kepiting Air Laut": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya kepiting air laut",
+  "sumber_no": 587
+ },
+ "Terdapat Budidaya Kepiting Air Tawar": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya kepiting air tawar",
+  "sumber_no": 601
+ },
+ "Terdapat Budidaya Kerang-kerangan Laut": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya kerang-kernagan laut",
+  "sumber_no": 597
+ },
+ "Terdapat Budidaya Kerapu": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya kerapu.",
+  "sumber_no": 593
+ },
+ "Terdapat Budidaya Lele": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya lele",
+  "sumber_no": 602
+ },
+ "Terdapat Budidaya Lobster Air Laut": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya lobster air laut.",
+  "sumber_no": 585
+ },
+ "Terdapat Budidaya Lobster Air Tawar": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Lobster Air Tawar",
+  "sumber_no": 599
+ },
+ "Terdapat Budidaya Napoleon": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Napoeleon.",
+  "sumber_no": 595
+ },
+ "Terdapat Budidaya Nila": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Nila",
+  "sumber_no": 604
+ },
+ "Terdapat Budidaya Perikanan Air Laut Lainnya": {
+  "definisi": "Dapat diisikan jika terdapat budidya perikanan air laut lainnya apabila ada, jika tidak ada dapat “Tidak Ada” atau “ 0 “ (strip). Potensi Perikanan Air Tawar Payau",
+  "sumber_no": 598
+ },
+ "Terdapat Budidaya Perikanan Air Tawa/ Payau Lainnya": {
+  "definisi": "Dapat diisikan jika terdapat budidya perikanan air tawar/payau lainnya apabila ada, jika tidak ada dapat “Tidak Ada” atau “ 0 “ (strip).",
+  "sumber_no": 608
+ },
+ "Terdapat Budidaya Rajungan": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Rajungan.",
+  "sumber_no": 589
+ },
+ "Terdapat Budidaya Rumput Laut": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Rumput Laut.",
+  "sumber_no": 590
+ },
+ "Terdapat Budidaya Teripang": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Teripang",
+  "sumber_no": 588
+ },
+ "Terdapat Budidaya Tilapia": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Tilapia",
+  "sumber_no": 603
+ },
+ "Terdapat Budidaya Tiram": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya tiram",
+  "sumber_no": 596
+ },
+ "Terdapat Budidaya Tuna": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya tuna.",
+  "sumber_no": 591
+ },
+ "Terdapat Budidaya Udang Air Laut": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya Udang Air Laut",
+  "sumber_no": 586
+ },
+ "Terdapat Budidaya Udang Air Tawar": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya udang air tawar",
+  "sumber_no": 600
+ },
+ "Terdapat Pabrik Es di Desa": {
+  "definisi": "Apakah terdapat Pabrik Es di desa (Iya/Tidak) Pabrik es adalah fasilitas industri yang memproduksi es dalam berbagai bentuk, seperti es balok, es kristal, atau es tube, untuk keperluan konsumsi, industri perikanan, penyimpanan makanan, dan kebutuhan lainnya.",
+  "sumber_no": 896
+ },
+ "Terdapat Perikanan Budidaya (Mencakup Seluruh Biota Laut)": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas perikanan budidaya di desa",
+  "sumber_no": 584
+ },
+ "Terdapat Perikanan Tangkap (Mencakup Seluruh Biota Laut)": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA berdasarkan keberadaan aktivitas perikanan tangkap di desa.",
+  "sumber_no": 583
+ },
+ "Tersedianya pasar ikan atau tempat pelelangan ikan di Desa?": {
+  "definisi": "Apakah Tersedia pasar ikan atau tempat pelelangan ikan di Desa (Iya/Tidak) Tempat Pelelangan Ikan (TPI) adalah lokasi yang digunakan untuk aktivitas jual beli ikan secara lelang, di mana nelayan menjual hasil tangkapannya kepada pedagang, pengolah ikan, atau konsumen lainnya. TPI biasanya dikelola oleh pemerintah daerah, koperasi perikanan, atau kelompok nelayan untuk memastikan harga yang transpa",
+  "sumber_no": 898
+ },
+ "Tersedianya tempat Tambatan perahu/pelabuhan/dermaga di Desa?": {
+  "definisi": "Apakah Tersedia tempat Tambatan perahu/pelabuhan/dermaga di Desa (Iya/Tidak) Tambatan Perahu Tambatan perahu adalah tempat khusus yang digunakan untuk menambatkan atau mengikat perahu agar tidak hanyut atau terbawa arus. Biasanya, tambatan perahu berlokasi di tepi sungai, danau, atau laut dan sering digunakan oleh nelayan atau masyarakat yang bergantung pada transportasi air. Pelabuhan Pelabuhan a",
+  "sumber_no": 899
+ },
+ "Total produksi garam dalam satu tahun di Desa": {
+  "definisi": "Memastikan Total produksi garam dalam satu tahun di Desa dengan pilihan jawaban • Tidak Ada • < 50 ton • > 50 – 150 ton • > 150 – 350 ton • > 350 – 500 ton • > 500 – 1.000 ton • > 1.000 ton",
+  "sumber_no": 895
+ },
+ "Jenis Perkebunan Lainnya, Sebutkan": {
+  "definisi": "Sebutkan Jenis Perkebunan Lainnya, jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 886
+ },
+ "Jumlah Produksi Kelapa Coklat/Kakao dalam 1 Tahun terakhir": {
+  "definisi": "Berapa total jumlah produksi coklat/kakao dalam 1 tahun terakhir (dalam Ton), jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 857
+ },
+ "Jumlah Produksi Kelapa Sawit dalam 1 Tahun terakhir": {
+  "definisi": "Berapa total jumlah produksi kelapa sawit dalam 1 tahun terakhir (dalam Ton), jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 852
+ },
+ "Jumlah Produksi Kopi dalam 1 Tahun terakhir": {
+  "definisi": "Berapa total jumlah produksi kopi dalam 1 tahun terakhir (dalam Ton) , jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 862
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Coklat/Kakao": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan coklat/kakao yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 856
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Karet": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan karet yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 846
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Kelapa Sawit": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan kelapa sawit yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 851
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Kina": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan kina yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 871
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Kopi": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan kopi yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 861
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Lainnya": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan lainnya yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 887
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Tebu": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan tebu yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 876
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Teh": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan teh yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 866
+ },
+ "Status Penguasaan/Pengelolaan Perkebunan Tembakau": {
+  "definisi": "Apakah status penguasaan/pengelolaan perkebunan tembakau yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Pemerintah Desa, Kelompok Tani, Investor/Swasta, Perorangan, Lainnya) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 881
+ },
+ "Terdapat Perkebunan Coklat/ Kacao": {
+  "definisi": "Apakah terdapat perkebunan coklat/kakao di desa (ada/tidak)",
+  "sumber_no": 855
+ },
+ "Terdapat Perkebunan Karet": {
+  "definisi": "Apakah terdapat perkebunan karet di desa (ada/tidak)",
+  "sumber_no": 845
+ },
+ "Terdapat Perkebunan Kelapa Sawit": {
+  "definisi": "Apakah terdapat perkebunan kelapa sawit di desa (ada/tidak)",
+  "sumber_no": 850
+ },
+ "Terdapat Perkebunan Kina": {
+  "definisi": "Apakah terdapat perkebunan kina di desa (ada/tidak)",
+  "sumber_no": 870
+ },
+ "Terdapat Perkebunan Kopi": {
+  "definisi": "Apakah terdapat perkebunan kopi di desa (ada/tidak)",
+  "sumber_no": 860
+ },
+ "Terdapat Perkebunan Tebu": {
+  "definisi": "Apakah terdapat perkebunan tebu di desa (ada/tidak)",
+  "sumber_no": 875
+ },
+ "Terdapat Perkebunan Teh": {
+  "definisi": "Apakah terdapat perkebunan teh di desa (ada/tidak)",
+  "sumber_no": 865
+ },
+ "Terdapat Perkebunan Tembakau": {
+  "definisi": "Apakah terdapat perkebunan tembakau di desa (ada/tidak)",
+  "sumber_no": 880
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Coklat/Kakao": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan coklat/kakao (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 858
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Karet": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan karet (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 848
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Kina": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan kina (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 873
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Kopi": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan kopi (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 863
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Lainnya": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan lainnya (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 889
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Tebu": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan tebu (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 878
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Teh": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan teh (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 868
+ },
+ "Tujuan Pasar Perdagangan Hasil Panen Perkebunan Tembakau": {
+  "definisi": "Kemanakah tujuan pemasaran hasil panen dari perkebunan tembakau (Dalam Negeri/Luar Negeri) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 883
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Coklat/Kakao": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebunan coklat/kakao (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor), jika tidak ada dapat diisikan “ - “ (strip)",
+  "sumber_no": 859
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Kelapa Sawit": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebuna n kelapa sawit (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor), jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 854
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Kina": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebunan kina (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor) , jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 874
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Kopi": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebunan kopi (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor) , jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 864
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Lainya": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebunan lainnya (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor), jika tidak ada dapat diisikan “ – “ (strip) Kawasan Pesisir Pantai",
+  "sumber_no": 890
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Tebu": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebunan tebu (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor) , jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 879
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Teh": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebunan teh (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor) , jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 869
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Hasil Perkebunan Tembakau": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri da ri hasil panen perkebunan tembakau (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor), jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 884
+ },
+ "Wilayah Tujuan Domestik/ Ekspor Perkebunan Karet": {
+  "definisi": "Sebutkan wilayah dari tujuan dalam negeri/luar negeri dari hasil panen perkebunan karet (sebutkan nama wilayah kab/kota (domestik) dan sebutkan nama negara (ekspor)) , jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 849
+ },
+ "Jenis Tambang Golongan A Lainnya (Sebutkan)": {
+  "definisi": "sebutkan tambang golongan A lainnya yang ada di desa (ada/tidak)",
+  "sumber_no": 798
+ },
+ "Jenis Tambang Golongan B Lainnya (Sebutkan)": {
+  "definisi": "Sebutkan jenis tambang Golongan B Lainnya, jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 817
+ },
+ "Jenis Tambang Golongan C Lainnya, Sebutkan": {
+  "definisi": "Sebutkan Jenis Tambang Golongan C Lainnya, jika tidak ada dapat diisikan “ – “ (strip)",
+  "sumber_no": 842
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Aspal": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan aspal yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 789
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Batu": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan pasir batu yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 830
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Batu Bara": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan batu bara yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 792
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Batu Kali": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan batu kali yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 836
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Batu Kapur": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan batu kapur yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 821
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Batu Kerikil": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan batu krikil yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 833
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Bauksit": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan bauksit yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 802
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Belerang": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan belerang yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 808
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Emas": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan emas yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 811
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Gas Alam": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan gas alam yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 786
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Minyak Bumi": {
+  "definisi": "Berapa Jumlah Tenaga Kerja di Pertambangan Minyak Bumi yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 783
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Nikel": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan nikel yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 795
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Pasir": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan pasir yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 827
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Perak": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan perak yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 814
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Tanah Liat": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan tanah liat yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 824
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Tanah Uruk": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan batu kali yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 839
+ },
+ "Jumlah Tenaga Kerja Masyarakat Desa Setempat bekerja di Pertambangan Tembaga": {
+  "definisi": "Berapa jumlah tenaga kerja masyarakat desa setempat bekerja di pertambangan tembaga yang ada di desa dengan satuan orang, jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 805
+ },
+ "Status Penguasaan/Pengelolaan Tambang Aspal": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang aspal yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 790
+ },
+ "Status Penguasaan/Pengelolaan Tambang Batu Bara": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang batu bara yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 793
+ },
+ "Status Penguasaan/Pengelolaan Tambang Batu Kali": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang batu kali yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 837
+ },
+ "Status Penguasaan/Pengelolaan Tambang Batu Kapur": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang batu kapur yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan , Koperasi, Ormas ) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 822
+ },
+ "Status Penguasaan/Pengelolaan Tambang Bauksit": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang bauksit yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 803
+ },
+ "Status Penguasaan/Pengelolaan Tambang Belerang": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang belerang yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 809
+ },
+ "Status Penguasaan/Pengelolaan Tambang Emas": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang emas yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 812
+ },
+ "Status Penguasaan/Pengelolaan Tambang Gas Alam": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang gas alam yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 787
+ },
+ "Status Penguasaan/Pengelolaan Tambang Gol A Lainnya": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang golongan A lainnya yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada Jenis Tambangan Golongan B",
+  "sumber_no": 800
+ },
+ "Status Penguasaan/Pengelolaan Tambang Gol B Lainnya": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang Gol B lainnya yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan , Koperasi, Ormas ) Jika tidak ada dapat memilih opsi Tidak ada Jenis Tambang Golongan C",
+  "sumber_no": 819
+ },
+ "Status Penguasaan/Pengelolaan Tambang Gol C Lainnya": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang golongan c lainnya yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada Kawasan Perkebunan",
+  "sumber_no": 844
+ },
+ "Status Penguasaan/Pengelolaan Tambang Kerikil": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang batu krikil yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan , Koperasi, Ormas ) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 834
+ },
+ "Status Penguasaan/Pengelolaan Tambang Minyak Bumi": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang minyak bumi yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan , Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 784
+ },
+ "Status Penguasaan/Pengelolaan Tambang Nikel": {
+  "definisi": "Apakah status penguasaan/pengelolaan tamban g nikel yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 796
+ },
+ "Status Penguasaan/Pengelolaan Tambang Pasir": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang pasir yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 828
+ },
+ "Status Penguasaan/Pengelolaan Tambang Pasir Batu": {
+  "definisi": "Apakah status penguasaan/ pengelolaan tambang pasir batu yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan , Koperasi, Ormas ) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 831
+ },
+ "Status Penguasaan/Pengelolaan Tambang Perak": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang perak yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 815
+ },
+ "Status Penguasaan/Pengelolaan Tambang Tanah Liat": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang tanah liat yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 825
+ },
+ "Status Penguasaan/Pengelolaan Tambang Tanah Uruk": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang batu kali yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 840
+ },
+ "Status Penguasaan/Pengelolaan Tambang Tembaga": {
+  "definisi": "Apakah status penguasaan/pengelolaan tambang tembaga yang ada di desa (Tidak Ada, Pemerintah, BUMN, BUMD, Swasta, Perorangan, Koperasi, Ormas) Jika tidak ada dapat memilih opsi Tidak ada",
+  "sumber_no": 806
+ },
+ "Terdapat Kawasan Tambang di Desa": {
+  "definisi": "Apakah terdapat kawasan tambang yang ada di desa (ada/tidak) Kawasan tambang dalam hal ini Jenis tambang akan dibagi berdasarkan Manfaat/ Kegunaan (Gol A, B, C dan Lainnya) Jenis Tambang berdasarkan Manfaat/Kegunaan Jenis Tambang Golongan A",
+  "sumber_no": 781
+ },
+ "Terdapat Tambang Aspal": {
+  "definisi": "Apakah terdapat tambang aspal yang ada di desa (ada/tidak)",
+  "sumber_no": 788
+ },
+ "Terdapat Tambang Batu Bara": {
+  "definisi": "Apakah terdapat tambang batu bara yang ada di desa (ada/tidak)",
+  "sumber_no": 791
+ },
+ "Terdapat Tambang Batu Kali": {
+  "definisi": "Apakah terdapat tambang batu kali yang ada di desa (ada/tidak)",
+  "sumber_no": 835
+ },
+ "Terdapat Tambang Batu Kapur": {
+  "definisi": "Apakah terdapat tambang batu kapur yang ada di desa (ada/tidak)",
+  "sumber_no": 820
+ },
+ "Terdapat Tambang Batu Krikil": {
+  "definisi": "Apakah terdapat tambang batu krikil yang ada di desa (ada/tidak)",
+  "sumber_no": 832
+ },
+ "Terdapat Tambang Bauksit": {
+  "definisi": "Apakah terdapat tambang bauksit yang ada di desa (ada/tidak)",
+  "sumber_no": 801
+ },
+ "Terdapat Tambang Belerang": {
+  "definisi": "Apakah terdapat tambang belerang yang ada di desa (ada/tidak)",
+  "sumber_no": 807
+ },
+ "Terdapat Tambang Emas": {
+  "definisi": "Apakah terdapat tambang emas yang ada di desa (ada/tidak)",
+  "sumber_no": 810
+ },
+ "Terdapat Tambang Gas Alam": {
+  "definisi": "Apakah terdapat tambang gas alam yang ada di desa (ada/tidak)",
+  "sumber_no": 785
+ },
+ "Terdapat Tambang Golongan A Lainnya": {
+  "definisi": "Apakah terdapat tambang Golongan A lainnya (ada/tidak)",
+  "sumber_no": 797
+ },
+ "Terdapat Tambang Lainnya Golongan B": {
+  "definisi": "Apakah terdapat tambang golongan B lainnya yang ada di desa (ada/tidak)",
+  "sumber_no": 816
+ },
+ "Terdapat Tambang Minyak Bumi": {
+  "definisi": "Apakah terdapat tambang minyak bumi yang ada di desa (ada/tidak)",
+  "sumber_no": 782
+ },
+ "Terdapat Tambang Nikel": {
+  "definisi": "Apakah terdapat tambang nikel yang ada di desa (ada/tidak)",
+  "sumber_no": 794
+ },
+ "Terdapat Tambang Pasir": {
+  "definisi": "Apakah terdapat tambang pasir yang ada di desa (ada/tidak)",
+  "sumber_no": 826
+ },
+ "Terdapat Tambang Pasir Batu": {
+  "definisi": "Apakah terdapat tambang pasir batu yang ada di desa (ada/tidak)",
+  "sumber_no": 829
+ },
+ "Terdapat Tambang Perak": {
+  "definisi": "Apakah terdapat tambang perak yang ada di desa (ada/tidak)",
+  "sumber_no": 813
+ },
+ "Terdapat Tambang Tambang Lainnya Gol C Lainnya": {
+  "definisi": "Apakah terdapat tambang golongan c lainnya yang ada di desa (ada/tidak)",
+  "sumber_no": 841
+ },
+ "Terdapat Tambang Tanah Liat": {
+  "definisi": "Apakah terdapat tambang tanah liat yang ada di desa (ada/tidak)",
+  "sumber_no": 823
+ },
+ "Terdapat Tambang Tanah Uruk": {
+  "definisi": "Apakah terdapat tambang batu kali yang ada di desa (ada/tidak)",
+  "sumber_no": 838
+ },
+ "Terdapat Tambang Tembaga": {
+  "definisi": "Apakah terdapat tambang tembaga yang ada di desa (ada/tidak)",
+  "sumber_no": 804
+ },
+ "Jumlah Produksi Kina dalam 1 Tahun terakhir": {
+  "definisi": "Berapa total jumlah produksi kina dalam 1 tahun terakhir (dalam Ton) , jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 872
+ },
+ "Jumlah Produksi Tebu dalam 1 Tahun terakhir": {
+  "definisi": "Berapa total jumlah produksi tebu dalam 1 tahun terakhir (dalam Ton) , jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 877
+ },
+ "Jumlah Produksi Tembakau dalam 1 tahun terakhir": {
+  "definisi": "Berapa total jumlah produksi tembakau dalam 1 tahun terakhir (dalam Ton) , jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 882
+ },
+ "Jumlah Produksi karet dalam 1 tahun terakhir": {
+  "definisi": "Berapa total jumlah produksi ka ret dalam 1 tahun terakhir (dalam Ton) , jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 847
+ },
+ "Jumlah Produksi lainnya dalam 1 Tahun Terakhir": {
+  "definisi": "Berapa total jumlah produksi lainnya dalam 1 tahun terakhir (dalam Ton), jika tidak ada dapat mengisi “ 0 “ (Nol).",
+  "sumber_no": 888
+ },
+ "Konsultan Pertanian/ Perkebunan/ Peternakan di fasilitasi pihak ke 3": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA ketersediaan Konsultan Pertanian/ Perkebunan/ Peternakan di fasilitasi pihak ke-3",
+  "sumber_no": 579
+ },
+ "Terdapat Peternakan Ayam Pedaging": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas budidaya",
+  "sumber_no": 610
+ },
+ "Terdapat Peternakan Ayam Petelur": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas peternakan ayam telur.",
+  "sumber_no": 611
+ },
+ "Terdapat Peternakan Babi": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas peternakan babi",
+  "sumber_no": 616
+ },
+ "Terdapat Peternakan Bebek Pedaging": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas peternakan bebek pedanging",
+  "sumber_no": 612
+ },
+ "Terdapat Peternakan Bebek Petelur": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas peternakan bebek petelur",
+  "sumber_no": 613
+ },
+ "Terdapat Peternakan Kambing": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas peternakan kambing",
+  "sumber_no": 614
+ },
+ "Terdapat Peternakan Kerbau": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas peternakan kerbau",
+  "sumber_no": 617
+ },
+ "Terdapat Peternakan Lainnya": {
+  "definisi": "Dapat diisikan jika terdapat budidaya peternakan lainnya apabila ada, jika tidak ada dapat “Tidak Ada” atau “ - “ (Strip). Desa Model",
+  "sumber_no": 618
+ },
+ "Terdapat Peternakan Sapi": {
+  "definisi": "Memilih opsi ADA atau TIDAK ADA aktivitas peternakan sapi",
+  "sumber_no": 615
+ }
+}

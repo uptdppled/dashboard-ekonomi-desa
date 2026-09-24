@@ -204,3 +204,36 @@ export function registerWithKode(email, nama, kode) {
 export function touchLogin(userId) {
   db.prepare('UPDATE users SET login_terakhir = ? WHERE id = ?').run(new Date().toISOString(), userId);
 }
+
+// ---------- dev-only login bypass ----------
+// Lets you click through the app locally before Google OAuth credentials
+// exist. Double-gated: never active in production, AND only while
+// GOOGLE_CLIENT_ID is unset - the moment real OAuth is configured, this
+// disappears on its own without needing to remember to remove it.
+export function devLoginAllowed() {
+  return process.env.NODE_ENV !== 'production' && !process.env.GOOGLE_CLIENT_ID;
+}
+
+export function findOrCreateDevUser(role) {
+  const email = `dev-${role}@local.test`;
+  const now = new Date().toISOString();
+  let user = findUserByEmail(email);
+  if (user) {
+    touchLogin(user.id);
+    return user;
+  }
+
+  let kode_desa = null;
+  let kabupaten = null;
+  if (role === 'desa') {
+    kode_desa = db.prepare('SELECT kode_desa FROM desa ORDER BY kode_desa LIMIT 1').get()?.kode_desa || null;
+  } else if (role === 'kabupaten') {
+    kabupaten = db.prepare('SELECT kabupaten FROM desa WHERE kabupaten IS NOT NULL ORDER BY kabupaten LIMIT 1').get()?.kabupaten || null;
+  }
+
+  db.prepare(
+    `INSERT INTO users (email, nama, role, kode_desa, kabupaten, dibuat_pada, login_terakhir)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`
+  ).run(email, `Uji Coba (${role})`, role, kode_desa, kabupaten, now, now);
+  return findUserByEmail(email);
+}

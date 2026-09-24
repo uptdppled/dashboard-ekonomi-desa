@@ -63,6 +63,10 @@ export function guard(fn) {
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch((err) => {
       if (err.code === 'FORBIDDEN') return res.status(403).json({ error: err.message, code: 'FORBIDDEN' });
+      // Any other thrown error carrying an explicit `.status` (e.g. lib/rpkp.js's
+      // badRequest/notFound helpers) also renders as clean JSON instead of
+      // falling through to Express's default HTML error page.
+      if (err.status) return res.status(err.status).json({ error: err.message, code: err.code });
       next(err);
     });
   };

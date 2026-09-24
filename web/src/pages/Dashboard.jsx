@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { api } from '../api';
 import FilterBar from '../components/FilterBar';
@@ -7,6 +8,7 @@ import { useTheme } from '../theme';
 import { STATUS_COLORS, ACCENT } from '../colors';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [filter, setFilter] = useState({});
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
@@ -54,6 +56,7 @@ export default function Dashboard() {
           <div className="grid-2">
             <div className="panel">
               <h2 className="panel-title">Komposisi Dimensi Ekonomi (rata-rata skor)</h2>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 0 }}>Klik bar untuk rincian indikator Dimensi Ekonomi.</p>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={data.subDimensi} layout="vertical" margin={{ left: 20 }}>
                   <XAxis type="number" hide />
@@ -65,7 +68,14 @@ export default function Dashboard() {
                     tick={{ fontSize: 11 }}
                   />
                   <Tooltip formatter={(v) => v.toFixed(2)} />
-                  <Bar dataKey="avg_skor" fill={accent} radius={[0, 4, 4, 0]} barSize={32} />
+                  <Bar
+                    dataKey="avg_skor"
+                    fill={accent}
+                    radius={[0, 4, 4, 0]}
+                    barSize={32}
+                    cursor="pointer"
+                    onClick={() => navigate('/banua-index/EKONOMI')}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

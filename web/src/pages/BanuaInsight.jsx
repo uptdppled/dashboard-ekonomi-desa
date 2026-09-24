@@ -6,15 +6,6 @@ import { cleanParams } from '../utils';
 
 const DIMENSI_OPTIONS = ['LAYANAN DASAR', 'SOSIAL', 'EKONOMI', 'LINGKUNGAN', 'AKSESIBILITAS', 'TATA KELOLA PEMERINTAHAN DESA'];
 
-function Check({ ok, children }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 12.5, color: ok ? 'var(--text)' : 'var(--text-muted)' }}>
-      <span style={{ color: ok ? 'var(--accent)' : 'var(--text-faint)', fontWeight: 700 }}>{ok ? '✓' : '○'}</span>
-      {children}
-    </div>
-  );
-}
-
 export default function BanuaInsight() {
   const { user } = useAuth();
   const [kabupatenList, setKabupatenList] = useState([]);
@@ -26,6 +17,7 @@ export default function BanuaInsight() {
   const [gapDesaList, setGapDesaList] = useState(null);
   const [showTanpaKoordinat, setShowTanpaKoordinat] = useState(false);
   const [tanpaKoordinatList, setTanpaKoordinatList] = useState(null);
+  const [naikStatus, setNaikStatus] = useState(null);
 
   const kabupatenLocked = kabupatenList.length === 1 && user.role !== 'admin' && user.role !== 'provinsi';
 
@@ -46,6 +38,11 @@ export default function BanuaInsight() {
     setExpandedGap(null);
     setShowTanpaKoordinat(false);
     api.insightRingkasan(cleanParams(filter)).then(setData).catch((e) => setError(e.message));
+  }, [filter]);
+
+  useEffect(() => {
+    setNaikStatus(null);
+    api.insightNaikStatus(cleanParams(filter)).then(setNaikStatus).catch(() => {});
   }, [filter]);
 
   function update(field, val) {
@@ -79,7 +76,8 @@ export default function BanuaInsight() {
       <div className="page-header">
         <h1 className="page-title">BANUA INSIGHT</h1>
         <p className="page-desc">
-          Analisis berbasis data untuk menemukan area perhatian, potensi pengembangan, dan potensi keterhubungan antar desa. Tahun 2026.
+          Analisis berbasis data untuk menemukan area perhatian, potensi pengembangan, dan kandidat naik status desa. Tahun 2026.
+          Untuk peluang keterhubungan antar desa, lihat <Link to="/banua-opportunity">BANUA OPPORTUNITY</Link>.
         </p>
       </div>
 
@@ -199,46 +197,54 @@ export default function BanuaInsight() {
           </div>
 
           <div className="panel">
-            <h2 className="panel-title">Potensi Keterhubungan Antar Desa</h2>
+            <h2 className="panel-title">Kandidat Naik Status</h2>
             <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
-              Pasangan desa berdekatan (&le; 15 km) dengan potensi sektor yang saling melengkapi (produksi &harr; pengolahan/pasar). Ini indikasi kedekatan dan kesesuaian sektor, bukan skor kelayakan kerja sama.
+              Desa BERKEMBANG dan MAJU diurutkan berdasarkan skor komposit 6 dimensi BANUA INDEX milik desa itu sendiri - desa dengan skor tertinggi di tier-nya adalah kandidat paling realistis untuk intervensi cepat menuju tier berikutnya. <strong>Ini peringkat internal aplikasi berdasarkan skor komposit, bukan hasil perhitungan resmi status desa dari Kemendes</strong> (rumus resminya tidak ada di data sumber) - gunakan sebagai titik awal diskusi, bukan keputusan final.
             </p>
-            {data.spatialMatching.length === 0 && <p className="state-msg">Tidak ada pasangan desa yang cocok pada filter ini.</p>}
-            <div style={{ display: 'grid', gap: 10 }}>
-              {data.spatialMatching.map((m) => (
-                <div key={`${m.desaA.kode_desa}-${m.desaB.kode_desa}`} style={{ border: '1px solid var(--border)', borderRadius: 10, padding: '14px 16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14, flexWrap: 'wrap' }}>
-                    <div style={{ flex: 1, minWidth: 160 }}>
-                      <Link to={`/profil-desa?kode=${m.desaA.kode_desa}`} style={{ fontWeight: 700, fontSize: 13.5 }}>{m.desaA.nama_desa}</Link>
-                      <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{m.desaA.kecamatan}, {m.desaA.kabupaten}</div>
-                      <div style={{ fontSize: 12, marginTop: 4 }}>{m.desaA.sektor.join(', ')}</div>
-                    </div>
-                    <div style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', alignSelf: 'center' }}>
-                      &harr;<br />{m.jarakKm} km
-                    </div>
-                    <div style={{ flex: 1, minWidth: 160 }}>
-                      <Link to={`/profil-desa?kode=${m.desaB.kode_desa}`} style={{ fontWeight: 700, fontSize: 13.5 }}>{m.desaB.nama_desa}</Link>
-                      <div style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>{m.desaB.kecamatan}, {m.desaB.kabupaten}</div>
-                      <div style={{ fontSize: 12, marginTop: 4 }}>{m.desaB.sektor.join(', ')}</div>
-                    </div>
+            {!naikStatus && <p className="state-msg">Memuat...</p>}
+            {naikStatus && naikStatus.map((grup) => (
+              <div key={grup.dari} style={{ marginBottom: 22 }}>
+                <h3 style={{ fontSize: 13.5, fontWeight: 700, marginBottom: 4 }}>
+                  {grup.dari} &rarr; {grup.ke}
+                  <span style={{ fontWeight: 400, color: 'var(--text-muted)', marginLeft: 8 }}>
+                    (menampilkan {grup.kandidat.length} dari {grup.totalDiTier.toLocaleString('id-ID')} desa {grup.dari})
+                  </span>
+                </h3>
+                {grup.kandidat.length === 0 && <p className="state-msg">Tidak ada desa {grup.dari} pada filter ini.</p>}
+                {grup.kandidat.length > 0 && (
+                  <div className="table-scroll">
+                    <table className="data-table">
+                      <thead>
+                        <tr><th>No.</th><th>Desa</th><th>Kabupaten</th><th>Kecamatan</th><th>Skor Komposit</th><th>Indikator Prioritas Diperbaiki</th></tr>
+                      </thead>
+                      <tbody>
+                        {grup.kandidat.map((d, i) => (
+                          <tr key={d.kode_desa}>
+                            <td>{i + 1}</td>
+                            <td><Link to={`/profil-desa?kode=${d.kode_desa}`}>{d.nama_desa}</Link></td>
+                            <td>{d.kabupaten}</td>
+                            <td>{d.kecamatan}</td>
+                            <td>{d.totalSkor} / {d.totalBobot} <span style={{ color: 'var(--text-muted)' }}>({Math.round(d.ratio * 100)}%)</span></td>
+                            <td style={{ fontSize: 12 }}>
+                              {d.gapIndikator.length === 0
+                                ? <span style={{ color: 'var(--text-faint)' }}>-</span>
+                                : d.gapIndikator.map((g) => g.indikator).join('; ')}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 12, paddingTop: 10, borderTop: '1px solid var(--border)' }}>
-                    <Check ok>Kedekatan geografis</Check>
-                    <Check ok>Potensi sektor saling terkait</Check>
-                    <Check ok>Data potensi tersedia</Check>
-                    <Check ok={false}>Data produksi belum tersedia</Check>
-                    <Check ok={false}>Data kapasitas fasilitas belum tersedia</Check>
-                  </div>
-                </div>
-              ))}
-            </div>
+                )}
+              </div>
+            ))}
           </div>
 
           {data.coverage.desaTanpaKoordinat > 0 && (
             <div className="panel">
               <h2 className="panel-title">Data yang Belum Tersedia</h2>
               <p style={{ fontSize: 13, marginBottom: 12 }}>
-                <strong>{data.coverage.desaTanpaKoordinat.toLocaleString('id-ID')} desa</strong> belum memiliki data koordinat, sehingga belum dapat dianalisis pada Potensi Keterhubungan. Desa ini tetap masuk pada Area Perhatian dan Potensi Pengembangan.
+                <strong>{data.coverage.desaTanpaKoordinat.toLocaleString('id-ID')} desa</strong> belum memiliki data koordinat, sehingga belum dapat dianalisis pada BANUA OPPORTUNITY. Desa ini tetap masuk pada Area Perhatian dan Potensi Pengembangan.
               </p>
               <button className="btn btn-secondary" onClick={toggleTanpaKoordinat}>
                 {showTanpaKoordinat ? 'Tutup' : 'Lihat Desa'}

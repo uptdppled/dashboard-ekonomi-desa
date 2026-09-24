@@ -1,0 +1,512 @@
+{
+ "SKOR Ketersediaan Akses Internet di sebagian besar wilayah Desa": {
+  "definisi": "1. Ada atau 1. Tidak Ada Pertanyaan ini akan dilakukan penilaian",
+  "klasifikasi": [],
+  "sumber_no": 461
+ },
+ "SKOR Ketersediaan Akses Telepon di sebagian besar wilayah Desa": {
+  "definisi": "Dengan pilihan 5. sinyal kuat; atau 3. sinyal lemah; atau 1. tidak ada sinyal Pertanyaan ini akan dilakukan penilaian",
+  "klasifikasi": [],
+  "sumber_no": 460
+ },
+ "SKOR Ketersediaan Pelayanan Listrik untuk rumah di desa": {
+  "definisi": "Akan diisi otomatis oleh sistem, berdasarkan pertanyaan 457 dan A118",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak Tersedia"
+   },
+   {
+    "level": 3,
+    "label": "Ada sebgaian kecil (< 50% terakses)"
+   },
+   {
+    "level": 5,
+    "label": "Ada Sebagian besar (> 50% terakses)"
+   }
+  ],
+  "sumber_no": 458
+ },
+ "SKOR Jenis Permukaan Jalan sebagian besar di desa": {
+  "definisi": "Memastikan Jenis Permukaan Jalan sebagian besar di desa dengan",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak ada akses apapun,"
+   },
+   {
+    "level": 2,
+    "label": "Akses lainnya,"
+   },
+   {
+    "level": 3,
+    "label": "Tanah,"
+   },
+   {
+    "level": 4,
+    "label": "Diperkeras (kerikil, batu, dll) dan"
+   },
+   {
+    "level": 5,
+    "label": "Aspal/beton"
+   }
+  ],
+  "sumber_no": 427
+ },
+ "SKOR Ketersediaan penerangan di jalan-jalan utama di desa": {
+  "definisi": "Memastikan Ketersediaan penerangan di jalan-jalan utama di desa dengan klasifikasi sebagai berikut",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak terdapat Penerangan Jalan Umum"
+   },
+   {
+    "level": 5,
+    "label": "Terdapat Penerangan Jalan Umum"
+   }
+  ],
+  "sumber_no": 433
+ },
+ "SKOR Kualitas sebagian besar jalan di Desa": {
+  "definisi": "Memastikan Kualitas sebagian besar jalan di Desa dengan",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "bila Rusak berat, tidak dapat dilalui setiap hari,"
+   },
+   {
+    "level": 2,
+    "label": "bila Rusak sedang, tidak dapat dilalui setiap hari,"
+   },
+   {
+    "level": 3,
+    "label": "bila rusak ringan, tidak dapat dilalui setiap hari,"
+   },
+   {
+    "level": 4,
+    "label": "Rusak sedang, dapat dilalui setiap hari, dan"
+   },
+   {
+    "level": 5,
+    "label": "Baik, dapat dilalui setiap hari"
+   }
+  ],
+  "sumber_no": 432
+ },
+ "SKOR Operasional desa dalam penyediaan penerangan di jalan-jalan utama di desa": {
+  "definisi": "Memastikan layanan penerangan di jalan-jalan utama di desa dengan",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak Teraliri Listrik"
+   },
+   {
+    "level": 2,
+    "label": "< 6 Jam dalam 1 hari"
+   },
+   {
+    "level": 4,
+    "label": "6-12 Jam dalam 1 hari"
+   },
+   {
+    "level": 5,
+    "label": "> 12 Jam dalam 1 hari"
+   }
+  ],
+  "sumber_no": 434
+ },
+ "SKOR Kemudahan akses menuju Kedai/Rumah Makan di Desa": {
+  "definisi": "Tingkat kemudahan akses dinilai berdasarkan tiga kriteria, yaitu jarak atau jangkauan fasilitas, waktu tempuh, dan ketersediaan akses transportasi untuk menuju fasilitas kedai/rumah makan. Hasil analisa ketiga parameter tersebut akan dihitung otomatis melalui sistem dengan klasifikasi penilaian seperti berikut:",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Sangat Sulit"
+   },
+   {
+    "level": 2,
+    "label": "Sulit"
+   },
+   {
+    "level": 3,
+    "label": "Sedang"
+   },
+   {
+    "level": 4,
+    "label": "Mudah"
+   },
+   {
+    "level": 5,
+    "label": "Sangat Mudah Sangat Sulit = 1, Dimana 1. Jarak >5 Km, Waktu >2-15 Menit, Transportasi Tidak Ada 2. Jarak >5 Km, Waktu >15 Menit, Transportasi Ada"
+   }
+  ],
+  "sumber_no": 351
+ },
+ "SKOR Kemudahan akses menuju Penginapan di Desa": {
+  "definisi": "Tingkat kemudahan akses dinilai berdasarkan tiga kriteria, yaitu jarak atau jangkauan fasilitas, waktu tempuh, dan ketersediaan akses transportasi untuk menuju fasilitas penginapan. Hasil analisa ketiga parameter tersebut akan dihitung otomatis melalui sistem dengan klasifikasi penilaian seperti berikut:",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Sangat Sulit"
+   },
+   {
+    "level": 2,
+    "label": "Sulit"
+   },
+   {
+    "level": 3,
+    "label": "Sedang"
+   },
+   {
+    "level": 4,
+    "label": "Mudah"
+   }
+  ],
+  "sumber_no": 356
+ },
+ "SKOR Kemudahan akses menuju toko/pertokoan di Desa": {
+  "definisi": "Tingkat kemudahan akses dinilai berdasarkan tiga kriteria, yaitu jarak atau jangkauan fasilitas, waktu tempuh, dan ketersediaan akses transportasi untuk menuju fasilitas toko/pertokoan. Hasil analisa ketiga parameter tersebut akan dihitung otomatis melalui sistem dengan klasifikasi penilaian seperti berikut:",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Sangat Sulit"
+   },
+   {
+    "level": 2,
+    "label": "Sulit"
+   },
+   {
+    "level": 3,
+    "label": "Sedang"
+   },
+   {
+    "level": 4,
+    "label": "Mudah"
+   }
+  ],
+  "sumber_no": 346
+ },
+ "SKOR Ketersediaan Pasar di Desa": {
+  "definisi": "Mengidentifikasi ADA atau TIDAK ADA keberadaan sarana perdagangan berupa pasar rakyat di desa yang dapat diakses oleh warga desa. Pertanyaan ini akan dilakukan penilaian.",
+  "klasifikasi": [],
+  "sumber_no": 336
+ },
+ "SKOR Ketersediaan Pendidikan Non-formal/Pusat Keterampilan/Kursus": {
+  "definisi": "Mengidentifikasi ADA atau TIDAK ADA pendidikan non-formal/ pusat keterampilan/ kursus yang dapat diakses oleh warga di desa. Pertanyaan ini akan dilakukan penilaian.",
+  "klasifikasi": [],
+  "sumber_no": 332
+ },
+ "SKOR Keaktifan Aktivitas Ekonomi di Desa": {
+  "definisi": "Mengukur tingkat keaktifan aktivitas ekonomi yang berjalan di desa dengan klasifikasi sebagai berikut.",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak aktif (tidak memiliki produk/jasa yang dihasilkan)"
+   },
+   {
+    "level": 5,
+    "label": "Aktif (memiliki produk/jasa yang dihasilkan)"
+   }
+  ],
+  "sumber_no": 324
+ },
+ "SKOR Keragaman Aktivitas Ekonomi di Desa": {
+  "definisi": "Mengidentifikasi jumlah jenis sektor/aktivitas ekonomi yang ada di desa yang diukur dengan klasifikasi berikut:",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Terdapat 1 sektor/aktivitas ekonomi"
+   },
+   {
+    "level": 3,
+    "label": "Terdapat 2 sektor/aktivitas ekonomi"
+   },
+   {
+    "level": 5,
+    "label": "Terdapat lebih dari 2 sektor/aktivitas ekonomi."
+   }
+  ],
+  "sumber_no": 323
+ },
+ "SKOR Ketersediaan merek dagang": {
+  "definisi": "Mengidentifikasi ketersediaan merek dagang pada produk unggulan desa yang dinilai dengan klasifikasi berikut.",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Merek dagang tidak terdaftar"
+   },
+   {
+    "level": 5,
+    "label": "Merek dagang terdaftar"
+   }
+  ],
+  "sumber_no": 327
+ },
+ "SKOR Kemudahan akses menuju Fasilitas Posyandu": {
+  "definisi": "Akan diisi otomatis oleh sistem berdasarkan pertanyaan 198 – 200 Pertanyaan ini akan dilakukan penilaian. Tempat Praktek Bidan",
+  "klasifikasi": [],
+  "sumber_no": 201
+ },
+ "SKOR Kemudahan akses menuju Sarana Kesehatan": {
+  "definisi": "Akan diisi otomatis oleh sistem berdasarkan pertanyaan 179 – 182 Sangat Sulit = 1 Dimana 1. Jarak >2 Km, Waktu >3-8 Menit, Transportasi Tidak Ada 2. Jarak >2 Km, Waktu >8 Menit, Transportasi Ada 3. Jarak >2 Km, Waktu >8 Menit, Transportasi Tidak Ada Sulit = 2 Dimana 1. Jarak >0,2-2 Km, Waktu >3-8 Menit, Transportasi Tidak Ada 2. Jarak >0,2-2 Km, Waktu >8 Menit, Transportasi Tidak Ada 3. Jarak >2 K",
+  "klasifikasi": [],
+  "sumber_no": 183
+ },
+ "SKOR Ketersediaan Fasilitas Posyandu di Desa": {
+  "definisi": "Memastikan Ketersediaan Fasilitas Posyandu di Desa dengan",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "apabila Tidak ada Posyandu,"
+   },
+   {
+    "level": 5,
+    "label": "apabila Terdapat Posyandu"
+   }
+  ],
+  "sumber_no": 195
+ },
+ "SKOR Persentase keanggotaan BPJS": {
+  "definisi": "Akan diisi otomatis oleh sistem berdasarkan pertanyaan 246 dibagi dengan jumlah total warga",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Persentase 0 - 20%"
+   },
+   {
+    "level": 2,
+    "label": "Persentase >20 - 40%"
+   },
+   {
+    "level": 3,
+    "label": "Persentase >40 - 60%"
+   },
+   {
+    "level": 4,
+    "label": "Persentase >60 - 80%"
+   },
+   {
+    "level": 5,
+    "label": "Persentase >80 - 100%"
+   }
+  ],
+  "sumber_no": 247
+ },
+ "SKOR Kemudahan Akses menuju PAUD/TK/Sederajat terdekat di Desa": {
+  "definisi": "Tingkat kemudahan akses dinilai berdasarkan tiga kriteria, yaitu jarak atau jangkauan fasilitas, waktu tempuh, dan ketersediaan akses transportasi untuk menuju fasilitas pendidikan. Hasil analisa ketiga parameter tersebut akan dihitung otomatis melalui sistem. Akan diisi otomatis oleh sistem berdasarkan pertanyaan 137-139 Sangat Sulit = 1 Dimana 1. Jarak >0,5 Km, Waktu >1-3 Menit, Transportasi Tid",
+  "klasifikasi": [],
+  "sumber_no": 140
+ },
+ "SKOR Kemudahan Akses menuju SD/MI/Sederajat terdekat di Desa": {
+  "definisi": "Tingkat kemudahan akses dinilai berdasarkan tiga kriteria, yaitu jarak atau jangkauan fasilitas, waktu tempuh, dan ketersediaan akses transportasi untuk menuju fasilitas Pendidikan. Akan diisi otomatis oleh sistem berdasarkan pertanyaan 147-149 Sangat Sulit = 1 Dimana 1. Jarak >0,5 Km, Waktu >1-3 Menit, Transportasi Tidak Ada 2. Jarak >0,5 Km, Waktu >3 Menit, Transportasi Ada 3. Jarak >0,5 Km, Wak",
+  "klasifikasi": [],
+  "sumber_no": 150
+ },
+ "SKOR Kemudahan Akses menuju SMA/SMK/MA/MAK/Sederajat terdekat di Desa": {
+  "definisi": "Tingkat kemudahan akses dinilai berdasarkan tiga kriteria, yaitu jarak atau jangkauan fasilitas, waktu tempuh, dan ketersediaan akses transportasi untuk menuju fasilitas Pendidikan. Akan diisi otomatis oleh sistem berdasarkan pertanyaan 167-169 Sangat Sulit = 1 Dimana 1. Jarak >5 Km, Waktu >5-15 Menit, Transportasi Tidak Ada 2. Jarak >5 Km, Waktu >15 Menit, Transportasi Ada 3. Jarak >5 Km, Waktu >",
+  "klasifikasi": [],
+  "sumber_no": 170
+ },
+ "SKOR Kemudahan Akses menuju SMP/MTs/Sederajat terdekat di Desa": {
+  "definisi": "Tingkat kemudahan akses dinilai berdasarkan tiga kriteria, yaitu jarak atau jangkauan fasilitas, waktu tempuh, dan ketersediaan akses transportasi untuk menuju fasilitas pendidikan. Akan diisi otomatis oleh sistem berdasarkan pertanyaan 156-159 Sangat Sulit = 1 Dimana 1. Jarak >2 Km, Waktu >3-8 Menit, Transportasi Tidak Ada 2. Jarak >2 Km, Waktu >8 Menit, Transportasi Ada 3. Jarak >2 Km, Waktu >8 ",
+  "klasifikasi": [],
+  "sumber_no": 160
+ },
+ "SKOR Kemudahan akses Air Minum untuk warga di desa": {
+  "definisi": "Kemudahan masyarakat desa untuk mendapatkan air minum aman, yang dapat diukur melalui",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Sulit (masih menggunakan 1 sumber mata air/ masih menggunakan air tanah);"
+   },
+   {
+    "level": 3,
+    "label": "Sedang (sebagian sudah terlayani PDAM dan sebagian lainnya menggunakan air tanah);"
+   },
+   {
+    "level": 5,
+    "label": "Mudah (sudah terlayani PDAM secara menyeluruh)."
+   }
+  ],
+  "sumber_no": 258
+ },
+ "SKOR Ketersediaan Air Minum untuk warga desa": {
+  "definisi": "Akan diisi otomatis oleh sistem berdasarkan pertanyaan 250 – 256 1. Sangat sedikit warga di Desa yang bisa mengakses air minum (< 50% terakses) 3. Sebagian warga di Desa yang bisa mengakses air minum (50 -100% terakses 5. Seluruh warga di Desa sudah bisa mengakses air minum (100% terakses) Pertanyaan ini akan dilakukan penilaian.",
+  "klasifikasi": [],
+  "sumber_no": 257
+ },
+ "SKOR Persentase Rumah Tidak Layak Huni": {
+  "definisi": "Akan diisi otomatis oleh sistem berdasarkan pertanyaan 261",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Persentase >80 – 100%"
+   },
+   {
+    "level": 2,
+    "label": "Persentase >60 – 80%"
+   },
+   {
+    "level": 3,
+    "label": "Persentase >40 – 60%"
+   },
+   {
+    "level": 4,
+    "label": "Persentase >20 – 40%"
+   },
+   {
+    "level": 5,
+    "label": "Persentase <20%"
+   }
+  ],
+  "sumber_no": 262
+ },
+ "SKOR Kemudahan Akses Menuju Fasilitas Mitigasi Bencana": {
+  "definisi": "Diisi otomatis oleh sistem berdasarkan pertanyaan 421-423 Sangat Sulit = 1 Dimana 1. Jarak >3 Km, Waktu >1-10 Menit, Transportasi Tidak Ada 2. Jarak >3 Km, Waktu >10 Menit, Transportasi Ada 3. Jarak >3 Km, Waktu >10 Menit, Transportasi Tidak Ada Sulit = 2 Dimana 1. Jarak >0,1-3 Km, Waktu >1-10 Menit, Transportasi Tidak Ada 2. Jarak >0,1-3 Km, Waktu >10 Menit, Transportasi Tidak Ada 3. Jarak >3 Km,",
+  "klasifikasi": [],
+  "sumber_no": 424
+ },
+ "SKOR Ketersediaan Aspek informasi Kebencanaan": {
+  "definisi": "Memastikan Ketersediaan aspek informasi kebencanaan, untuk :",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak tersedia data kejadian bencana, indeks risiko bencana dan peta rawan bencana"
+   },
+   {
+    "level": 5,
+    "label": "Tersedia data kejadian bencana, indeks risiko bencana dan peta rawan bencana"
+   }
+  ],
+  "sumber_no": 417
+ },
+ "SKOR Ketersediaan Fasilitas Aspek Tanggap Darurat Bencana": {
+  "definisi": "Memastikan Ketersediaan fasilitas aspek tanggap darurat bencana, untuk:",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak tersedia titik evakuasi, pos keamanan bencana dan alat kesiapsiagaan bencana"
+   },
+   {
+    "level": 5,
+    "label": "Tersedia titik evakuasi, pos keamanan bencana dan alat kesiapsiagaan bencana"
+   }
+  ],
+  "sumber_no": 426
+ },
+ "SKOR Ketersediaan Fasilitas Mitigasi Bencana": {
+  "definisi": "Diisi Otomatis oleh sistem berdasarkan pertanyaan 418-419 Pertanyaan ini akan dilakukan penilaian",
+  "klasifikasi": [],
+  "sumber_no": 420
+ },
+ "SKOR Terdapat aktivitas Mitigasi dan atau Rehabilitasi Bencana di Desa": {
+  "definisi": "Memastikan Terdapat aktivitas Mitigasi dan atau Rehabilitasi bencana di Desa, untuk",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak ada program penanggulangan bencana"
+   },
+   {
+    "level": 3,
+    "label": "Ada program penanggulangan bencana dalam dokumen perencanaan desa dan tidak terealisasi"
+   },
+   {
+    "level": 5,
+    "label": "Ada Program penanggulangan bencana dalam dokumen perencanaan desa dan terealisasi"
+   }
+  ],
+  "sumber_no": 425
+ },
+ "SKOR Keberfungsian jamban": {
+  "definisi": "Memastikan keberfungsian jamban dengan",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Jamban tidak berfungsi"
+   },
+   {
+    "level": 5,
+    "label": "jamban berfungsi"
+   }
+  ],
+  "sumber_no": 402
+ },
+ "SKOR Ketersediaan dan kepemilikan Jamban di Desa": {
+  "definisi": "Diisi otomatis oleh sistem berdasarkan pertanyaan 400 dan A 116",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Masih menggunakan jamban komunal"
+   },
+   {
+    "level": 3,
+    "label": "Sebagian kecil rumah tangga memiliki jamban individu (k urang dari 50%)"
+   },
+   {
+    "level": 5,
+    "label": "Sebagian besar rumah tangga sudah memiliki jamban individu (lebih besar dari 50%)"
+   }
+  ],
+  "sumber_no": 401
+ },
+ "SKOR Rata-rata kejadian pencemaran lingkungan": {
+  "definisi": "Akan diisi otomatis oleh sistem, berdasarkan pertanyaan 397 Pertanyaan ini akan dilakukan penilaian. Sistem Pembuangan Air Limbah Domestik Air limbah domestik menurut Undang-Undang Nomor 32 Tahun 2009 tentang Perlindungan dan Pengelolaan Lingkungan Hidup adalah air limbah yang berasal dari usaha dan/atau kegiatan pemukiman, rumah makan, perkantoran, perniagaan, apartemen, dan asrama. Sistem Pengel",
+  "klasifikasi": [],
+  "sumber_no": 398
+ },
+ "SKOR Frekuensi Kegiatan Gotong Royong di desa": {
+  "definisi": "Diisikan jumlah frekuensi Kegiatan gotong royong di desa, dengan kreteria",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak terdapat kegiatan"
+   },
+   {
+    "level": 3,
+    "label": "Terdapat 1-2 kegiatan dalam 1 bulan"
+   },
+   {
+    "level": 5,
+    "label": "Terdapat > 2 kegiatan dalam 1 bulan"
+   }
+  ],
+  "sumber_no": 271
+ },
+ "SKOR Keterlibatan warga dalam kegiatan gotong royong": {
+  "definisi": "Memastikan keterlibatan warga dalam kegiatan gotong royong di Desa",
+  "klasifikasi": [
+   {
+    "level": 1,
+    "label": "Tidak terdapat kegiatan"
+   },
+   {
+    "level": 3,
+    "label": "Sebagian kecil warga terlibat (<50% terlibat)"
+   },
+   {
+    "level": 5,
+    "label": "Sebagian besar warga terlibat (>50% terlibat)"
+   }
+  ],
+  "sumber_no": 272
+ },
+ "SKOR Penyelesaian Konflik secara damai": {
+  "definisi": "Apakah jika terjadi konflik diselesaikan secara damai? (1. Tidak Ada, 3.Ada tetapi tidak tuntas, dan 5. Ada) Pertanyaan ini akan dilakukan penilaian.",
+  "klasifikasi": [],
+  "sumber_no": 297
+ },
+ "SKOR Peranan tokoh agama menjadi mediator / penengah dalam penyelesaian Konflik": {
+  "definisi": "massal Mengetahui 5. ADA atau 1. TIDAK ADA peranan tokoh agama yang menjadi mediator/penengah dalam penyelesaian konflik massal di desa Pertanyaan ini akan dilakukan penilaian. Satkamling Satuan Keamanan Lingkungan yang selanjutnya disingkat Satkamling adalah satuan masyarakat yang pengemban fungsi kepolisian yang dibentuk oleh warga masyarakat atas kemauan, kesadaran, dan kepentingan untuk mengam",
+  "klasifikasi": [],
+  "sumber_no": 301
+ },
+ "SKOR Peningkatan PADes": {
+  "definisi": "Akan diisi otomatis oleh sistem berdasarkan pertanyaan 112-113 Pertanyaan ini akan dilakukan penilaian.",
+  "klasifikasi": [],
+  "sumber_no": 114
+ },
+ "SKOR Produktivitas Kepemilikan Aset Desa": {
+  "definisi": "Akan diisi otomatis oleh sistem, berdasarkan pertanyaan 119-122 Pertanyaan ini akan dilakukan penilaian.",
+  "klasifikasi": [],
+  "sumber_no": 123
+ }
+}
