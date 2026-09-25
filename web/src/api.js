@@ -80,6 +80,7 @@ export const api = {
   ekosistemSummary: () => get('/ekosistem/summary'),
   ekosistemDesa: (komponen, params) => get(`/ekosistem/desa?${new URLSearchParams({ ...params, komponen })}`),
   peta: (params) => get(`/peta?${new URLSearchParams(params)}`),
+  petaIndikator: () => get('/peta/indikator'),
   analisisKuadran: (params) => get(`/analisis/kuadran?${new URLSearchParams(params)}`),
   importLog: () => get('/import/log'),
   importRun: () => post('/import/run'),

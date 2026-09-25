@@ -4,7 +4,7 @@ This file provides guidance to Claude Code when working with code in this direct
 
 ## Project overview
 
-**Banua360** ("Dashboard Ekonomi Desa Kalsel") — dashboard analisis potensi & kinerja ekonomi desa se-Kalimantan Selatan, dibangun oleh Dory Amanda Sari, S.Kom., M.M., dari dua file Excel sumber (`ekonomi.xlsx` dan `row data ID Aplikasi final kirim.xlsx` di folder Downloads). Berisi 9 modul: Dashboard, Dimensi Ekonomi, Potensi Desa, Profil Desa (termasuk Rekomendasi Produk Unggulan berbasis AI), Ekosistem Ekonomi, Peta Ekonomi, Analisis Kuadran (Potensi x Kinerja), Analisis BUMDes (kondisi BUM Desa & rekomendasi kebijakan tingkat kabupaten ATAU provinsi sekaligus, berbasis AI), dan Data (admin/import).
+**Banua360** ("Dashboard Ekonomi Desa Kalsel") — dashboard analisis potensi & kinerja ekonomi desa se-Kalimantan Selatan, dibangun oleh Dory Amanda Sari, S.Kom., M.M., dari dua file Excel sumber (`ekonomi.xlsx` dan `row data ID Aplikasi final kirim.xlsx` di folder Downloads). Berisi 9 modul: Dashboard, Dimensi Ekonomi, Potensi Desa, Profil Desa (termasuk Rekomendasi Produk Unggulan berbasis AI), Ekosistem Ekonomi, Peta Sebaran Desa, Analisis Kuadran (Potensi x Kinerja), Analisis BUMDes (kondisi BUM Desa & rekomendasi kebijakan tingkat kabupaten ATAU provinsi sekaligus, berbasis AI), dan Data (admin/import).
 
 Lihat `../kamus-data/Kamus_Data_Ekonomi_Desa.xlsx` untuk kamus data lengkap (6.943 kolom, 24 sheet) yang mendasari desain skema database di bawah.
 
@@ -48,7 +48,7 @@ Lihat tabel `desa`, `skor_indikator`, `jawaban_kuesioner`, `potensi_desa`, `ekos
 - Sumber potensi sektor: sheet `Rekap Isu` di file master (1.416 kolom, lengkap).
 - Sumber ekosistem pendukung: sheet `Rekap Tambahan` di file master — **bukan** `Tambahan 2026` meski skemanya lebih baru, karena `Tambahan 2026` baru terisi ~6% (lihat komentar di `import-excel.js`).
 - **Tidak diimpor**: sheet `rekap ISU DESA PERDESAAN` (2.283 kolom, tata kelola & modal sosial desa — mayoritas di luar cakupan ekonomi), dan sheet duplikat/QA lainnya (`rekap KUISIONER`, `Kuisioner`, `Info Grafis`, dll).
-- **Koordinat GPS** (untuk Peta Ekonomi, BANUA OPPORTUNITY, BANUA INSIGHT, dll): sumber utama adalah file CSV geocoded-by-address terpisah (`KOORDINAT_DESA_CSV`, default `Posyandu 6 SPM - MW.csv` di Downloads) — mencakup 1.871/1.871 desa (100%), kode_desa cocok persis, divalidasi 2026-09-24 terhadap hasil parse teks bebas lama: mengisi 445 desa yang dulu tidak punya koordinat sama sekali, dan mengoreksi ~305 desa lain yang koordinat hasil parse-nya meleset >5km (bukan cuma kurang presisi — salah desa/lokasi). Field teks bebas "Titik Koordinat Desa" (parse best-effort, ~75% berhasil) masih dipertahankan sebagai fallback kalau file CSV ini tidak tersedia.
+- **Koordinat GPS** (untuk Peta Sebaran Desa, BANUA OPPORTUNITY, BANUA INSIGHT, dll): sumber utama adalah file CSV geocoded-by-address terpisah (`KOORDINAT_DESA_CSV`, default `Posyandu 6 SPM - MW.csv` di Downloads) — mencakup 1.871/1.871 desa (100%), kode_desa cocok persis, divalidasi 2026-09-24 terhadap hasil parse teks bebas lama: mengisi 445 desa yang dulu tidak punya koordinat sama sekali, dan mengoreksi ~305 desa lain yang koordinat hasil parse-nya meleset >5km (bukan cuma kurang presisi — salah desa/lokasi). Field teks bebas "Titik Koordinat Desa" (parse best-effort, ~75% berhasil) masih dipertahankan sebagai fallback kalau file CSV ini tidak tersedia.
 
 ## Rekomendasi AI (Profil Desa & Analisis BUMDes)
 

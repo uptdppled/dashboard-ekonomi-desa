@@ -862,13 +862,30 @@ app.get('/api/peta', requireAuth, (req, res) => {
     'd.lat IS NOT NULL',
     'd.lng IS NOT NULL',
   ]);
+  // Optional: attach one indicator's own score/max weight per desa so the map
+  // can color by that indicator (value bound as a parameter, never interpolated).
+  const { indikator } = req.query;
+  const indikatorSelect = indikator
+    ? `, (SELECT si.skor FROM skor_indikator si WHERE si.kode_desa = d.kode_desa AND si.nama_indikator = ? LIMIT 1) AS skor_indikator,
+         (SELECT si.bobot_maks FROM skor_indikator si WHERE si.kode_desa = d.kode_desa AND si.nama_indikator = ? LIMIT 1) AS bobot_indikator`
+    : '';
   const rows = db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa, d.lat, d.lng,
-              ${ekonomiSkorSubquery()} AS skor_ekonomi
+              ${ekonomiSkorSubquery()} AS skor_ekonomi${indikatorSelect}
        FROM desa d ${sql}`
     )
-    .all(...params);
+    .all(...(indikator ? [indikator, indikator] : []), ...params);
+  res.json(rows);
+});
+
+app.get('/api/peta/indikator', requireAuth, (req, res) => {
+  const rows = db
+    .prepare(
+      `SELECT DISTINCT dimensi, sub_dimensi AS subDimensi, nama_indikator AS indikator
+       FROM skor_indikator WHERE nama_indikator LIKE 'SKOR %' ORDER BY dimensi, sub_dimensi, nama_indikator`
+    )
+    .all();
   res.json(rows);
 });
 

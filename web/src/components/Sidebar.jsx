@@ -49,7 +49,7 @@ const NAV = [
   { type: 'group', label: 'BANUA PROFILE', icon: '◇', children: [{ to: '/profil-desa', label: 'Profil Desa' }] },
   { type: 'group', label: 'BANUA POTENSI', icon: '◆', children: [{ to: '/potensi-desa', label: 'Potensi Desa' }] },
   { type: 'link', to: '/ekosistem-ekonomi', label: 'BANUA ECOSYSTEM', icon: '◈' },
-  { type: 'group', label: 'BANUA MAP', icon: '◎', children: [{ to: '/peta-ekonomi', label: 'Peta Ekonomi' }] },
+  { type: 'group', label: 'BANUA MAP', icon: '◎', children: [{ to: '/peta-ekonomi', label: 'Peta Sebaran' }] },
   {
     type: 'group',
     label: 'BANUA ANALYTICS',

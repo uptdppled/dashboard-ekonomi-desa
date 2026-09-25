@@ -83,7 +83,9 @@ export function listDesaGapUntukIndikator(scope, indikator) {
        WHERE si.nama_indikator = ? ${where.sql}`
     )
     .all(indikator, ...where.params);
-  return rows.filter((r) => r.bobot_maks && r.skor / r.bobot_maks < GAP_THRESHOLD);
+  return rows
+    .filter((r) => r.bobot_maks && r.skor / r.bobot_maks < GAP_THRESHOLD)
+    .sort((a, b) => a.skor / a.bobot_maks - b.skor / b.bobot_maks || a.nama_desa.localeCompare(b.nama_desa));
 }
 
 // ---------- 2. Potensi Pengembangan ----------

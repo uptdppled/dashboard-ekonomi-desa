@@ -35,6 +35,9 @@ export default function DimensiDetail() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [selectedSubDimensi, setSelectedSubDimensi] = useState(null);
+  const [selectedIndikator, setSelectedIndikator] = useState(null);
+  const [gapDesaList, setGapDesaList] = useState(null);
+  const [gapError, setGapError] = useState(null);
   const { resolved } = useTheme();
   const accent = ACCENT_SECONDARY[resolved];
   const definisiSkor = useDefinisiSkor();
@@ -43,8 +46,19 @@ export default function DimensiDetail() {
     setData(null);
     setError(null);
     setSelectedSubDimensi(null);
+    setSelectedIndikator(null);
     api.indeksDimensi(dimensi, cleanParams(filter)).then(setData).catch((e) => setError(e.message));
   }, [dimensi, filter]);
+
+  useEffect(() => {
+    setGapDesaList(null);
+    setGapError(null);
+    if (!selectedIndikator) return;
+    api
+      .insightGapDesa(cleanParams({ ...filter, indikator: selectedIndikator }))
+      .then(setGapDesaList)
+      .catch((e) => setGapError(e.message));
+  }, [selectedIndikator, filter]);
 
   const indikatorRows = data
     ? selectedSubDimensi
@@ -130,17 +144,33 @@ export default function DimensiDetail() {
               {selectedSubDimensi && ` · ${selectedSubDimensi.replace(/^SUB-DIMENSI /i, '')}`}
             </h2>
             <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginTop: 0 }}>
-              Diurutkan dari skor terendah (relatif terhadap bobot maksimalnya). Merah = di bawah 60% bobot maks.
+              Diurutkan dari skor terendah (relatif terhadap bobot maksimalnya). Merah = di bawah 60% bobot maks. Klik satu indikator untuk melihat desa mana saja yang rendah.
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
               {indikatorRows.map((it) => {
                 const sev = severity(it.ratio);
                 const tooltip = formatTooltip(definisiSkor[it.indikator]);
+                const active = selectedIndikator === it.indikator;
                 return (
                   <div
                     key={it.indikator}
                     title={tooltip}
-                    style={{ border: `1px solid ${sev.color}`, borderRadius: 10, padding: '10px 12px', background: sev.bg, cursor: tooltip ? 'help' : undefined }}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedIndikator((prev) => (prev === it.indikator ? null : it.indikator))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedIndikator((prev) => (prev === it.indikator ? null : it.indikator));
+                      }
+                    }}
+                    style={{
+                      border: `${active ? 2 : 1}px solid ${sev.color}`,
+                      borderRadius: 10,
+                      padding: '10px 12px',
+                      background: sev.bg,
+                      cursor: 'pointer',
+                    }}
                   >
                     <div style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: 4 }}>
                       {it.subDimensi.replace(/^SUB-DIMENSI /i, '')}
@@ -157,6 +187,58 @@ export default function DimensiDetail() {
               })}
             </div>
           </div>
+
+          {selectedIndikator && (
+            <div className="panel">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <h2 className="panel-title" style={{ marginBottom: 0 }}>
+                  Desa dengan Gap: {selectedIndikator.replace(/^SKOR /i, '')}
+                </h2>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Link
+                    className="btn"
+                    style={{ textDecoration: 'none' }}
+                    to={`/peta-ekonomi?${new URLSearchParams(cleanParams({
+                      kabupaten: filter.kabupaten,
+                      kecamatan: filter.kecamatan,
+                      indikator: selectedIndikator,
+                    }))}`}
+                  >
+                    Lihat di Peta
+                  </Link>
+                  <button className="btn btn-secondary" onClick={() => setSelectedIndikator(null)}>Tutup</button>
+                </div>
+              </div>
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>
+                Desa yang skornya di bawah 60% bobot maksimal indikator ini, diurutkan dari yang paling rendah, pada filter saat ini
+                {gapDesaList ? ` (${gapDesaList.length.toLocaleString('id-ID')} desa)` : ''}.
+              </p>
+              {gapError && <div className="state-msg state-error">{gapError}</div>}
+              {!gapDesaList && !gapError && <p className="state-msg">Memuat...</p>}
+              {gapDesaList && gapDesaList.length === 0 && <p className="state-msg">Tidak ada desa dengan gap pada filter ini.</p>}
+              {gapDesaList && gapDesaList.length > 0 && (
+                <div className="table-scroll" style={{ maxHeight: 420, overflowY: 'auto' }}>
+                  <table className="data-table">
+                    <thead><tr><th>No.</th><th>Desa</th><th>Kecamatan</th><th>Kabupaten</th><th>Skor</th></tr></thead>
+                    <tbody>
+                      {gapDesaList.slice(0, 300).map((d, i) => (
+                        <tr key={d.kode_desa}>
+                          <td>{i + 1}</td>
+                          <td><Link to={`/profil-desa?kode=${d.kode_desa}`}>{d.nama_desa}</Link></td>
+                          <td>{d.kecamatan}</td>
+                          <td>{d.kabupaten}</td>
+                          <td>{d.skor} / {d.bobot_maks}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {gapDesaList.length > 300 && (
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Menampilkan 300 dari {gapDesaList.length.toLocaleString('id-ID')} desa - persempit dengan filter kabupaten/kecamatan.</p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="panel">
             <h2 className="panel-title">Desa Prioritas (Skor {label} Terendah)</h2>
