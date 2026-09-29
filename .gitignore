@@ -7,3 +7,4 @@ server/server-out.log
 server/server-err.log
 server/pid.txt
 web/dist/
+server/.env.bak-*

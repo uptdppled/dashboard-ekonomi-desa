@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "node --watch-path=index.js --watch-path=db.js --watch-path=lib --watch-path=scripts index.js",
     "start": "cross-env NODE_ENV=production node index.js",
-    "import": "node scripts/import-excel.js"
+    "import": "node scripts/import-excel.js",
+    "estimate:pg": "node scripts/estimate-postgres-size.js",
+    "migrate:pg": "node scripts/migrate-to-postgres.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
@@ -14,6 +16,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.4.0",
+    "pg": "^8.23.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
