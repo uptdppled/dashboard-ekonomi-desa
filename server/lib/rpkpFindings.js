@@ -24,7 +24,7 @@ function notFound(msg = 'Tidak ditemukan.') {
 
 // kategori: 'COMPLETENESS' | 'IPKP' | 'READINESS' - same master-checklist
 // table, one Review-tab section each.
-export function listChecklistItems(kategori) {
+export async function listChecklistItems(kategori) {
   return await db.prepare('SELECT * FROM rpkp_completeness_item WHERE kategori = ? AND aktif = 1 ORDER BY urutan').all(kategori);
 }
 
@@ -32,15 +32,15 @@ export function listCompletenessItems() {
   return listChecklistItems('COMPLETENESS');
 }
 
-export function getChecklistItem(kode) {
+export async function getChecklistItem(kode) {
   return await db.prepare('SELECT * FROM rpkp_completeness_item WHERE kode = ? AND aktif = 1').get(kode);
 }
 
-export function getCompletenessItem(kode) {
+export async function getCompletenessItem(kode) {
   return await db.prepare('SELECT * FROM rpkp_completeness_item WHERE kode = ? AND aktif = 1').get(kode);
 }
 
-function attachEvidence(findings) {
+async function attachEvidence(findings) {
   if (findings.length === 0) return findings;
   const ids = findings.map((f) => f.id);
   const placeholders = ids.map(() => '?').join(',');
@@ -56,7 +56,7 @@ function attachEvidence(findings) {
 // Findings across every category (COMPLETENESS today; IPKP/READINESS/RTRW/
 // RPJMD/BANUA360 reuse this same listing once their engines exist) - this
 // is the "Temuan" tab's consolidated view.
-export function listFindings(reviewId, category) {
+export async function listFindings(reviewId, category) {
   const clauses = ['review_id = ?'];
   const params = [reviewId];
   if (category) {
@@ -76,7 +76,7 @@ export function listFindings(reviewId, category) {
 // COMPLETENESS uses one row per rpkp_completeness_item.kode; RTRW/RPJMD/
 // BANUA360 aren't itemized, so they each just use a fixed sentinel
 // item_kode (their whole category is "one check").
-export function upsertFinding(reviewId, category, itemKode, title, aiResult, user) {
+export async function upsertFinding(reviewId, category, itemKode, title, aiResult, user) {
   const now = new Date().toISOString();
   const existing = await db
     .prepare('SELECT id FROM rpkp_finding WHERE review_id = ? AND category = ? AND item_kode = ?')
@@ -100,14 +100,14 @@ export function upsertFinding(reviewId, category, itemKode, title, aiResult, use
     findingId = Number(result.lastInsertRowid);
   }
 
-  const insertEvidence = await db.prepare(
+  const insertEvidence = db.prepare(
     'INSERT INTO rpkp_evidence (finding_id, sumber_dokumen, halaman, kutipan) VALUES (?, ?, ?, ?)'
   );
   for (const e of aiResult.evidence) {
-    insertEvidence.run(findingId, e.sumberDokumen, e.halaman, e.kutipan);
+    await insertEvidence.run(findingId, e.sumberDokumen, e.halaman, e.kutipan);
   }
 
-  logHistory(reviewId, 'AI_CHECK', `${category} - "${title}": ${aiResult.status}`, user.email);
+  await logHistory(reviewId, 'AI_CHECK', `${category} - "${title}": ${aiResult.status}`, user.email);
   return getFinding(findingId);
 }
 
@@ -120,13 +120,13 @@ export function upsertChecklistFinding(reviewId, item, aiResult, user) {
   return upsertFinding(reviewId, item.kategori, item.kode, item.label, aiResult, user);
 }
 
-export function getFinding(findingId) {
-  const finding = db.prepare('SELECT * FROM rpkp_finding WHERE id = ?').get(findingId);
+export async function getFinding(findingId) {
+  const finding = await db.prepare('SELECT * FROM rpkp_finding WHERE id = ?').get(findingId);
   if (!finding) return null;
-  return attachEvidence([finding])[0];
+  return (await attachEvidence([finding]))[0];
 }
 
-function setReviewerStatus(findingId, user, status, note) {
+async function setReviewerStatus(findingId, user, status, note) {
   const finding = await db.prepare('SELECT * FROM rpkp_finding WHERE id = ?').get(findingId);
   if (!finding) throw notFound('Temuan tidak ditemukan.');
   const now = new Date().toISOString();
@@ -136,7 +136,7 @@ function setReviewerStatus(findingId, user, status, note) {
     now,
     findingId
   );
-  logHistory(finding.review_id, 'FINDING_' + status, `"${finding.title}": ${status}${note ? ` - ${note}` : ''}`, user.email);
+  await logHistory(finding.review_id, 'FINDING_' + status, `"${finding.title}": ${status}${note ? ` - ${note}` : ''}`, user.email);
   return getFinding(findingId);
 }
 
@@ -153,8 +153,8 @@ export function rejectFinding(findingId, user, note) {
 // (the same ones BANUA POTENSI/BANUA OPPORTUNITY already use) so the
 // reviewer can compare RPKP's narrative claims against what BANUA360
 // itself has on record for those exact villages.
-export function checkBanua360CrossCheck(review, user) {
-  const desaList = listReviewDesa(review.id);
+export async function checkBanua360CrossCheck(review, user) {
+  const desaList = await listReviewDesa(review.id);
   let aiResult;
   if (desaList.length === 0) {
     aiResult = {
@@ -208,17 +208,17 @@ export function checkBanua360CrossCheck(review, user) {
 
 const KEPUTUSAN_VALUES = new Set(['DAPAT_DIREKOMENDASIKAN', 'DENGAN_CATATAN', 'BELUM_DAPAT']);
 
-export function getRecommendation(reviewId) {
+export async function getRecommendation(reviewId) {
   return await db.prepare('SELECT * FROM rpkp_recommendation WHERE review_id = ?').get(reviewId);
 }
 
 // The Recommendation Gate is deliberately a human-only decision - this
 // function only ever records what the reviewer chose, never derives or
 // suggests a value itself.
-export function setRecommendation(reviewId, user, keputusan, catatan) {
+export async function setRecommendation(reviewId, user, keputusan, catatan) {
   if (!KEPUTUSAN_VALUES.has(keputusan)) throw badRequest('Keputusan tidak dikenali.');
   const now = new Date().toISOString();
-  const existing = getRecommendation(reviewId);
+  const existing = await getRecommendation(reviewId);
   if (existing) {
     await db.prepare('UPDATE rpkp_recommendation SET keputusan = ?, catatan = ?, dibuat_oleh = ?, dibuat_pada = ? WHERE review_id = ?').run(
       keputusan,
@@ -232,6 +232,6 @@ export function setRecommendation(reviewId, user, keputusan, catatan) {
       'INSERT INTO rpkp_recommendation (review_id, keputusan, catatan, dibuat_oleh, dibuat_pada) VALUES (?, ?, ?, ?, ?)'
     ).run(reviewId, keputusan, catatan || null, user.email, now);
   }
-  logHistory(reviewId, 'RECOMMENDATION_GATE', `Keputusan: ${keputusan}${catatan ? ` - ${catatan}` : ''}`, user.email);
+  await logHistory(reviewId, 'RECOMMENDATION_GATE', `Keputusan: ${keputusan}${catatan ? ` - ${catatan}` : ''}`, user.email);
   return getRecommendation(reviewId);
 }

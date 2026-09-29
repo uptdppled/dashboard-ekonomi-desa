@@ -19,7 +19,7 @@ function requireEnv(name) {
 // admin registration code from ADMIN_BOOTSTRAP_CODE so the first deploy
 // always has a way in - without this there would be no way to create the
 // first account at all (every other role needs an admin-generated code).
-export function bootstrapAdmin() {
+export async function bootstrapAdmin() {
   const bootstrapCode = process.env.ADMIN_BOOTSTRAP_CODE;
   if (!bootstrapCode) return;
 
@@ -85,7 +85,7 @@ export function requireAuth(req, res, next) {
 }
 
 export function requireRole(...roles) {
-  return async (req, res, next) => {
+  return (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ error: 'Anda tidak punya akses ke fitur ini.', code: 'FORBIDDEN' });
     }
@@ -163,11 +163,11 @@ export function consumeOAuthState(state) {
 
 // ---------- registration / login ----------
 
-export function findUserByEmail(email) {
+export async function findUserByEmail(email) {
   return await db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 }
 
-export function registerWithKode(email, nama, kode) {
+export async function registerWithKode(email, nama, kode) {
   const kodeRow = await db.prepare('SELECT * FROM kode_registrasi WHERE kode = ?').get(kode);
   if (!kodeRow) {
     const err = new Error('Kode registrasi tidak ditemukan.');
@@ -201,7 +201,7 @@ export function registerWithKode(email, nama, kode) {
   }
 }
 
-export function touchLogin(userId) {
+export async function touchLogin(userId) {
   await db.prepare('UPDATE users SET login_terakhir = ? WHERE id = ?').run(new Date().toISOString(), userId);
 }
 
@@ -214,21 +214,21 @@ export function devLoginAllowed() {
   return process.env.NODE_ENV !== 'production' && !process.env.GOOGLE_CLIENT_ID;
 }
 
-export function findOrCreateDevUser(role) {
+export async function findOrCreateDevUser(role) {
   const email = `dev-${role}@local.test`;
   const now = new Date().toISOString();
-  let user = findUserByEmail(email);
+  let user = await findUserByEmail(email);
   if (user) {
-    touchLogin(user.id);
+    await touchLogin(user.id);
     return user;
   }
 
   let kode_desa = null;
   let kabupaten = null;
   if (role === 'desa') {
-    kode_desa = await db.prepare('SELECT kode_desa FROM desa ORDER BY kode_desa LIMIT 1').get()?.kode_desa || null;
+    kode_desa = (await db.prepare('SELECT kode_desa FROM desa ORDER BY kode_desa LIMIT 1').get())?.kode_desa || null;
   } else if (role === 'kabupaten') {
-    kabupaten = await db.prepare('SELECT kabupaten FROM desa WHERE kabupaten IS NOT NULL ORDER BY kabupaten LIMIT 1').get()?.kabupaten || null;
+    kabupaten = (await db.prepare('SELECT kabupaten FROM desa WHERE kabupaten IS NOT NULL ORDER BY kabupaten LIMIT 1').get())?.kabupaten || null;
   }
 
   await db.prepare(

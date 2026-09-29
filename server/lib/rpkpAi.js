@@ -29,7 +29,7 @@ function badRequest(msg) {
 // Only the latest version of each document_type - an old superseded
 // version shouldn't silently influence the answer alongside its
 // replacement.
-export function latestDocumentsForReview(reviewId) {
+export async function latestDocumentsForReview(reviewId) {
   return await db
     .prepare(
       `SELECT d.* FROM rpkp_document d
@@ -456,7 +456,7 @@ async function callGeminiJson(prompt, fileParts) {
 // + RTRW documents, not the whole set) - both for a cheaper/faster call and
 // so the prompt isn't ambiguous about which two documents to compare.
 async function getReviewFileParts(review, documentTypes) {
-  let docs = latestDocumentsForReview(review.id).filter((d) => d.mime_type === 'application/pdf');
+  let docs = (await latestDocumentsForReview(review.id)).filter((d) => d.mime_type === 'application/pdf');
   if (documentTypes) docs = docs.filter((d) => documentTypes.includes(d.document_type));
   if (docs.length === 0) {
     throw badRequest('Belum ada dokumen PDF pada review ini - fitur AI hanya bisa membaca dokumen berformat PDF saat ini.');
@@ -551,7 +551,7 @@ function missingDocumentResult(documentType, promptVersion) {
 }
 
 export async function checkRtrwAlignment(review) {
-  const hasRtrw = latestDocumentsForReview(review.id).some((d) => d.document_type === 'RTRW' && d.mime_type === 'application/pdf');
+  const hasRtrw = (await latestDocumentsForReview(review.id)).some((d) => d.document_type === 'RTRW' && d.mime_type === 'application/pdf');
   if (!hasRtrw) return missingDocumentResult('RTRW', RTRW_PROMPT_VERSION);
   const { docLabels, fileParts } = await getReviewFileParts(review, ['RPKP', 'RTRW']);
   const { parsed, model } = await callGeminiJson(buildRtrwPrompt(docLabels), fileParts);
@@ -559,14 +559,14 @@ export async function checkRtrwAlignment(review) {
 }
 
 export async function checkRpjmdAlignment(review) {
-  const hasRpjmd = latestDocumentsForReview(review.id).some((d) => d.document_type === 'RPJMD' && d.mime_type === 'application/pdf');
+  const hasRpjmd = (await latestDocumentsForReview(review.id)).some((d) => d.document_type === 'RPJMD' && d.mime_type === 'application/pdf');
   if (!hasRpjmd) return missingDocumentResult('RPJMD', RPJMD_PROMPT_VERSION);
   const { docLabels, fileParts } = await getReviewFileParts(review, ['RPKP', 'RPJMD']);
   const { parsed, model } = await callGeminiJson(buildRpjmdPrompt(docLabels), fileParts);
   return parseStatusEvidenceResponse(parsed, model, RPJMD_PROMPT_VERSION);
 }
 
-export function saveQa(reviewId, user, question, result) {
+export async function saveQa(reviewId, user, question, result) {
   const now = new Date().toISOString();
   await db.prepare(
     `INSERT INTO rpkp_ai_qa (review_id, pertanyaan, ditemukan, jawaban, sumber_dokumen, halaman, kutipan, model, prompt_version, ditanya_oleh, dibuat_pada)
@@ -586,6 +586,6 @@ export function saveQa(reviewId, user, question, result) {
   );
 }
 
-export function listQa(reviewId) {
+export async function listQa(reviewId) {
   return await db.prepare('SELECT * FROM rpkp_ai_qa WHERE review_id = ? ORDER BY dibuat_pada DESC').all(reviewId);
 }

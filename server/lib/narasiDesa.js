@@ -26,7 +26,7 @@ const GAP_LIMIT_ALL = 3;
 // {dimensi, label, komposit, gap}) so buildPrompt/hashContext don't need to
 // branch - per-dimensi mode is just a 1-element version of the overall
 // mode's 6-element array.
-function buildContext(kode, dimensi) {
+async function buildContext(kode, dimensi) {
   const desa = await db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return null;
 
@@ -82,9 +82,9 @@ function buildContext(kode, dimensi) {
     gap: gapByDim[d] || [],
   }));
 
-  const potensiSektor = await db
+  const potensiSektor = (await db
     .prepare(`SELECT DISTINCT sektor FROM potensi_desa WHERE kode_desa = ? AND nilai = 'Ada' ORDER BY sektor`)
-    .all(kode)
+    .all(kode))
     .map((r) => r.sektor);
 
   return { desa, dimensi: null, dims, potensiSektor };
@@ -143,7 +143,7 @@ function hashContext(ctx) {
 }
 
 export async function getNarasiDesa(kode, dimensi, { forceRefresh = false } = {}) {
-  const ctx = buildContext(kode, dimensi || null);
+  const ctx = await buildContext(kode, dimensi || null);
   if (!ctx) return { notFound: true };
 
   const dimensiKey = dimensi || RINGKASAN_KEY;

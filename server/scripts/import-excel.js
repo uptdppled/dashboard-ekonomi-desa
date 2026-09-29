@@ -18,18 +18,6 @@ const TAHUN = 2026;
 
 const IDENTITY_RE = /^(kode desa|provinsi|kabupaten|kecamatan|^desa$|nama desa|tanggal upload kuesioner)$/i;
 
-// Values in 'Rekap Isu' that record the ABSENCE of a potensi. Every read path
-// in index.js already excludes them (see the `nilai NOT IN (...)` filters
-// around index.js:591/601/822/843), so storing them costs space and buys
-// nothing: they were 728k of 1.21M potensi_desa rows, ~60% of the largest
-// table in the database.
-//
-// '0' is deliberately NOT in this set even though most queries also exclude
-// it: the per-desa potensi list at index.js:601 filters only
-// ('Tidak Ada', '-', '') and still treats 0 as meaningful. Dropping it here
-// would silently change that endpoint's output.
-const POTENSI_KOSONG = new Set(['tidak ada', '-', '']);
-
 function isIdentityHeader(h) {
   return IDENTITY_RE.test(h.trim());
 }
@@ -92,7 +80,7 @@ function toNumberOrNull(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-function logImport(sumber, sheet, jumlah) {
+async function logImport(sumber, sheet, jumlah) {
   await db.prepare(
     'INSERT INTO import_log (sumber_file, sheet, waktu_import, jumlah_baris) VALUES (?, ?, ?, ?)'
   ).run(sumber, sheet, new Date().toISOString(), jumlah);
@@ -108,11 +96,22 @@ console.log('Selesai membaca. Memproses sheet...');
 
 // users/kode_registrasi reference desa(kode_desa) via FK (added after this
 // script was first written) - re-import deletes and re-inserts the SAME
-// kode_desa set, so FK checks are safely disabled for the duration rather
-// than needing a full CASCADE that would also wipe operator accounts.
-await db.exec('PRAGMA foreign_keys = OFF;');
-await db.exec('BEGIN');
-try {
+// kode_desa set, so the checks only need to hold at COMMIT, not between the
+// DELETE and the re-INSERT. SQLite got there with `PRAGMA foreign_keys = OFF`;
+// Postgres has no equivalent for a non-superuser, so the constraints are
+// deferred to the end of the transaction instead.
+//
+// UNTESTED against Postgres: the source workbooks are not on this machine, so
+// this path has not been run since the migration. It also requires the FKs to
+// be DEFERRABLE - see the note at the top of scripts/postgres-schema.sql.
+await db.transaction(async (tx) => {
+  // Shadows the module-level `db` so the body below needs no other change:
+  // every db.prepare(...) in this block now runs on the transaction's own
+  // connection, which is what makes it an actual transaction behind the
+  // pooler.
+  const db = tx;
+  await db.exec('SET CONSTRAINTS ALL DEFERRED');
+  try {
   await db.exec(
     'DELETE FROM skor_indikator; DELETE FROM jawaban_kuesioner; ' +
     'DELETE FROM potensi_desa; DELETE FROM ekosistem_desa; ' +
@@ -182,7 +181,7 @@ try {
     const koord = csvKoord || koordMap.get(kode);
     if (csvKoord) koordFromCsv++;
     else if (koord) koordFound++;
-    insertDesa.run(
+    await insertDesa.run(
       kode,
       'KALIMANTAN SELATAN',
       String(row[idxKab] ?? '').trim(),
@@ -195,7 +194,7 @@ try {
       idxNilaiIndeks !== -1 ? toNumberOrNull(row[idxNilaiIndeks]) : null
     );
   }
-  logImport('raw', 'rekap (identitas desa)', seenKode.size);
+  await logImport('raw', 'rekap (identitas desa)', seenKode.size);
   console.log(`  -> koordinat dari CSV: ${koordFromCsv} desa, dari parse teks bebas (fallback): ${koordFound} desa`);
 
   // ---- 2. skor_indikator dari raw 'rekap' (6 dimensi Permendesa 9/2024 lengkap) ----
@@ -222,11 +221,11 @@ try {
       const skor = toNumberOrNull(row[i]);
       if (skor === null) continue;
       const bobot = toNumberOrNull(rekapRaw.weightRow[i]);
-      insertSkor.run(kode, TAHUN, dimensi, subDimensi, header, skor, bobot);
+      await insertSkor.run(kode, TAHUN, dimensi, subDimensi, header, skor, bobot);
       skorCount++;
     }
   }
-  logImport('raw', 'rekap (skor indikator, 6 dimensi)', skorCount);
+  await logImport('raw', 'rekap (skor indikator, 6 dimensi)', skorCount);
 
   // ---- 3. jawaban_kuesioner dari ekonomi.xlsx 'Rekap kuisioner 1' (blok Ekonomi) ----
   const kuisEko = parseSheet(wbEko.Sheets['Rekap kuisioner 1']);
@@ -241,11 +240,11 @@ try {
       if (!header || isIdentityHeader(header)) continue;
       const val = row[i];
       if (val === null || val === undefined || String(val).trim() === '') continue;
-      insertJawaban.run(kode, TAHUN, header, String(val).trim());
+      await insertJawaban.run(kode, TAHUN, header, String(val).trim());
       jawabanCount++;
     }
   }
-  logImport('ekonomi.xlsx', 'Rekap kuisioner 1 (jawaban)', jawabanCount);
+  await logImport('ekonomi.xlsx', 'Rekap kuisioner 1 (jawaban)', jawabanCount);
 
   // ---- 4. potensi_desa dari raw 'Rekap Isu' (lengkap, dikategorikan per sektor) ----
   const isuRaw = parseSheet(wbRaw.Sheets['Rekap Isu']);
@@ -253,7 +252,6 @@ try {
     'INSERT INTO potensi_desa (kode_desa, tahun, sektor, subsektor, nilai) VALUES (?, ?, ?, ?, ?)'
   );
   let potensiCount = 0;
-  let potensiKosong = 0;
   const sektorCache = new Map();
   for (const row of isuRaw.dataRows) {
     const kode = String(row[isuRaw.kodeDesaIdx]).trim();
@@ -262,24 +260,17 @@ try {
       if (!header || isIdentityHeader(header)) continue;
       const val = row[i];
       if (val === null || val === undefined || String(val).trim() === '') continue;
-      const nilai = String(val).trim();
-      // Absence is not data - see POTENSI_KOSONG at the top of this file.
-      if (POTENSI_KOSONG.has(nilai.toLowerCase())) {
-        potensiKosong++;
-        continue;
-      }
       let sektor = sektorCache.get(header);
       if (sektor === undefined) {
         sektor = categorizeSektor(header);
         sektorCache.set(header, sektor);
       }
       if (!sektor) continue; // kolom belum terkategori -> di luar cakupan v1 (lihat kamus data)
-      insertPotensi.run(kode, TAHUN, sektor, header, nilai);
+      await insertPotensi.run(kode, TAHUN, sektor, header, String(val).trim());
       potensiCount++;
     }
   }
-  console.log(`  potensi_desa: ${potensiCount} baris disimpan, ${potensiKosong} baris "tidak ada" dilewati`);
-  logImport('raw', 'Rekap Isu (potensi desa)', potensiCount);
+  await logImport('raw', 'Rekap Isu (potensi desa)', potensiCount);
 
   // ---- 5. ekosistem_desa dari raw 'Rekap Tambahan' ----
   // 'Tambahan 2026' punya skema lebih baru (+ Kerentanan Sosial/Kehutanan) tapi
@@ -297,18 +288,19 @@ try {
       if (!header || isIdentityHeader(header) || EKOSISTEM_EXCLUDE_RE.test(header)) continue;
       const val = row[i];
       if (val === null || val === undefined || String(val).trim() === '') continue;
-      insertEkosistem.run(kode, TAHUN, header, String(val).trim());
+      await insertEkosistem.run(kode, TAHUN, header, String(val).trim());
       ekosistemCount++;
     }
   }
-  logImport('raw', 'Rekap Tambahan (ekosistem)', ekosistemCount);
+  await logImport('raw', 'Rekap Tambahan (ekosistem)', ekosistemCount);
 
-  await db.exec('COMMIT');
-  console.log('\nImport selesai.');
-} catch (err) {
-  await db.exec('ROLLBACK');
-  console.error('Import gagal, rollback:', err);
-  process.exit(1);
-} finally {
-  await db.exec('PRAGMA foreign_keys = ON;');
-}
+    console.log('\nImport selesai.');
+  } catch (err) {
+    // db.transaction rolls back on a rejected callback; re-throwing keeps that
+    // behaviour and preserves the original error.
+    console.error('Import gagal, rollback:', err);
+    throw err;
+  }
+});
+
+await db.close();

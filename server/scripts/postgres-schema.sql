@@ -267,3 +267,30 @@ CREATE TABLE IF NOT EXISTS rpkp_review_desa (
 );
 
 COMMIT;
+
+-- Foreign keys must be DEFERRABLE for scripts/import-excel.js, which deletes
+-- and re-inserts the same kode_desa set inside one transaction. Between the
+-- DELETE and the re-INSERT the references from users/kode_registrasi are
+-- briefly dangling, which is fine as long as they hold at COMMIT. SQLite did
+-- this with `PRAGMA foreign_keys = OFF`; Postgres has no such switch for a
+-- normal user, so the constraints are made deferrable instead.
+--
+-- INITIALLY IMMEDIATE keeps the normal behaviour: checks still run per
+-- statement unless a transaction explicitly asks for SET CONSTRAINTS DEFERRED.
+-- Idempotent, and safe to run against a database that already has data.
+DO $$
+DECLARE r record;
+BEGIN
+  FOR r IN
+    SELECT conrelid::regclass AS tbl, conname
+      FROM pg_constraint
+     WHERE contype = 'f'
+       AND connamespace = 'public'::regnamespace
+       AND NOT condeferrable
+  LOOP
+    EXECUTE format(
+      'ALTER TABLE %s ALTER CONSTRAINT %I DEFERRABLE INITIALLY IMMEDIATE',
+      r.tbl, r.conname
+    );
+  END LOOP;
+END $$;

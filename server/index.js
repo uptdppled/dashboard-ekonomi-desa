@@ -104,7 +104,7 @@ try {
 }
 let importInProgress = false;
 
-bootstrapAdmin();
+await bootstrapAdmin();
 
 const app = express();
 app.use(cors({ origin: process.env.CORS_ORIGIN || true, credentials: true }));
@@ -170,7 +170,7 @@ function googleRedirectUri(req) {
   return `${base}/api/auth/google/callback`;
 }
 
-app.get('/api/auth/google/start', async (req, res) => {
+app.get('/api/auth/google/start', (req, res) => {
   try {
     const state = createOAuthState(req.query.kode ? String(req.query.kode) : null);
     const url = buildGoogleAuthUrl({ redirectUri: googleRedirectUri(req), state });
@@ -180,7 +180,7 @@ app.get('/api/auth/google/start', async (req, res) => {
   }
 });
 
-app.get('/api/auth/google/callback', async (req, res) => {
+app.get('/api/auth/google/callback', guard(async (req, res) => {
   const frontendBase = process.env.PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
   try {
     const { code, state } = req.query;
@@ -189,17 +189,17 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const kode = consumeOAuthState(String(state || ''));
     const { email, nama } = await exchangeGoogleCode(code, googleRedirectUri(req));
 
-    let user = findUserByEmail(email);
+    let user = await findUserByEmail(email);
     if (!user) {
       if (!kode) return res.redirect(`${frontendBase}/login?error=belum_terdaftar`);
       try {
-        user = registerWithKode(email, nama, kode);
+        user = await registerWithKode(email, nama, kode);
       } catch (err) {
         const reason = err.code === 'CODE_USED' ? 'kode_terpakai' : 'kode_invalid';
         return res.redirect(`${frontendBase}/login?error=${reason}`);
       }
     } else {
-      touchLogin(user.id);
+      await touchLogin(user.id);
     }
 
     setSessionCookie(res, user);
@@ -208,37 +208,37 @@ app.get('/api/auth/google/callback', async (req, res) => {
     console.error('Google OAuth callback gagal:', err);
     res.redirect(`${frontendBase}/login?error=server`);
   }
-});
+}));
 
-app.get('/api/auth/me', async (req, res) => {
+app.get('/api/auth/me', (req, res) => {
   const user = getSessionUser(req);
   if (!user) return res.status(401).json({ error: 'Belum masuk.' });
   res.json(user);
 });
 
-app.post('/api/auth/logout', async (req, res) => {
+app.post('/api/auth/logout', (req, res) => {
   clearSessionCookie(res);
   res.json({ ok: true });
 });
 
-app.get('/api/auth/dev-config', async (req, res) => {
+app.get('/api/auth/dev-config', (req, res) => {
   res.json({ devLoginEnabled: devLoginAllowed() });
 });
 
-app.post('/api/auth/dev-login', async (req, res) => {
+app.post('/api/auth/dev-login', guard(async (req, res) => {
   if (!devLoginAllowed()) return res.status(403).json({ error: 'Mode uji coba tidak tersedia.' });
   const { role } = req.body || {};
   if (!['admin', 'provinsi', 'kabupaten', 'desa'].includes(role)) {
     return res.status(400).json({ error: 'Role tidak valid.' });
   }
-  const user = findOrCreateDevUser(role);
+  const user = await findOrCreateDevUser(role);
   setSessionCookie(res, user);
   res.json({ ok: true, user });
-});
+}));
 
 // ---------- admin: manajemen pengguna ----------
 
-app.get('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), async (req, res) => {
+app.get('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), guard(async (req, res) => {
   const rows = await db
     .prepare(
       `SELECT kr.*, u.email AS dipakai_oleh_email FROM kode_registrasi kr
@@ -247,9 +247,9 @@ app.get('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), async (
     )
     .all();
   res.json(rows);
-});
+}));
 
-app.post('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), async (req, res) => {
+app.post('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), guard(async (req, res) => {
   const { role, kode_desa, kabupaten } = req.body || {};
   if (!['desa', 'kabupaten', 'provinsi', 'admin'].includes(role)) {
     return res.status(400).json({ error: 'Role tidak valid' });
@@ -264,47 +264,47 @@ app.post('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), async 
   ).run(kode, role, role === 'desa' ? kode_desa : null, role === 'kabupaten' ? kabupaten : null, req.user.email, new Date().toISOString());
 
   res.json({ kode });
-});
+}));
 
-app.get('/api/admin/users', requireAuth, requireRole('admin'), async (req, res) => {
+app.get('/api/admin/users', requireAuth, requireRole('admin'), guard(async (req, res) => {
   const rows = await db.prepare('SELECT id, email, nama, role, kode_desa, kabupaten, dibuat_pada, login_terakhir FROM users ORDER BY id DESC').all();
   res.json(rows);
-});
+}));
 
 // ---------- referensi wilayah ----------
 
-app.get('/api/wilayah/kabupaten', requireAuth, async (req, res) => {
+app.get('/api/wilayah/kabupaten', requireAuth, guard(async (req, res) => {
   const scoped = mergeScope(req.user, req.query);
   const rows = scoped.kabupaten
     ? [{ kabupaten: scoped.kabupaten }]
     : await db.prepare('SELECT DISTINCT kabupaten FROM desa ORDER BY kabupaten').all();
   res.json(rows.map((r) => r.kabupaten));
-});
+}));
 
-app.get('/api/wilayah/kecamatan', requireAuth, async (req, res) => {
+app.get('/api/wilayah/kecamatan', requireAuth, guard(async (req, res) => {
   const scoped = mergeScope(req.user, req.query);
   const rows = scoped.kabupaten
     ? await db.prepare('SELECT DISTINCT kecamatan FROM desa WHERE kabupaten = ? ORDER BY kecamatan').all(scoped.kabupaten)
     : await db.prepare('SELECT DISTINCT kecamatan FROM desa ORDER BY kecamatan').all();
   res.json(rows.map((r) => r.kecamatan));
-});
+}));
 
 // ---------- dashboard ----------
 
-app.get('/api/dashboard/summary', requireAuth, async (req, res) => {
+app.get('/api/dashboard/summary', requireAuth, guard(async (req, res) => {
   req.query = mergeScope(req.user, req.query);
   const { sql, params } = whereFromFilters(req.query);
-  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
+  const totalDesa = (await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params)).n;
 
   const statusRows = await db
     .prepare(`SELECT status_desa, COUNT(*) AS n FROM desa d ${sql} GROUP BY status_desa ORDER BY n DESC`)
     .all(...params);
 
-  const avgEkonomi = await db
+  const avgEkonomi = (await db
     .prepare(
       `SELECT AVG(${ekonomiSkorSubquery()}) AS avg_ekonomi FROM desa d ${sql}`
     )
-    .get(...params).avg_ekonomi;
+    .get(...params)).avg_ekonomi;
 
   const subDimensiFilter = whereFromFilters(req.query, 'd', [
     `si.sub_dimensi IN ('SUB-DIMENSI PRODUKSI DESA', 'SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI')`,
@@ -326,22 +326,22 @@ app.get('/api/dashboard/summary', requireAuth, async (req, res) => {
     statusDesa: statusRows,
     subDimensi: subDimensiRows,
   });
-});
+}));
 
 // ---------- indeks desa (6 dimensi, Permendesa 9/2024) ----------
 
-app.get('/api/indeks/ringkasan', requireAuth, async (req, res) => {
+app.get('/api/indeks/ringkasan', requireAuth, guard(async (req, res) => {
   req.query = mergeScope(req.user, req.query);
   const { sql, params } = whereFromFilters(req.query);
-  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
+  const totalDesa = (await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params)).n;
 
   const statusRows = await db
     .prepare(`SELECT status_desa, COUNT(*) AS n FROM desa d ${sql} GROUP BY status_desa ORDER BY n DESC`)
     .all(...params);
 
-  const avgNilaiIndeks = await db
+  const avgNilaiIndeks = (await db
     .prepare(`SELECT AVG(nilai_indeks_desa) AS avg_nilai FROM desa d ${sql}`)
-    .get(...params).avg_nilai;
+    .get(...params)).avg_nilai;
 
   // Each dimension's own composite score is stored as a row where
   // nama_indikator = dimensi (same convention as sub_dimensi's composite
@@ -363,9 +363,9 @@ app.get('/api/indeks/ringkasan', requireAuth, async (req, res) => {
     avgNilaiIndeks: avgNilaiIndeks !== null ? Math.round(avgNilaiIndeks * 100) / 100 : null,
     dimensi: dimensiRows.map((r) => ({ dimensi: r.dimensi, avgSkor: Math.round(r.avg_skor * 100) / 100 })),
   });
-});
+}));
 
-app.post('/api/indeks/narasi', requireAuth, async (req, res) => {
+app.post('/api/indeks/narasi', requireAuth, guard(async (req, res) => {
   const dimensi = req.body?.dimensi || null;
   if (dimensi && !INDEKS_DIMENSI_KEYS.has(dimensi)) {
     return res.status(400).json({ error: 'Dimensi tidak valid.' });
@@ -377,7 +377,7 @@ app.post('/api/indeks/narasi', requireAuth, async (req, res) => {
     kecamatan: scope.kecamatan || undefined,
     status: scope.status || undefined,
   };
-  getNarasiIndeks(query, { forceRefresh: !!req.body?.forceRefresh })
+  (await getNarasiIndeks(query, { forceRefresh: !!req.body?.forceRefresh }))
     .then((result) => res.json(result))
     .catch((err) => {
       if (err.code === 'NO_API_KEY') {
@@ -386,17 +386,17 @@ app.post('/api/indeks/narasi', requireAuth, async (req, res) => {
       console.error('Gagal membuat narasi BANUA INDEX:', err);
       res.status(500).json({ error: 'Gagal membuat narasi AI: ' + err.message });
     });
-});
+}));
 
 // Detail for a single dimension (BANUA INDEX submenu) - down to individual
 // "SKOR ..." indicators, generalizing the old Ekonomi-only page to all 6
 // dimensions. `dimensi` is a path param (arbitrary client input), so it's
 // always bound as a query parameter, never interpolated into SQL text.
-app.get('/api/indeks/dimensi/:dimensi', requireAuth, async (req, res) => {
+app.get('/api/indeks/dimensi/:dimensi', requireAuth, guard(async (req, res) => {
   const { dimensi } = req.params;
   req.query = mergeScope(req.user, req.query);
   const { sql: baseSql, params: baseParams } = whereFromFilters(req.query);
-  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${baseSql}`).get(...baseParams).n;
+  const totalDesa = (await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${baseSql}`).get(...baseParams)).n;
 
   const { clauses: scopeClauses, params: scopeParams } = filterClauses(req.query, 'd');
   const scopeAnd = scopeClauses.length ? `AND ${scopeClauses.join(' AND ')}` : '';
@@ -430,14 +430,14 @@ app.get('/api/indeks/dimensi/:dimensi', requireAuth, async (req, res) => {
   // "desa prioritas" list (same idea as recommendKabupaten.js's priorityDesa)
   // instead of dumping every desa, which is what made this page unusable
   // for actually spotting a problem.
-  const desaTerendah = await db
+  const desaTerendah = (await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa,
               (SELECT skor FROM skor_indikator si2 WHERE si2.kode_desa = d.kode_desa
                  AND si2.dimensi = ? AND si2.nama_indikator = si2.dimensi LIMIT 1) AS skor_dimensi
        FROM desa d ${baseSql}`
     )
-    .all(dimensi, ...baseParams)
+    .all(dimensi, ...baseParams))
     .filter((r) => r.skor_dimensi !== null)
     .sort((a, b) => a.skor_dimensi - b.skor_dimensi)
     .slice(0, 12);
@@ -465,7 +465,7 @@ app.get('/api/indeks/dimensi/:dimensi', requireAuth, async (req, res) => {
     jumlahIndikatorGap: indikatorWithRatio.filter((r) => r.ratio !== null && r.ratio < GAP_THRESHOLD).length,
     desaTerendah,
   });
-});
+}));
 
 // ---------- BANUA INSIGHT (Phase 1: Gap Analysis, Potensi Pengembangan -
 // deterministic, no AI, no invented scores; see server/lib/insight.js.
@@ -473,78 +473,78 @@ app.get('/api/indeks/dimensi/:dimensi', requireAuth, async (req, res) => {
 // below - `coverage` here is direct COUNT queries via buildCoverage(), not
 // a byproduct of running that matching engine) ----------
 
-app.get('/api/insight/ringkasan', requireAuth, async (req, res) => {
+app.get('/api/insight/ringkasan', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  const gapAnalysis = buildGapAnalysis(scope);
-  const potensiPengembangan = buildPotensiPengembangan(scope);
-  const coverage = buildCoverage(scope);
+  const gapAnalysis = await buildGapAnalysis(scope);
+  const potensiPengembangan = await buildPotensiPengembangan(scope);
+  const coverage = await buildCoverage(scope);
 
   res.json({
     coverage,
     gapAnalysis,
     potensiPengembangan,
   });
-});
+}));
 
-app.get('/api/insight/gap/desa', requireAuth, async (req, res) => {
+app.get('/api/insight/gap/desa', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   const { indikator } = req.query;
   if (!indikator) return res.status(400).json({ error: 'Parameter indikator wajib diisi' });
-  res.json(listDesaGapUntukIndikator(scope, indikator));
-});
+  res.json(await listDesaGapUntukIndikator(scope, indikator));
+}));
 
-app.get('/api/insight/tanpa-koordinat', requireAuth, async (req, res) => {
+app.get('/api/insight/tanpa-koordinat', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(listDesaTanpaKoordinat(scope));
-});
+  res.json(await listDesaTanpaKoordinat(scope));
+}));
 
-app.get('/api/insight/naik-status', requireAuth, async (req, res) => {
+app.get('/api/insight/naik-status', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(buildKandidatNaikStatus(scope));
-});
+  res.json(await buildKandidatNaikStatus(scope));
+}));
 
 // ---------- BANUA OPPORTUNITY (deterministic, no AI - see
 // server/lib/opportunity.js: one shared matching engine, 5 tabs each with
 // its own relationship rule + honest checklist, never an invented score) ----------
 
-app.get('/api/opportunity/coverage', requireAuth, async (req, res) => {
+app.get('/api/opportunity/coverage', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   const { sql, params } = whereFromFilters(scope);
-  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
-  const desaDenganKoordinat = await db
+  const totalDesa = (await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params)).n;
+  const desaDenganKoordinat = (await db
     .prepare(`SELECT COUNT(*) AS n FROM desa d ${sql ? `${sql} AND` : 'WHERE'} d.lat IS NOT NULL AND d.lng IS NOT NULL`)
-    .get(...params).n;
+    .get(...params)).n;
   res.json({ totalDesa, desaDenganKoordinat, desaTanpaKoordinat: totalDesa - desaDenganKoordinat });
-});
+}));
 
-app.get('/api/opportunity/kawasan', requireAuth, async (req, res) => {
+app.get('/api/opportunity/kawasan', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(buildPotensiKawasan(scope));
-});
+  res.json(await buildPotensiKawasan(scope));
+}));
 
-app.get('/api/opportunity/potensi-potensi', requireAuth, async (req, res) => {
+app.get('/api/opportunity/potensi-potensi', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(buildPotensiPotensi(scope));
-});
+  res.json(await buildPotensiPotensi(scope));
+}));
 
-app.get('/api/opportunity/produksi-akses-pasar', requireAuth, async (req, res) => {
+app.get('/api/opportunity/produksi-akses-pasar', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(buildProduksiAksesPasar(scope));
-});
+  res.json(await buildProduksiAksesPasar(scope));
+}));
 
-app.get('/api/opportunity/desa-desa', requireAuth, async (req, res) => {
+app.get('/api/opportunity/desa-desa', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(buildDesaKeDesa(scope));
-});
+  res.json(await buildDesaKeDesa(scope));
+}));
 
-app.get('/api/opportunity/bumdesa-potensi', requireAuth, async (req, res) => {
+app.get('/api/opportunity/bumdesa-potensi', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(buildBumDesaPotensi(scope));
-});
+  res.json(await buildBumDesaPotensi(scope));
+}));
 
 // ---------- profil / list desa ----------
 
-app.get('/api/desa', requireAuth, async (req, res) => {
+app.get('/api/desa', requireAuth, guard(async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query));
   const rows = await db
     .prepare(
@@ -556,11 +556,11 @@ app.get('/api/desa', requireAuth, async (req, res) => {
     )
     .all(...params);
   res.json(rows);
-});
+}));
 
 app.get('/api/desa/:kode', requireAuth, guard(async (req, res) => {
   const { kode } = req.params;
-  assertDesaAccess(req.user, kode);
+  await assertDesaAccess(req.user, kode);
   const desa = await db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return res.status(404).json({ error: 'Desa tidak ditemukan' });
 
@@ -616,7 +616,7 @@ app.get('/api/desa/:kode', requireAuth, guard(async (req, res) => {
 }));
 
 app.post('/api/desa/:kode/rekomendasi', requireAuth, guard(async (req, res) => {
-  assertDesaAccess(req.user, req.params.kode);
+  await assertDesaAccess(req.user, req.params.kode);
   try {
     const result = await getRekomendasi(req.params.kode, { forceRefresh: !!req.body?.forceRefresh });
     if (result.notFound) return res.status(404).json({ error: 'Desa tidak ditemukan' });
@@ -631,7 +631,7 @@ app.post('/api/desa/:kode/rekomendasi', requireAuth, guard(async (req, res) => {
 }));
 
 app.post('/api/desa/:kode/narasi', requireAuth, guard(async (req, res) => {
-  assertDesaAccess(req.user, req.params.kode);
+  await assertDesaAccess(req.user, req.params.kode);
   const dimensi = req.body?.dimensi || null;
   if (dimensi && !DIMENSI_KEYS.has(dimensi)) {
     return res.status(400).json({ error: 'Dimensi tidak valid.' });
@@ -651,7 +651,7 @@ app.post('/api/desa/:kode/narasi', requireAuth, guard(async (req, res) => {
 
 app.get('/api/kabupaten/:nama/ringkasan', requireAuth, guard(async (req, res) => {
   assertKabupatenAccess(req.user, req.params.nama);
-  const ctx = buildKabupatenContext(req.params.nama);
+  const ctx = await buildKabupatenContext(req.params.nama);
   if (!ctx) return res.status(404).json({ error: 'Kabupaten tidak ditemukan' });
   res.json(ctx);
 }));
@@ -675,7 +675,7 @@ app.post('/api/kabupaten/:nama/rekomendasi', requireAuth, guard(async (req, res)
 // with kabupaten=null, only admin/provinsi may reach it.
 app.get('/api/provinsi/ringkasan', requireAuth, guard(async (req, res) => {
   assertProvinsiAccess(req.user);
-  const ctx = buildKabupatenContext(null);
+  const ctx = await buildKabupatenContext(null);
   if (!ctx) return res.status(404).json({ error: 'Data provinsi tidak ditemukan' });
   res.json(ctx);
 }));
@@ -698,23 +698,23 @@ app.post('/api/provinsi/rekomendasi', requireAuth, guard(async (req, res) => {
 // Drill-down for the "Kondisi BUM Desa"/"Kondisi KDMP" bar charts on
 // Analisis BUMDes - deterministic, no AI, same normalization as the
 // aggregate counts above so a bar's count and its desa list always agree.
-function desaKomponenList(kabupaten, req, res) {
+async function desaKomponenList(kabupaten, req, res) {
   const { komponen, value } = req.query;
   if (!value || (komponen !== 'bum' && komponen !== 'kdmp')) {
     return res.status(400).json({ error: 'Parameter komponen (bum|kdmp) dan value wajib diisi.' });
   }
-  const rows = komponen === 'bum' ? listDesaByBumTier(kabupaten, value) : listDesaByKdmpStatus(kabupaten, value);
+  const rows = komponen === 'bum' ? await listDesaByBumTier(kabupaten, value) : await listDesaByKdmpStatus(kabupaten, value);
   res.json(rows);
 }
 
 app.get('/api/kabupaten/:nama/desa-komponen', requireAuth, guard(async (req, res) => {
   assertKabupatenAccess(req.user, req.params.nama);
-  desaKomponenList(req.params.nama, req, res);
+  await desaKomponenList(req.params.nama, req, res);
 }));
 
 app.get('/api/provinsi/desa-komponen', requireAuth, guard(async (req, res) => {
   assertProvinsiAccess(req.user);
-  desaKomponenList(null, req, res);
+  await desaKomponenList(null, req, res);
 }));
 
 // ---------- potensi sektor ----------
@@ -736,7 +736,7 @@ app.get('/api/provinsi/desa-komponen', requireAuth, guard(async (req, res) => {
 // ".replace(/^Terdapat /i, '')" display convention used everywhere in the UI).
 const ADA_FILTER = `p.nilai = 'Ada' AND p.subsektor LIKE 'Terdapat %'`;
 
-app.get('/api/potensi/sektor', requireAuth, async (req, res) => {
+app.get('/api/potensi/sektor', requireAuth, guard(async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query), 'd');
   const extra = sql ? `${sql} AND` : 'WHERE';
   const rows = await db
@@ -749,9 +749,9 @@ app.get('/api/potensi/sektor', requireAuth, async (req, res) => {
     )
     .all(...params);
   res.json(rows);
-});
+}));
 
-app.get('/api/potensi/sektor/:sektor', requireAuth, async (req, res) => {
+app.get('/api/potensi/sektor/:sektor', requireAuth, guard(async (req, res) => {
   const { sektor } = req.params;
   // Optional drill-down to a single subsektor/indikator (e.g. "Terdapat
   // Peternakan Sapi") so the desa list can answer "where exactly is this
@@ -799,7 +799,7 @@ app.get('/api/potensi/sektor/:sektor', requireAuth, async (req, res) => {
     .slice(0, 200);
 
   res.json({ sektor, subsektorTerpilih: subsektorFilterValue, jumlahDesa: desa.length, desa, subsektor });
-});
+}));
 
 // ---------- referensi (Buku Panduan Indeks Desa 2026) ----------
 // Static reference dictionaries, not scoped to any user/region - definisi
@@ -807,17 +807,17 @@ app.get('/api/potensi/sektor/:sektor', requireAuth, async (req, res) => {
 // exactly as stored in skor_indikator/potensi_desa. Fetched once by the
 // frontend and looked up client-side, so this isn't query-parameterized.
 
-app.get('/api/referensi/definisi-skor', requireAuth, async (req, res) => {
+app.get('/api/referensi/definisi-skor', requireAuth, (req, res) => {
   res.json(allDefinisiSkor());
 });
 
-app.get('/api/referensi/definisi-potensi', requireAuth, async (req, res) => {
+app.get('/api/referensi/definisi-potensi', requireAuth, (req, res) => {
   res.json(allDefinisiPotensi());
 });
 
 // ---------- ekosistem ----------
 
-app.get('/api/ekosistem/summary', requireAuth, async (req, res) => {
+app.get('/api/ekosistem/summary', requireAuth, guard(async (req, res) => {
   const filter = whereFromFilters(mergeScope(req.user, req.query), 'd', [
     `e.nilai NOT IN ('Tidak Ada', '-', '', '0')`,
   ]);
@@ -831,12 +831,12 @@ app.get('/api/ekosistem/summary', requireAuth, async (req, res) => {
     )
     .all(...filter.params);
   res.json(rows);
-});
+}));
 
 // Drill-down for the "Jumlah Desa per Komponen" bar chart - same nilai
 // filter as the aggregate above, scoped to one komponen (arbitrary client
 // input, always bound as a query parameter, never interpolated).
-app.get('/api/ekosistem/desa', requireAuth, async (req, res) => {
+app.get('/api/ekosistem/desa', requireAuth, guard(async (req, res) => {
   const { komponen } = req.query;
   if (!komponen) return res.status(400).json({ error: 'Parameter komponen wajib diisi.' });
   const filter = whereFromFilters(mergeScope(req.user, req.query), 'd', [
@@ -853,11 +853,11 @@ app.get('/api/ekosistem/desa', requireAuth, async (req, res) => {
     )
     .all(...filter.params, komponen);
   res.json(rows);
-});
+}));
 
 // ---------- peta ----------
 
-app.get('/api/peta', requireAuth, async (req, res) => {
+app.get('/api/peta', requireAuth, guard(async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query), 'd', [
     'd.lat IS NOT NULL',
     'd.lng IS NOT NULL',
@@ -877,9 +877,9 @@ app.get('/api/peta', requireAuth, async (req, res) => {
     )
     .all(...(indikator ? [indikator, indikator] : []), ...params);
   res.json(rows);
-});
+}));
 
-app.get('/api/peta/indikator', requireAuth, async (req, res) => {
+app.get('/api/peta/indikator', requireAuth, guard(async (req, res) => {
   const rows = await db
     .prepare(
       `SELECT DISTINCT dimensi, sub_dimensi AS subDimensi, nama_indikator AS indikator
@@ -887,20 +887,20 @@ app.get('/api/peta/indikator', requireAuth, async (req, res) => {
     )
     .all();
   res.json(rows);
-});
+}));
 
 // ---------- analisis kuadran (potensi x kinerja) ----------
 
-app.get('/api/analisis/kuadran', requireAuth, async (req, res) => {
+app.get('/api/analisis/kuadran', requireAuth, guard(async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query));
-  const rows = await db
+  const rows = (await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa,
               ${ekonomiSkorSubquery()} AS skor,
               ${potensiSektorCountSubquery()} AS potensi
        FROM desa d ${sql}`
     )
-    .all(...params)
+    .all(...params))
     .filter((r) => r.skor !== null);
 
   const { potensiMedian, skorMedian, desa } = classifyKuadran(rows);
@@ -909,18 +909,18 @@ app.get('/api/analisis/kuadran', requireAuth, async (req, res) => {
     kinerjaMedian: skorMedian,
     desa: desa.map(({ skor, ...r }) => ({ ...r, kinerja: skor })),
   });
-});
+}));
 
 // ---------- import (admin) ----------
 
-app.get('/api/import/log', requireAuth, requireRole('admin'), async (req, res) => {
+app.get('/api/import/log', requireAuth, requireRole('admin'), guard(async (req, res) => {
   const rows = await db
     .prepare('SELECT sumber_file, sheet, waktu_import, jumlah_baris FROM import_log ORDER BY id DESC')
     .all();
   res.json(rows);
-});
+}));
 
-app.post('/api/import/run', requireAuth, requireRole('admin'), async (req, res) => {
+app.post('/api/import/run', requireAuth, requireRole('admin'), (req, res) => {
   if (importInProgress) {
     return res.status(409).json({ error: 'Import lain sedang berjalan, coba lagi sebentar.' });
   }
@@ -963,7 +963,7 @@ const rpkpUpload = multer({
 // error page.
 function uploadSingle(field) {
   const mw = rpkpUpload.single(field);
-  return async (req, res, next) => {
+  return (req, res, next) => {
     mw(req, res, (err) => {
       if (err) return res.status(400).json({ error: err.message || 'Upload gagal.' });
       next();
@@ -971,9 +971,9 @@ function uploadSingle(field) {
   };
 }
 
-function loadReviewOr404(req) {
+async function loadReviewOr404(req) {
   const id = Number(req.params.id);
-  const review = getReview(id);
+  const review = await getReview(id);
   if (!review) {
     const err = new Error('Review RPKP tidak ditemukan.');
     err.status = 404;
@@ -984,24 +984,24 @@ function loadReviewOr404(req) {
 
 app.get('/api/rpkp/reviews', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
-  res.json(listReviews(scope));
+  res.json(await listReviews(scope));
 }));
 
 app.post('/api/rpkp/reviews', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = createReview(req.user, req.body || {});
+  const review = await createReview(req.user, req.body || {});
   res.status(201).json(review);
 }));
 
 app.get('/api/rpkp/reviews/:id', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
   res.json(review);
 }));
 
 app.get('/api/rpkp/reviews/:id/documents', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  res.json(listDocuments(review.id));
+  res.json(await listDocuments(review.id));
 }));
 
 app.post(
@@ -1010,7 +1010,7 @@ app.post(
   requireRole(...RPKP_ROLES),
   uploadSingle('file'),
   guard(async (req, res) => {
-    const review = loadReviewOr404(req);
+    const review = await loadReviewOr404(req);
     assertReviewAccess(req.user, review);
     if (!req.file) return res.status(400).json({ error: 'File wajib dilampirkan.' });
     const documentType = req.body.documentType;
@@ -1021,7 +1021,7 @@ app.post(
     const storedFilename = `${crypto.randomUUID()}${ext}`;
     const dir = reviewUploadDir(review.id);
     fs.writeFileSync(path.join(dir, storedFilename), req.file.buffer);
-    const doc = addDocument(review.id, req.user, {
+    const doc = await addDocument(review.id, req.user, {
       documentType,
       originalFilename: req.file.originalname,
       storedFilename,
@@ -1037,9 +1037,9 @@ app.get(
   requireAuth,
   requireRole(...RPKP_ROLES),
   guard(async (req, res) => {
-    const review = loadReviewOr404(req);
+    const review = await loadReviewOr404(req);
     assertReviewAccess(req.user, review);
-    const doc = getDocument(review.id, Number(req.params.docId));
+    const doc = await getDocument(review.id, Number(req.params.docId));
     if (!doc) return res.status(404).json({ error: 'Dokumen tidak ditemukan.' });
     const filePath = path.join(reviewUploadDir(review.id), doc.stored_filename);
     if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'Berkas tidak ditemukan di server.' });
@@ -1052,16 +1052,16 @@ app.get(
 );
 
 app.get('/api/rpkp/reviews/:id/history', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  res.json(listHistory(review.id));
+  res.json(await listHistory(review.id));
 }));
 
 app.post('/api/rpkp/reviews/:id/status', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
   const { status, note } = req.body || {};
-  const updated = changeStatus(req.user, review, status, note);
+  const updated = await changeStatus(req.user, review, status, note);
   res.json(updated);
 }));
 
@@ -1069,13 +1069,13 @@ app.post('/api/rpkp/reviews/:id/status', requireAuth, requireRole(...RPKP_ROLES)
 // see lib/rpkpAi.js). Every answer is persisted, never just returned, so
 // the Q&A history survives and doubles as an audit trail.
 app.get('/api/rpkp/reviews/:id/ai/qa', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  res.json(listQa(review.id));
+  res.json(await listQa(review.id));
 }));
 
 app.post('/api/rpkp/reviews/:id/ai/ask', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
   const question = (req.body || {}).question;
   let result;
@@ -1088,7 +1088,7 @@ app.post('/api/rpkp/reviews/:id/ai/ask', requireAuth, requireRole(...RPKP_ROLES)
     console.error('Asisten AI RPKP gagal:', err.cause || err);
     throw err;
   }
-  saveQa(review.id, req.user, question, result);
+  await saveQa(review.id, req.user, question, result);
   res.status(201).json(result);
 }));
 
@@ -1102,9 +1102,9 @@ app.get('/api/rpkp/completeness-items', requireAuth, requireRole(...RPKP_ROLES),
 }));
 
 app.get('/api/rpkp/reviews/:id/findings', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  res.json(listFindings(review.id, req.query.category));
+  res.json(await listFindings(review.id, req.query.category));
 }));
 
 app.post(
@@ -1112,9 +1112,9 @@ app.post(
   requireAuth,
   requireRole(...RPKP_ROLES),
   guard(async (req, res) => {
-    const review = loadReviewOr404(req);
+    const review = await loadReviewOr404(req);
     assertReviewAccess(req.user, review);
-    const item = getCompletenessItem(req.params.kode);
+    const item = await getCompletenessItem(req.params.kode);
     if (!item) return res.status(404).json({ error: 'Item kelengkapan tidak dikenali.' });
     let aiResult;
     try {
@@ -1137,7 +1137,7 @@ app.get('/api/rpkp/checklist-items', requireAuth, requireRole(...RPKP_ROLES), gu
   if (!['IPKP', 'READINESS'].includes(kategori)) {
     return res.status(400).json({ error: 'Parameter kategori wajib diisi: IPKP atau READINESS.' });
   }
-  res.json(listChecklistItems(kategori));
+  res.json(await listChecklistItems(kategori));
 }));
 
 app.post(
@@ -1145,9 +1145,9 @@ app.post(
   requireAuth,
   requireRole(...RPKP_ROLES),
   guard(async (req, res) => {
-    const review = loadReviewOr404(req);
+    const review = await loadReviewOr404(req);
     assertReviewAccess(req.user, review);
-    const item = getChecklistItem(req.params.kode);
+    const item = await getChecklistItem(req.params.kode);
     if (!item || !['IPKP', 'READINESS'].includes(item.kategori)) {
       return res.status(404).json({ error: 'Item checklist tidak dikenali.' });
     }
@@ -1166,20 +1166,20 @@ app.post(
 // ---------- Sprint 4: RTRW/RPJMD/BANUA360 alignment engines ----------
 
 app.get('/api/rpkp/reviews/:id/desa', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  res.json(listReviewDesa(review.id));
+  res.json(await listReviewDesa(review.id));
 }));
 
 app.put('/api/rpkp/reviews/:id/desa', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  const result = setReviewDesa(review, req.user, (req.body || {}).kodeDesaList || []);
+  const result = await setReviewDesa(review, req.user, (req.body || {}).kodeDesaList || []);
   res.json(result);
 }));
 
 app.post('/api/rpkp/reviews/:id/rtrw/check', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
   let aiResult;
   try {
@@ -1188,12 +1188,12 @@ app.post('/api/rpkp/reviews/:id/rtrw/check', requireAuth, requireRole(...RPKP_RO
     console.error('Cek RTRW RPKP gagal:', err.cause || err);
     throw err;
   }
-  const finding = upsertFinding(review.id, 'RTRW', 'RTRW_ALIGNMENT', 'Kesesuaian Tata Ruang (RTRW)', aiResult, req.user);
+  const finding = await upsertFinding(review.id, 'RTRW', 'RTRW_ALIGNMENT', 'Kesesuaian Tata Ruang (RTRW)', aiResult, req.user);
   res.status(201).json(finding);
 }));
 
 app.post('/api/rpkp/reviews/:id/rpjmd/check', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
   let aiResult;
   try {
@@ -1202,19 +1202,19 @@ app.post('/api/rpkp/reviews/:id/rpjmd/check', requireAuth, requireRole(...RPKP_R
     console.error('Cek RPJMD RPKP gagal:', err.cause || err);
     throw err;
   }
-  const finding = upsertFinding(review.id, 'RPJMD', 'RPJMD_ALIGNMENT', 'Keselarasan RPJMD', aiResult, req.user);
+  const finding = await upsertFinding(review.id, 'RPJMD', 'RPJMD_ALIGNMENT', 'Keselarasan RPJMD', aiResult, req.user);
   res.status(201).json(finding);
 }));
 
 app.post('/api/rpkp/reviews/:id/banua360/check', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  const finding = checkBanua360CrossCheck(review, req.user);
+  const finding = await checkBanua360CrossCheck(review, req.user);
   res.status(201).json(finding);
 }));
 
-function loadFindingOr404(req) {
-  const finding = getFinding(Number(req.params.findingId));
+async function loadFindingOr404(req) {
+  const finding = await getFinding(Number(req.params.findingId));
   if (!finding) {
     const err = new Error('Temuan tidak ditemukan.');
     err.status = 404;
@@ -1223,8 +1223,8 @@ function loadFindingOr404(req) {
   return finding;
 }
 
-function assertFindingReviewAccess(user, finding) {
-  const review = getReview(finding.review_id);
+async function assertFindingReviewAccess(user, finding) {
+  const review = await getReview(finding.review_id);
   if (!review) {
     const err = new Error('Review RPKP tidak ditemukan.');
     err.status = 404;
@@ -1234,30 +1234,30 @@ function assertFindingReviewAccess(user, finding) {
 }
 
 app.post('/api/rpkp/findings/:findingId/verify', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const finding = loadFindingOr404(req);
-  assertFindingReviewAccess(req.user, finding);
+  const finding = await loadFindingOr404(req);
+  await assertFindingReviewAccess(req.user, finding);
   res.json(verifyFinding(finding.id, req.user, (req.body || {}).note));
 }));
 
 app.post('/api/rpkp/findings/:findingId/reject', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const finding = loadFindingOr404(req);
-  assertFindingReviewAccess(req.user, finding);
+  const finding = await loadFindingOr404(req);
+  await assertFindingReviewAccess(req.user, finding);
   res.json(rejectFinding(finding.id, req.user, (req.body || {}).note));
 }));
 
 app.get('/api/rpkp/reviews/:id/recommendation', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
-  res.json(getRecommendation(review.id) || null);
+  res.json(await getRecommendation(review.id) || null);
 }));
 
 app.post('/api/rpkp/reviews/:id/recommendation', requireAuth, requireRole('admin', 'provinsi'), guard(async (req, res) => {
-  const review = loadReviewOr404(req);
+  const review = await loadReviewOr404(req);
   assertReviewAccess(req.user, review);
   const { keputusan, catatan } = req.body || {};
-  const result = setRecommendation(review.id, req.user, keputusan, catatan);
+  const result = await setRecommendation(review.id, req.user, keputusan, catatan);
   if (review.status === 'IN_REVIEW') {
-    changeStatus(req.user, review, 'REVIEW_COMPLETED', `Recommendation Gate: ${keputusan}`);
+    await changeStatus(req.user, review, 'REVIEW_COMPLETED', `Recommendation Gate: ${keputusan}`);
   }
   res.status(201).json(result);
 }));
@@ -1272,7 +1272,7 @@ app.post('/api/rpkp/reviews/:id/recommendation', requireAuth, requireRole('admin
 if (process.env.NODE_ENV === 'production') {
   const webDist = path.join(__dirname, '..', 'web', 'dist');
   app.use(express.static(webDist));
-  app.get(/^(?!\/api\/).*/, async (req, res) => {
+  app.get(/^(?!\/api\/).*/, (req, res) => {
     res.sendFile(path.join(webDist, 'index.html'));
   });
 }

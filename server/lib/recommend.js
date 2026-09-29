@@ -6,7 +6,7 @@ import { callLLM } from './llm.js';
 // gap in supporting infrastructure (Layer 2b / Layer 4) - so the prompt is
 // built from exactly those two angles: what the village already has, and
 // what's visibly missing relative to typical village economic facilities.
-function buildProfileContext(kode) {
+async function buildProfileContext(kode) {
   const desa = await db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return null;
 
@@ -99,7 +99,7 @@ function hashContext(ctx) {
 }
 
 export async function getRekomendasi(kode, { forceRefresh = false } = {}) {
-  const ctx = buildProfileContext(kode);
+  const ctx = await buildProfileContext(kode);
   if (!ctx) return { notFound: true };
 
   const inputHash = hashContext(ctx);

@@ -38,7 +38,7 @@ function normalizeKdmp(v) {
 // scoping and normalization as buildKabupatenContext's bumTier/kdmpStatus
 // aggregates above, but returning the desa list for one specific bar
 // instead of just the count.
-export function listDesaByBumTier(kabupaten, tier) {
+export async function listDesaByBumTier(kabupaten, tier) {
   const scoped = kabupaten != null;
   const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
   const args = scoped ? [kabupaten] : [];
@@ -54,7 +54,7 @@ export function listDesaByBumTier(kabupaten, tier) {
     .map((r) => ({ kode_desa: r.kode_desa, nama_desa: r.nama_desa, kecamatan: r.kecamatan, kabupaten: r.kabupaten, status_desa: r.status_desa }));
 }
 
-export function listDesaByKdmpStatus(kabupaten, status) {
+export async function listDesaByKdmpStatus(kabupaten, status) {
   const scoped = kabupaten != null;
   const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
   const args = scoped ? [kabupaten] : [];
@@ -105,7 +105,7 @@ function parseHariOperasional(v) {
 // combine high potential with low economic performance (computed
 // deterministically, not left to the LLM to invent, so the village list is
 // always accurate).
-export function buildKabupatenContext(kabupaten) {
+export async function buildKabupatenContext(kabupaten) {
   const scoped = kabupaten != null;
   const kabWhere = scoped ? 'WHERE d.kabupaten = ?' : '';
   const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
@@ -321,7 +321,7 @@ function hashContext(ctx) {
 // PROVINSI_SENTINEL instead of an actual kabupaten name.
 export async function getRekomendasiKabupaten(kabupaten, { forceRefresh = false } = {}) {
   const cacheKey = kabupaten == null ? PROVINSI_SENTINEL : kabupaten;
-  const ctx = buildKabupatenContext(kabupaten);
+  const ctx = await buildKabupatenContext(kabupaten);
   if (!ctx) return { notFound: true };
 
   const inputHash = hashContext(ctx);

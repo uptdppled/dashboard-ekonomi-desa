@@ -36,7 +36,7 @@ function scopeWhere(scope, alias = 'd') {
 // Every leaf indicator ("SKOR ..." columns, not the DIMENSI/SUB-DIMENSI
 // composite marker rows) scored below GAP_THRESHOLD of its own max weight,
 // aggregated by how many desa are affected.
-export function buildGapAnalysis(scope) {
+export async function buildGapAnalysis(scope) {
   const where = scopeWhere(scope);
   const dimensiClause = scope.dimensi ? 'AND si.dimensi = ?' : '';
   const params = [...where.params];
@@ -73,7 +73,7 @@ export function buildGapAnalysis(scope) {
 }
 
 // List of desa affected by a specific indicator's gap (for the drilldown).
-export function listDesaGapUntukIndikator(scope, indikator) {
+export async function listDesaGapUntukIndikator(scope, indikator) {
   const where = scopeWhere(scope);
   const rows = await db
     .prepare(
@@ -92,7 +92,7 @@ export function listDesaGapUntukIndikator(scope, indikator) {
 // potensi hadir di sektor X + indikator "Fasilitas Pendukung Ekonomi" di
 // bawah threshold -> ditandai sebagai potensi pengembangan. Tidak membuat
 // skor baru, hanya menghitung irisan dua fakta yang sudah ada.
-export function buildPotensiPengembangan(scope) {
+export async function buildPotensiPengembangan(scope) {
   const potensiWhere = scopeWhere(scope);
   const potensiRows = await db
     .prepare(
@@ -131,24 +131,24 @@ export function buildPotensiPengembangan(scope) {
 // Just the coverage KPIs for the "Cakupan Data" panel - direct COUNT
 // queries, not a byproduct of running the spatial-matching engine (that
 // engine now lives in opportunity.js, see BANUA OPPORTUNITY below).
-export function buildCoverage(scope) {
+export async function buildCoverage(scope) {
   const totalWhere = scopeWhere(scope);
-  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d WHERE 1=1 ${totalWhere.sql}`).get(...totalWhere.params).n;
+  const totalDesa = (await db.prepare(`SELECT COUNT(*) AS n FROM desa d WHERE 1=1 ${totalWhere.sql}`).get(...totalWhere.params)).n;
 
   const koordinatWhere = scopeWhere(scope);
-  const desaDenganKoordinat = await db
+  const desaDenganKoordinat = (await db
     .prepare(`SELECT COUNT(*) AS n FROM desa d WHERE d.lat IS NOT NULL AND d.lng IS NOT NULL ${koordinatWhere.sql}`)
-    .get(...koordinatWhere.params).n;
+    .get(...koordinatWhere.params)).n;
 
   const potensiWhere = scopeWhere(scope);
-  const desaDenganPotensi = await db
+  const desaDenganPotensi = (await db
     .prepare(
       `SELECT COUNT(DISTINCT p.kode_desa) AS n
        FROM potensi_desa p
        JOIN desa d ON d.kode_desa = p.kode_desa
        WHERE p.nilai = 'Ada' ${potensiWhere.sql}`
     )
-    .get(...potensiWhere.params).n;
+    .get(...potensiWhere.params)).n;
 
   return { totalDesa, desaDenganKoordinat, desaTanpaKoordinat: totalDesa - desaDenganKoordinat, desaDenganPotensi };
 }
@@ -168,7 +168,7 @@ const NAIK_STATUS_PAIRS = [
   { dari: 'MAJU', ke: 'MANDIRI' },
 ];
 
-export function buildKandidatNaikStatus(scope, { perTier = 30 } = {}) {
+export async function buildKandidatNaikStatus(scope, { perTier = 30 } = {}) {
   const statusList = NAIK_STATUS_PAIRS.map((p) => p.dari);
   const placeholders = statusList.map(() => '?').join(',');
 
@@ -237,7 +237,7 @@ export function buildKandidatNaikStatus(scope, { perTier = 30 } = {}) {
   }));
 }
 
-export function listDesaTanpaKoordinat(scope) {
+export async function listDesaTanpaKoordinat(scope) {
   const where = scopeWhere(scope);
   return await db
     .prepare(`SELECT kode_desa, nama_desa, kecamatan, kabupaten FROM desa d WHERE (lat IS NULL OR lng IS NULL) ${where.sql}`)

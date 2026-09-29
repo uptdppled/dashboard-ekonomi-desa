@@ -48,7 +48,7 @@ function scopeWhere(scope, alias = 'd') {
   return { sql: clauses.length ? `AND ${clauses.join(' AND ')}` : '', params };
 }
 
-function loadDesaWithSektor(scope) {
+async function loadDesaWithSektor(scope) {
   const where = scopeWhere(scope);
   const desaRows = await db
     .prepare(`SELECT kode_desa, nama_desa, kecamatan, kabupaten, lat, lng FROM desa d WHERE lat IS NOT NULL AND lng IS NOT NULL ${where.sql}`)
@@ -87,8 +87,8 @@ function loadDesaWithSektor(scope) {
 // Generic pair matcher: desa with a sektor in sektorASet <-> desa with a
 // sektor in sektorBSet, within radiusKm - the one engine behind all 3
 // relationship tabs below, just pointed at different sektor sets.
-function matchDesaPairs(scope, sektorASet, sektorBSet, { radiusKm = 15, maxResults = 30 } = {}) {
-  const { desaRows, sektorByDesa } = loadDesaWithSektor(scope);
+async function matchDesaPairs(scope, sektorASet, sektorBSet, { radiusKm = 15, maxResults = 30 } = {}) {
+  const { desaRows, sektorByDesa } = await loadDesaWithSektor(scope);
   const sideA = desaRows.filter((d) => [...(sektorByDesa.get(d.kode_desa) || [])].some((s) => sektorASet.has(s)));
   const sideB = desaRows.filter((d) => [...(sektorByDesa.get(d.kode_desa) || [])].some((s) => sektorBSet.has(s)));
 
@@ -116,8 +116,8 @@ function matchDesaPairs(scope, sektorASet, sektorBSet, { radiusKm = 15, maxResul
 }
 
 // ---------- Tab: Potensi -> Potensi (rantai nilai hulu -> pengolahan) ----------
-export function buildPotensiPotensi(scope, opts) {
-  return matchDesaPairs(scope, PRODUKSI_SEKTOR, PENGOLAHAN_SEKTOR, opts).map((m) => ({
+export async function buildPotensiPotensi(scope, opts) {
+  return (await matchDesaPairs(scope, PRODUKSI_SEKTOR, PENGOLAHAN_SEKTOR, opts)).map((m) => ({
     tipe: 'potensi_potensi',
     label: 'Potensi → Potensi (Pengolahan)',
     desaA: m.desaA,
@@ -135,8 +135,8 @@ export function buildPotensiPotensi(scope, opts) {
 // Deliberately NOT called "Produksi -> Pasar": our data only shows
 // fasilitas perdagangan/pemasaran EXISTS nearby, not actual market demand,
 // buyers, or transaction volume - naming it "akses" keeps the claim honest.
-export function buildProduksiAksesPasar(scope, opts) {
-  return matchDesaPairs(scope, PRODUKSI_SEKTOR, AKSES_PASAR_SEKTOR, opts).map((m) => ({
+export async function buildProduksiAksesPasar(scope, opts) {
+  return (await matchDesaPairs(scope, PRODUKSI_SEKTOR, AKSES_PASAR_SEKTOR, opts)).map((m) => ({
     tipe: 'produksi_akses_pasar',
     label: 'Produksi → Akses Pasar',
     desaA: m.desaA,
@@ -166,7 +166,7 @@ const BUM_DESA_BIDANG = [
   'Terdapat BUM Desa Perdagangan Bidang Peternakan',
 ];
 
-export function buildBumDesaPotensi(scope, { maxResults = 60 } = {}) {
+export async function buildBumDesaPotensi(scope, { maxResults = 60 } = {}) {
   const where = scopeWhere(scope);
   const bidangPlaceholders = BUM_DESA_BIDANG.map(() => '?').join(',');
 
@@ -228,8 +228,8 @@ export function buildBumDesaPotensi(scope, { maxResults = 60 } = {}) {
 }
 
 // ---------- Tab: Desa <-> Desa (general explorer, semua jenis relationship) ----------
-export function buildDesaKeDesa(scope, opts) {
-  return [...buildPotensiPotensi(scope, opts), ...buildProduksiAksesPasar(scope, opts), ...buildBumDesaPotensi(scope, opts)];
+export async function buildDesaKeDesa(scope, opts) {
+  return [...await buildPotensiPotensi(scope, opts), ...await buildProduksiAksesPasar(scope, opts), ...await buildBumDesaPotensi(scope, opts)];
 }
 
 // ---------- Tab: Potensi Kawasan (kandidat pembentukan Kawasan Perdesaan) ----------
@@ -290,8 +290,8 @@ function clusterByHub(points, radiusKm, minDesa) {
   return clusters;
 }
 
-export function buildPotensiKawasan(scope, { radiusKm = KAWASAN_RADIUS_KM, minDesa = KAWASAN_MIN_DESA, maxResults = 40 } = {}) {
-  const { desaRows, sektorByDesa } = loadDesaWithSektor(scope);
+export async function buildPotensiKawasan(scope, { radiusKm = KAWASAN_RADIUS_KM, minDesa = KAWASAN_MIN_DESA, maxResults = 40 } = {}) {
+  const { desaRows, sektorByDesa } = await loadDesaWithSektor(scope);
 
   const byKabupaten = new Map();
   for (const d of desaRows) {

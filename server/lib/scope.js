@@ -23,7 +23,7 @@ export function mergeScope(user, query) {
 
 // For routes keyed by a specific :kode path param (desa detail, per-desa
 // recommendation). Throws unless the caller is allowed to see that village.
-export function assertDesaAccess(user, kodeDesa) {
+export async function assertDesaAccess(user, kodeDesa) {
   if (!user || user.role === 'admin' || user.role === 'provinsi') return;
   if (user.role === 'desa') {
     if (kodeDesa !== user.kode_desa) throw forbidden();
@@ -60,7 +60,7 @@ export function assertProvinsiAccess(user) {
 // rejected promise, not a synchronous exception, even when it happens
 // before the first `await`.
 export function guard(fn) {
-  return async (req, res, next) => {
+  return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch((err) => {
       if (err.code === 'FORBIDDEN') return res.status(403).json({ error: err.message, code: 'FORBIDDEN' });
       // Any other thrown error carrying an explicit `.status` (e.g. lib/rpkp.js's

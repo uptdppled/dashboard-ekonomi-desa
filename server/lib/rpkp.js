@@ -50,7 +50,7 @@ export function assertReviewAccess(user, review) {
   throw forbidden();
 }
 
-export function listReviews(scope) {
+export async function listReviews(scope) {
   const clauses = [];
   const params = [];
   if (scope.kabupaten) {
@@ -67,18 +67,18 @@ export function listReviews(scope) {
   }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
   const rows = await db.prepare(`SELECT * FROM rpkp_review ${where} ORDER BY diperbarui_pada DESC`).all(...params);
-  const withCounts = rows.map((r) => {
+  const withCounts = rows.map(async (r) => {
     const doc = await db.prepare('SELECT COUNT(*) n FROM rpkp_document WHERE review_id = ?').get(r.id);
     return { ...r, jumlah_dokumen: doc.n };
   });
   return withCounts;
 }
 
-export function getReview(id) {
+export async function getReview(id) {
   return await db.prepare('SELECT * FROM rpkp_review WHERE id = ?').get(id);
 }
 
-export function createReview(user, data) {
+export async function createReview(user, data) {
   const { nama_kawasan, kabupaten, periode, tahun_dokumen, keterangan } = data;
   if (!nama_kawasan || !nama_kawasan.trim()) throw badRequest('Nama kawasan wajib diisi.');
   const kab = user.role === 'kabupaten' ? user.kabupaten : kabupaten;
@@ -91,27 +91,27 @@ export function createReview(user, data) {
     )
     .run(nama_kawasan.trim(), kab.trim(), periode || null, tahun_dokumen || null, keterangan || null, user.email, now, now);
   const id = Number(result.lastInsertRowid);
-  logHistory(id, 'CREATED', `Review dibuat untuk kawasan "${nama_kawasan.trim()}"`, user.email);
+  await logHistory(id, 'CREATED', `Review dibuat untuk kawasan "${nama_kawasan.trim()}"`, user.email);
   return getReview(id);
 }
 
-export function logHistory(reviewId, eventType, detail, aktor) {
+export async function logHistory(reviewId, eventType, detail, aktor) {
   await db.prepare(
     `INSERT INTO rpkp_review_history (review_id, event_type, detail, aktor, dibuat_pada) VALUES (?, ?, ?, ?, ?)`
   ).run(reviewId, eventType, detail || null, aktor, new Date().toISOString());
 }
 
-export function listHistory(reviewId) {
+export async function listHistory(reviewId) {
   return await db.prepare('SELECT * FROM rpkp_review_history WHERE review_id = ? ORDER BY dibuat_pada DESC').all(reviewId);
 }
 
-export function listDocuments(reviewId) {
+export async function listDocuments(reviewId) {
   return await db
     .prepare('SELECT * FROM rpkp_document WHERE review_id = ? ORDER BY document_type, version DESC')
     .all(reviewId);
 }
 
-export function getDocument(reviewId, documentId) {
+export async function getDocument(reviewId, documentId) {
   return await db.prepare('SELECT * FROM rpkp_document WHERE id = ? AND review_id = ?').get(documentId, reviewId);
 }
 
@@ -119,7 +119,7 @@ export function getDocument(reviewId, documentId) {
 // version (1, 2, 3, ...) rather than overwriting - old files stay on disk
 // and in the DB so a future version-comparison feature has something to
 // diff against.
-export function addDocument(reviewId, user, { documentType, originalFilename, storedFilename, fileSize, mimeType }) {
+export async function addDocument(reviewId, user, { documentType, originalFilename, storedFilename, fileSize, mimeType }) {
   if (!DOCUMENT_TYPES.includes(documentType)) {
     throw badRequest(`Jenis dokumen tidak dikenali: ${documentType}`);
   }
@@ -135,7 +135,7 @@ export function addDocument(reviewId, user, { documentType, originalFilename, st
     )
     .run(reviewId, documentType, version, originalFilename, storedFilename, fileSize || null, mimeType || null, user.email, now);
   await db.prepare('UPDATE rpkp_review SET diperbarui_pada = ? WHERE id = ?').run(now, reviewId);
-  logHistory(reviewId, 'DOCUMENT_UPLOADED', `${documentType} v${version} diunggah (${originalFilename})`, user.email);
+  await logHistory(reviewId, 'DOCUMENT_UPLOADED', `${documentType} v${version} diunggah (${originalFilename})`, user.email);
   return { id: Number(result.lastInsertRowid), version };
 }
 
@@ -150,7 +150,7 @@ export function reviewUploadDir(reviewId) {
 // after uploading a revision); every other transition is a provinsi/admin
 // reviewer action. Enforced here (not just hidden in the UI) since status
 // changes are as consequential as the RBAC scope checks elsewhere.
-export function changeStatus(user, review, nextStatus, note) {
+export async function changeStatus(user, review, nextStatus, note) {
   const allowed = STATUS_TRANSITIONS[review.status] || [];
   if (!allowed.includes(nextStatus)) {
     throw badRequest(`Status tidak bisa berpindah dari ${review.status} ke ${nextStatus}.`);
@@ -169,7 +169,7 @@ export function changeStatus(user, review, nextStatus, note) {
   }
   const now = new Date().toISOString();
   await db.prepare('UPDATE rpkp_review SET status = ?, diperbarui_pada = ? WHERE id = ?').run(nextStatus, now, review.id);
-  logHistory(review.id, 'STATUS_CHANGED', note ? `${review.status} → ${nextStatus}: ${note}` : `${review.status} → ${nextStatus}`, user.email);
+  await logHistory(review.id, 'STATUS_CHANGED', note ? `${review.status} → ${nextStatus}: ${note}` : `${review.status} → ${nextStatus}`, user.email);
   return getReview(review.id);
 }
 
@@ -177,7 +177,7 @@ export function changeStatus(user, review, nextStatus, note) {
 // (Sprint 4) to look up real potensi/BUM Desa/status data for the right
 // villages. Every kode_desa must belong to the review's own kabupaten -
 // a kawasan can't span kabupaten (Permendesa 5/2016 Pasal 9).
-export function listReviewDesa(reviewId) {
+export async function listReviewDesa(reviewId) {
   return await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kecamatan, d.status_desa FROM rpkp_review_desa rd
@@ -187,14 +187,14 @@ export function listReviewDesa(reviewId) {
     .all(reviewId);
 }
 
-export function setReviewDesa(review, user, kodeDesaList) {
+export async function setReviewDesa(review, user, kodeDesaList) {
   if (!Array.isArray(kodeDesaList)) throw badRequest('Daftar desa tidak valid.');
   const unique = [...new Set(kodeDesaList.map(String))];
   if (unique.length > 0) {
     const placeholders = unique.map(() => '?').join(',');
-    const found = await db
+    const found = (await db
       .prepare(`SELECT kode_desa FROM desa WHERE kode_desa IN (${placeholders}) AND kabupaten = ?`)
-      .all(...unique, review.kabupaten)
+      .all(...unique, review.kabupaten))
       .map((r) => r.kode_desa);
     const invalid = unique.filter((k) => !found.includes(k));
     if (invalid.length > 0) {
@@ -205,12 +205,12 @@ export function setReviewDesa(review, user, kodeDesaList) {
   try {
     await db.prepare('DELETE FROM rpkp_review_desa WHERE review_id = ?').run(review.id);
     const insert = db.prepare('INSERT INTO rpkp_review_desa (review_id, kode_desa) VALUES (?, ?)');
-    for (const kode of unique) insert.run(review.id, kode);
+    for (const kode of unique) await insert.run(review.id, kode);
     await db.exec('COMMIT');
   } catch (e) {
     await db.exec('ROLLBACK');
     throw e;
   }
-  logHistory(review.id, 'DESA_ANGGOTA_DIPERBARUI', `${unique.length} desa ditandai sebagai anggota kawasan`, user.email);
+  await logHistory(review.id, 'DESA_ANGGOTA_DIPERBARUI', `${unique.length} desa ditandai sebagai anggota kawasan`, user.email);
   return listReviewDesa(review.id);
 }

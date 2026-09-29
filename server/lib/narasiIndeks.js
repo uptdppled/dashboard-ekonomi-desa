@@ -51,9 +51,9 @@ export function scopeLabel(scope) {
 // Same shape as /api/indeks/ringkasan (avg skor per dimensi) plus, for each
 // dimensi, its worst few leaf indicators - grounds the AI's recommendations
 // in specific indicators rather than letting it invent generic advice.
-function buildContext(scope) {
+async function buildContext(scope) {
   const base = scopeWhere(scope);
-  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${base.sql}`).get(...base.params).n;
+  const totalDesa = (await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${base.sql}`).get(...base.params)).n;
 
   const single = scope.dimensi ? DIMENSI_ORDER.filter((d) => d === scope.dimensi) : DIMENSI_ORDER;
   const gapLimit = scope.dimensi ? GAP_PER_DIMENSI_SATU : GAP_PER_DIMENSI_ALL;
@@ -154,7 +154,7 @@ function hashContext(ctx) {
 }
 
 export async function getNarasiIndeks(scope, { forceRefresh = false } = {}) {
-  const ctx = buildContext(scope);
+  const ctx = await buildContext(scope);
   const key = scopeKey(scope);
   const inputHash = hashContext(ctx);
 
