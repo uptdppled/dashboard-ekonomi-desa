@@ -7,28 +7,28 @@ import { callLLM } from './llm.js';
 // built from exactly those two angles: what the village already has, and
 // what's visibly missing relative to typical village economic facilities.
 function buildProfileContext(kode) {
-  const desa = db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
+  const desa = await db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return null;
 
   // Scoped to EKONOMI - this prompt reasons about BUM Desa product fit, so
   // "masalah" should mean economic-facility gaps, not e.g. a low Kesehatan
   // score. skor_indikator now also holds the other 5 Permendesa 9/2024
   // dimensions (see server/lib/recommendKabupaten.js).
-  const skor = db
+  const skor = await db
     .prepare(
       `SELECT sub_dimensi, nama_indikator, skor, bobot_maks FROM skor_indikator
        WHERE kode_desa = ? AND dimensi = 'EKONOMI' ORDER BY id`
     )
     .all(kode);
 
-  const potensi = db
+  const potensi = await db
     .prepare(
       `SELECT sektor, subsektor FROM potensi_desa
        WHERE kode_desa = ? AND nilai = 'Ada' ORDER BY sektor`
     )
     .all(kode);
 
-  const ekosistem = db
+  const ekosistem = await db
     .prepare(`SELECT komponen, nilai FROM ekosistem_desa WHERE kode_desa = ? ORDER BY id`)
     .all(kode);
 
@@ -105,7 +105,7 @@ export async function getRekomendasi(kode, { forceRefresh = false } = {}) {
   const inputHash = hashContext(ctx);
 
   if (!forceRefresh) {
-    const cached = db
+    const cached = await db
       .prepare(
         `SELECT rekomendasi_json, model, dibuat_pada FROM rekomendasi_produk
          WHERE kode_desa = ? AND input_hash = ? ORDER BY id DESC LIMIT 1`
@@ -124,7 +124,7 @@ export async function getRekomendasi(kode, { forceRefresh = false } = {}) {
   const prompt = buildPrompt(ctx);
   const { result, model } = await callLLM(prompt);
 
-  db.prepare(
+  await db.prepare(
     `INSERT INTO rekomendasi_produk (kode_desa, input_hash, model, rekomendasi_json, dibuat_pada)
      VALUES (?, ?, ?, ?, ?)`
   ).run(kode, inputHash, model, JSON.stringify(result), new Date().toISOString());

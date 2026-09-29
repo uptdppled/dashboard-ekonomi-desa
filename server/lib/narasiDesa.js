@@ -27,11 +27,11 @@ const GAP_LIMIT_ALL = 3;
 // branch - per-dimensi mode is just a 1-element version of the overall
 // mode's 6-element array.
 function buildContext(kode, dimensi) {
-  const desa = db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
+  const desa = await db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return null;
 
   if (dimensi) {
-    const rows = db
+    const rows = await db
       .prepare(
         `SELECT nama_indikator, skor, bobot_maks FROM skor_indikator
          WHERE kode_desa = ? AND dimensi = ? ORDER BY id`
@@ -54,11 +54,11 @@ function buildContext(kode, dimensi) {
     };
   }
 
-  const indeksDimensi = db
+  const indeksDimensi = await db
     .prepare(`SELECT dimensi, skor, bobot_maks FROM skor_indikator WHERE kode_desa = ? AND nama_indikator = dimensi ORDER BY id`)
     .all(kode);
 
-  const allIndikator = db
+  const allIndikator = await db
     .prepare(
       `SELECT dimensi, nama_indikator, skor, bobot_maks FROM skor_indikator
        WHERE kode_desa = ? AND nama_indikator LIKE 'SKOR %' AND bobot_maks > 0`
@@ -82,7 +82,7 @@ function buildContext(kode, dimensi) {
     gap: gapByDim[d] || [],
   }));
 
-  const potensiSektor = db
+  const potensiSektor = await db
     .prepare(`SELECT DISTINCT sektor FROM potensi_desa WHERE kode_desa = ? AND nilai = 'Ada' ORDER BY sektor`)
     .all(kode)
     .map((r) => r.sektor);
@@ -150,7 +150,7 @@ export async function getNarasiDesa(kode, dimensi, { forceRefresh = false } = {}
   const inputHash = hashContext(ctx);
 
   if (!forceRefresh) {
-    const cached = db
+    const cached = await db
       .prepare(
         `SELECT narasi, model, dibuat_pada FROM narasi_desa
          WHERE kode_desa = ? AND dimensi = ? AND input_hash = ? ORDER BY id DESC LIMIT 1`
@@ -165,7 +165,7 @@ export async function getNarasiDesa(kode, dimensi, { forceRefresh = false } = {}
   const { result, model } = await callLLM(prompt);
 
   const dibuatPada = new Date().toISOString();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO narasi_desa (kode_desa, dimensi, input_hash, model, narasi, dibuat_pada)
      VALUES (?, ?, ?, ?, ?, ?)`
   ).run(kode, dimensiKey, inputHash, model, JSON.stringify(result), dibuatPada);

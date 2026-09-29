@@ -66,16 +66,16 @@ export function listReviews(scope) {
     params.push(`%${scope.q}%`, `%${scope.q}%`);
   }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-  const rows = db.prepare(`SELECT * FROM rpkp_review ${where} ORDER BY diperbarui_pada DESC`).all(...params);
+  const rows = await db.prepare(`SELECT * FROM rpkp_review ${where} ORDER BY diperbarui_pada DESC`).all(...params);
   const withCounts = rows.map((r) => {
-    const doc = db.prepare('SELECT COUNT(*) n FROM rpkp_document WHERE review_id = ?').get(r.id);
+    const doc = await db.prepare('SELECT COUNT(*) n FROM rpkp_document WHERE review_id = ?').get(r.id);
     return { ...r, jumlah_dokumen: doc.n };
   });
   return withCounts;
 }
 
 export function getReview(id) {
-  return db.prepare('SELECT * FROM rpkp_review WHERE id = ?').get(id);
+  return await db.prepare('SELECT * FROM rpkp_review WHERE id = ?').get(id);
 }
 
 export function createReview(user, data) {
@@ -84,7 +84,7 @@ export function createReview(user, data) {
   const kab = user.role === 'kabupaten' ? user.kabupaten : kabupaten;
   if (!kab || !kab.trim()) throw badRequest('Kabupaten wajib diisi.');
   const now = new Date().toISOString();
-  const result = db
+  const result = await db
     .prepare(
       `INSERT INTO rpkp_review (nama_kawasan, kabupaten, periode, tahun_dokumen, keterangan, status, dibuat_oleh, dibuat_pada, diperbarui_pada)
        VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?)`
@@ -96,23 +96,23 @@ export function createReview(user, data) {
 }
 
 export function logHistory(reviewId, eventType, detail, aktor) {
-  db.prepare(
+  await db.prepare(
     `INSERT INTO rpkp_review_history (review_id, event_type, detail, aktor, dibuat_pada) VALUES (?, ?, ?, ?, ?)`
   ).run(reviewId, eventType, detail || null, aktor, new Date().toISOString());
 }
 
 export function listHistory(reviewId) {
-  return db.prepare('SELECT * FROM rpkp_review_history WHERE review_id = ? ORDER BY dibuat_pada DESC').all(reviewId);
+  return await db.prepare('SELECT * FROM rpkp_review_history WHERE review_id = ? ORDER BY dibuat_pada DESC').all(reviewId);
 }
 
 export function listDocuments(reviewId) {
-  return db
+  return await db
     .prepare('SELECT * FROM rpkp_document WHERE review_id = ? ORDER BY document_type, version DESC')
     .all(reviewId);
 }
 
 export function getDocument(reviewId, documentId) {
-  return db.prepare('SELECT * FROM rpkp_document WHERE id = ? AND review_id = ?').get(documentId, reviewId);
+  return await db.prepare('SELECT * FROM rpkp_document WHERE id = ? AND review_id = ?').get(documentId, reviewId);
 }
 
 // Every upload of the same document_type within a review becomes the next
@@ -123,18 +123,18 @@ export function addDocument(reviewId, user, { documentType, originalFilename, st
   if (!DOCUMENT_TYPES.includes(documentType)) {
     throw badRequest(`Jenis dokumen tidak dikenali: ${documentType}`);
   }
-  const last = db
+  const last = await db
     .prepare('SELECT MAX(version) AS v FROM rpkp_document WHERE review_id = ? AND document_type = ?')
     .get(reviewId, documentType);
   const version = (last?.v || 0) + 1;
   const now = new Date().toISOString();
-  const result = db
+  const result = await db
     .prepare(
       `INSERT INTO rpkp_document (review_id, document_type, version, original_filename, stored_filename, file_size, mime_type, diunggah_oleh, diunggah_pada)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     )
     .run(reviewId, documentType, version, originalFilename, storedFilename, fileSize || null, mimeType || null, user.email, now);
-  db.prepare('UPDATE rpkp_review SET diperbarui_pada = ? WHERE id = ?').run(now, reviewId);
+  await db.prepare('UPDATE rpkp_review SET diperbarui_pada = ? WHERE id = ?').run(now, reviewId);
   logHistory(reviewId, 'DOCUMENT_UPLOADED', `${documentType} v${version} diunggah (${originalFilename})`, user.email);
   return { id: Number(result.lastInsertRowid), version };
 }
@@ -168,7 +168,7 @@ export function changeStatus(user, review, nextStatus, note) {
     throw forbidden('Aksi ini biasanya dilakukan oleh Kabupaten.');
   }
   const now = new Date().toISOString();
-  db.prepare('UPDATE rpkp_review SET status = ?, diperbarui_pada = ? WHERE id = ?').run(nextStatus, now, review.id);
+  await db.prepare('UPDATE rpkp_review SET status = ?, diperbarui_pada = ? WHERE id = ?').run(nextStatus, now, review.id);
   logHistory(review.id, 'STATUS_CHANGED', note ? `${review.status} → ${nextStatus}: ${note}` : `${review.status} → ${nextStatus}`, user.email);
   return getReview(review.id);
 }
@@ -178,7 +178,7 @@ export function changeStatus(user, review, nextStatus, note) {
 // villages. Every kode_desa must belong to the review's own kabupaten -
 // a kawasan can't span kabupaten (Permendesa 5/2016 Pasal 9).
 export function listReviewDesa(reviewId) {
-  return db
+  return await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kecamatan, d.status_desa FROM rpkp_review_desa rd
        JOIN desa d ON d.kode_desa = rd.kode_desa
@@ -192,7 +192,7 @@ export function setReviewDesa(review, user, kodeDesaList) {
   const unique = [...new Set(kodeDesaList.map(String))];
   if (unique.length > 0) {
     const placeholders = unique.map(() => '?').join(',');
-    const found = db
+    const found = await db
       .prepare(`SELECT kode_desa FROM desa WHERE kode_desa IN (${placeholders}) AND kabupaten = ?`)
       .all(...unique, review.kabupaten)
       .map((r) => r.kode_desa);
@@ -201,14 +201,14 @@ export function setReviewDesa(review, user, kodeDesaList) {
       throw badRequest(`Desa berikut bukan bagian dari kabupaten ${review.kabupaten}: ${invalid.join(', ')}`);
     }
   }
-  db.exec('BEGIN');
+  await db.exec('BEGIN');
   try {
-    db.prepare('DELETE FROM rpkp_review_desa WHERE review_id = ?').run(review.id);
+    await db.prepare('DELETE FROM rpkp_review_desa WHERE review_id = ?').run(review.id);
     const insert = db.prepare('INSERT INTO rpkp_review_desa (review_id, kode_desa) VALUES (?, ?)');
     for (const kode of unique) insert.run(review.id, kode);
-    db.exec('COMMIT');
+    await db.exec('COMMIT');
   } catch (e) {
-    db.exec('ROLLBACK');
+    await db.exec('ROLLBACK');
     throw e;
   }
   logHistory(review.id, 'DESA_ANGGOTA_DIPERBARUI', `${unique.length} desa ditandai sebagai anggota kawasan`, user.email);

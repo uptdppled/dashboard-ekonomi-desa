@@ -53,7 +53,7 @@ export function scopeLabel(scope) {
 // in specific indicators rather than letting it invent generic advice.
 function buildContext(scope) {
   const base = scopeWhere(scope);
-  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d ${base.sql}`).get(...base.params).n;
+  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${base.sql}`).get(...base.params).n;
 
   const single = scope.dimensi ? DIMENSI_ORDER.filter((d) => d === scope.dimensi) : DIMENSI_ORDER;
   const gapLimit = scope.dimensi ? GAP_PER_DIMENSI_SATU : GAP_PER_DIMENSI_ALL;
@@ -61,7 +61,7 @@ function buildContext(scope) {
   const dimensiParam = scope.dimensi ? [scope.dimensi] : [];
 
   const dimensiFilter = scopeWhere(scope, 'd');
-  const dimensiRows = db
+  const dimensiRows = await db
     .prepare(
       `SELECT si.dimensi, AVG(si.skor) AS avgSkor, AVG(si.bobot_maks) AS avgBobot
        FROM skor_indikator si
@@ -72,7 +72,7 @@ function buildContext(scope) {
     .all(...dimensiFilter.params, ...dimensiParam);
 
   const indikatorFilter = scopeWhere(scope, 'd');
-  const indikatorRows = db
+  const indikatorRows = await db
     .prepare(
       `SELECT si.dimensi, si.sub_dimensi, si.nama_indikator, AVG(si.skor) AS avgSkor, AVG(si.bobot_maks) AS avgBobot
        FROM skor_indikator si
@@ -159,7 +159,7 @@ export async function getNarasiIndeks(scope, { forceRefresh = false } = {}) {
   const inputHash = hashContext(ctx);
 
   if (!forceRefresh) {
-    const cached = db
+    const cached = await db
       .prepare(
         `SELECT hasil_json, model, dibuat_pada FROM narasi_indeks
          WHERE scope_key = ? AND input_hash = ? ORDER BY id DESC LIMIT 1`
@@ -174,7 +174,7 @@ export async function getNarasiIndeks(scope, { forceRefresh = false } = {}) {
   const { result, model } = await callLLM(prompt);
 
   const dibuatPada = new Date().toISOString();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO narasi_indeks (scope_key, input_hash, model, hasil_json, dibuat_pada)
      VALUES (?, ?, ?, ?, ?)`
   ).run(key, inputHash, model, JSON.stringify(result), dibuatPada);

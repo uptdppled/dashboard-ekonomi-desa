@@ -30,7 +30,7 @@ function badRequest(msg) {
 // version shouldn't silently influence the answer alongside its
 // replacement.
 export function latestDocumentsForReview(reviewId) {
-  return db
+  return await db
     .prepare(
       `SELECT d.* FROM rpkp_document d
        INNER JOIN (
@@ -345,7 +345,7 @@ async function ensureGeminiFile(doc, filePath) {
   }
   const buffer = fs.readFileSync(filePath);
   const uploaded = await waitUntilActive(await uploadFileToGemini(buffer, 'application/pdf', doc.original_filename));
-  db.prepare('UPDATE rpkp_document SET gemini_file_uri = ?, gemini_file_expires_at = ? WHERE id = ?').run(
+  await db.prepare('UPDATE rpkp_document SET gemini_file_uri = ?, gemini_file_expires_at = ? WHERE id = ?').run(
     uploaded.uri,
     uploaded.expirationTime,
     doc.id
@@ -568,7 +568,7 @@ export async function checkRpjmdAlignment(review) {
 
 export function saveQa(reviewId, user, question, result) {
   const now = new Date().toISOString();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO rpkp_ai_qa (review_id, pertanyaan, ditemukan, jawaban, sumber_dokumen, halaman, kutipan, model, prompt_version, ditanya_oleh, dibuat_pada)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   ).run(
@@ -587,5 +587,5 @@ export function saveQa(reviewId, user, question, result) {
 }
 
 export function listQa(reviewId) {
-  return db.prepare('SELECT * FROM rpkp_ai_qa WHERE review_id = ? ORDER BY dibuat_pada DESC').all(reviewId);
+  return await db.prepare('SELECT * FROM rpkp_ai_qa WHERE review_id = ? ORDER BY dibuat_pada DESC').all(reviewId);
 }

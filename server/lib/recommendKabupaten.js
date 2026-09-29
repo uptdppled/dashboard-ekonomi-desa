@@ -42,7 +42,7 @@ export function listDesaByBumTier(kabupaten, tier) {
   const scoped = kabupaten != null;
   const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
   const args = scoped ? [kabupaten] : [];
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT e.kode_desa, e.nilai, d.nama_desa, d.kecamatan, d.kabupaten, d.status_desa
        FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
@@ -58,7 +58,7 @@ export function listDesaByKdmpStatus(kabupaten, status) {
   const scoped = kabupaten != null;
   const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
   const args = scoped ? [kabupaten] : [];
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT e.kode_desa, e.nilai, d.nama_desa, d.kecamatan, d.kabupaten, d.status_desa
        FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
@@ -111,7 +111,7 @@ export function buildKabupatenContext(kabupaten) {
   const kabWhereAnd = scoped ? 'AND d.kabupaten = ?' : '';
   const args = scoped ? [kabupaten] : [];
 
-  const desaRows = db
+  const desaRows = await db
     .prepare(`SELECT kode_desa, nama_desa, kecamatan, kabupaten, status_desa FROM desa d ${kabWhere}`)
     .all(...args);
   if (desaRows.length === 0) return null;
@@ -119,7 +119,7 @@ export function buildKabupatenContext(kabupaten) {
   const statusCount = {};
   for (const d of desaRows) statusCount[d.status_desa] = (statusCount[d.status_desa] || 0) + 1;
 
-  const skorRows = db
+  const skorRows = await db
     .prepare(
       `SELECT si.kode_desa, si.skor FROM skor_indikator si
        JOIN desa d ON d.kode_desa = si.kode_desa
@@ -129,7 +129,7 @@ export function buildKabupatenContext(kabupaten) {
   const skorMap = new Map(skorRows.map((r) => [r.kode_desa, r.skor]));
   const avgSkor = skorRows.length ? skorRows.reduce((a, r) => a + r.skor, 0) / skorRows.length : null;
 
-  const bumRows = db
+  const bumRows = await db
     .prepare(
       `SELECT e.kode_desa, e.nilai FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
        WHERE e.komponen = ? ${kabWhereAnd}`
@@ -144,7 +144,7 @@ export function buildKabupatenContext(kabupaten) {
     .filter((d) => !isAktif(bumTierByDesa.get(d.kode_desa)))
     .map(desaInfo);
 
-  const kdmpRows = db
+  const kdmpRows = await db
     .prepare(
       `SELECT e.nilai FROM ekosistem_desa e JOIN desa d ON d.kode_desa = e.kode_desa
        WHERE e.komponen = ? ${kabWhereAnd}`
@@ -155,7 +155,7 @@ export function buildKabupatenContext(kabupaten) {
   // Legal-entity status + operational days both live in the free-text
   // jawaban_kuesioner table, keyed by question text, one row per village per
   // question (main BUM Desa + the joint "Bersama" variant).
-  const bumJawabanRows = db
+  const bumJawabanRows = await db
     .prepare(
       `SELECT j.kode_desa, j.pertanyaan, j.jawaban FROM jawaban_kuesioner j
        JOIN desa d ON d.kode_desa = j.kode_desa
@@ -188,7 +188,7 @@ export function buildKabupatenContext(kabupaten) {
     ? hariOperasionalValues.reduce((a, n) => a + n, 0) / hariOperasionalValues.length
     : null;
 
-  const sektorRows = db
+  const sektorRows = await db
     .prepare(
       `SELECT p.sektor, COUNT(DISTINCT p.kode_desa) n FROM potensi_desa p
        JOIN desa d ON d.kode_desa = p.kode_desa
@@ -197,7 +197,7 @@ export function buildKabupatenContext(kabupaten) {
     )
     .all(...args);
 
-  const potensiCountRows = db
+  const potensiCountRows = await db
     .prepare(
       `SELECT p.kode_desa, COUNT(DISTINCT p.sektor) n FROM potensi_desa p
        JOIN desa d ON d.kode_desa = p.kode_desa
@@ -327,7 +327,7 @@ export async function getRekomendasiKabupaten(kabupaten, { forceRefresh = false 
   const inputHash = hashContext(ctx);
 
   if (!forceRefresh) {
-    const cached = db
+    const cached = await db
       .prepare(
         `SELECT rekomendasi_json, model, dibuat_pada FROM rekomendasi_kabupaten
          WHERE kabupaten = ? AND input_hash = ? ORDER BY id DESC LIMIT 1`
@@ -347,7 +347,7 @@ export async function getRekomendasiKabupaten(kabupaten, { forceRefresh = false 
   const prompt = buildPrompt(ctx);
   const { result, model } = await callLLM(prompt);
 
-  db.prepare(
+  await db.prepare(
     `INSERT INTO rekomendasi_kabupaten (kabupaten, input_hash, model, rekomendasi_json, dibuat_pada)
      VALUES (?, ?, ?, ?, ?)`
   ).run(cacheKey, inputHash, model, JSON.stringify(result), new Date().toISOString());

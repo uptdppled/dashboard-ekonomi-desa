@@ -30,7 +30,7 @@ export function assertDesaAccess(user, kodeDesa) {
     return;
   }
   if (user.role === 'kabupaten') {
-    const desaRow = db.prepare('SELECT kabupaten FROM desa WHERE kode_desa = ?').get(kodeDesa);
+    const desaRow = await db.prepare('SELECT kabupaten FROM desa WHERE kode_desa = ?').get(kodeDesa);
     if (!desaRow || desaRow.kabupaten !== user.kabupaten) throw forbidden();
     return;
   }
@@ -60,7 +60,7 @@ export function assertProvinsiAccess(user) {
 // rejected promise, not a synchronous exception, even when it happens
 // before the first `await`.
 export function guard(fn) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch((err) => {
       if (err.code === 'FORBIDDEN') return res.status(403).json({ error: err.message, code: 'FORBIDDEN' });
       // Any other thrown error carrying an explicit `.status` (e.g. lib/rpkp.js's

@@ -50,12 +50,12 @@ function scopeWhere(scope, alias = 'd') {
 
 function loadDesaWithSektor(scope) {
   const where = scopeWhere(scope);
-  const desaRows = db
+  const desaRows = await db
     .prepare(`SELECT kode_desa, nama_desa, kecamatan, kabupaten, lat, lng FROM desa d WHERE lat IS NOT NULL AND lng IS NOT NULL ${where.sql}`)
     .all(...where.params);
 
   const sektorWhere = scopeWhere(scope);
-  const sektorRows = db
+  const sektorRows = await db
     .prepare(
       `SELECT DISTINCT p.kode_desa, p.sektor FROM potensi_desa p
        JOIN desa d ON d.kode_desa = p.kode_desa
@@ -63,7 +63,7 @@ function loadDesaWithSektor(scope) {
     )
     .all(...sektorWhere.params);
   const kerajinanWhere = scopeWhere(scope);
-  const kerajinanRows = db
+  const kerajinanRows = await db
     .prepare(
       `SELECT DISTINCT p.kode_desa FROM potensi_desa p
        JOIN desa d ON d.kode_desa = p.kode_desa
@@ -170,7 +170,7 @@ export function buildBumDesaPotensi(scope, { maxResults = 60 } = {}) {
   const where = scopeWhere(scope);
   const bidangPlaceholders = BUM_DESA_BIDANG.map(() => '?').join(',');
 
-  const bumRows = db
+  const bumRows = await db
     .prepare(
       `SELECT p.kode_desa, p.sektor, p.subsektor
        FROM potensi_desa p JOIN desa d ON d.kode_desa = p.kode_desa
@@ -181,7 +181,7 @@ export function buildBumDesaPotensi(scope, { maxResults = 60 } = {}) {
 
   const sektorSet = [...new Set(bumRows.map((r) => r.sektor))];
   const sektorPlaceholders = sektorSet.map(() => '?').join(',');
-  const potRows = db
+  const potRows = await db
     .prepare(
       `SELECT p.kode_desa, p.sektor, p.subsektor
        FROM potensi_desa p JOIN desa d ON d.kode_desa = p.kode_desa
@@ -199,7 +199,7 @@ export function buildBumDesaPotensi(scope, { maxResults = 60 } = {}) {
 
   const candidateKodes = [...new Set(bumRows.map((r) => r.kode_desa))];
   const kodePlaceholders = candidateKodes.map(() => '?').join(',');
-  const desaRows = db
+  const desaRows = await db
     .prepare(`SELECT kode_desa, nama_desa, kecamatan, kabupaten, status_desa FROM desa WHERE kode_desa IN (${kodePlaceholders})`)
     .all(...candidateKodes);
   const desaMap = new Map(desaRows.map((d) => [d.kode_desa, d]));

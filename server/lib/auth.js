@@ -23,13 +23,13 @@ export function bootstrapAdmin() {
   const bootstrapCode = process.env.ADMIN_BOOTSTRAP_CODE;
   if (!bootstrapCode) return;
 
-  const anyAdmin = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
+  const anyAdmin = await db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
   if (anyAdmin) return;
 
-  const existing = db.prepare('SELECT id FROM kode_registrasi WHERE kode = ?').get(bootstrapCode);
+  const existing = await db.prepare('SELECT id FROM kode_registrasi WHERE kode = ?').get(bootstrapCode);
   if (existing) return;
 
-  db.prepare(
+  await db.prepare(
     `INSERT INTO kode_registrasi (kode, role, dibuat_oleh, dibuat_pada) VALUES (?, 'admin', 'system:bootstrap', ?)`
   ).run(bootstrapCode, new Date().toISOString());
   console.log('Kode registrasi admin pertama dibuat dari ADMIN_BOOTSTRAP_CODE.');
@@ -85,7 +85,7 @@ export function requireAuth(req, res, next) {
 }
 
 export function requireRole(...roles) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ error: 'Anda tidak punya akses ke fitur ini.', code: 'FORBIDDEN' });
     }
@@ -164,11 +164,11 @@ export function consumeOAuthState(state) {
 // ---------- registration / login ----------
 
 export function findUserByEmail(email) {
-  return db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  return await db.prepare('SELECT * FROM users WHERE email = ?').get(email);
 }
 
 export function registerWithKode(email, nama, kode) {
-  const kodeRow = db.prepare('SELECT * FROM kode_registrasi WHERE kode = ?').get(kode);
+  const kodeRow = await db.prepare('SELECT * FROM kode_registrasi WHERE kode = ?').get(kode);
   if (!kodeRow) {
     const err = new Error('Kode registrasi tidak ditemukan.');
     err.code = 'INVALID_CODE';
@@ -181,28 +181,28 @@ export function registerWithKode(email, nama, kode) {
   }
 
   const now = new Date().toISOString();
-  db.exec('BEGIN');
+  await db.exec('BEGIN');
   try {
-    db.prepare(
+    await db.prepare(
       `INSERT INTO users (email, nama, role, kode_desa, kabupaten, dibuat_pada, login_terakhir)
        VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(email, nama, kodeRow.role, kodeRow.kode_desa, kodeRow.kabupaten, now, now);
-    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-    db.prepare('UPDATE kode_registrasi SET dipakai_oleh_user_id = ?, dipakai_pada = ? WHERE id = ?').run(
+    const user = await db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    await db.prepare('UPDATE kode_registrasi SET dipakai_oleh_user_id = ?, dipakai_pada = ? WHERE id = ?').run(
       user.id,
       now,
       kodeRow.id
     );
-    db.exec('COMMIT');
+    await db.exec('COMMIT');
     return user;
   } catch (err) {
-    db.exec('ROLLBACK');
+    await db.exec('ROLLBACK');
     throw err;
   }
 }
 
 export function touchLogin(userId) {
-  db.prepare('UPDATE users SET login_terakhir = ? WHERE id = ?').run(new Date().toISOString(), userId);
+  await db.prepare('UPDATE users SET login_terakhir = ? WHERE id = ?').run(new Date().toISOString(), userId);
 }
 
 // ---------- dev-only login bypass ----------
@@ -226,12 +226,12 @@ export function findOrCreateDevUser(role) {
   let kode_desa = null;
   let kabupaten = null;
   if (role === 'desa') {
-    kode_desa = db.prepare('SELECT kode_desa FROM desa ORDER BY kode_desa LIMIT 1').get()?.kode_desa || null;
+    kode_desa = await db.prepare('SELECT kode_desa FROM desa ORDER BY kode_desa LIMIT 1').get()?.kode_desa || null;
   } else if (role === 'kabupaten') {
-    kabupaten = db.prepare('SELECT kabupaten FROM desa WHERE kabupaten IS NOT NULL ORDER BY kabupaten LIMIT 1').get()?.kabupaten || null;
+    kabupaten = await db.prepare('SELECT kabupaten FROM desa WHERE kabupaten IS NOT NULL ORDER BY kabupaten LIMIT 1').get()?.kabupaten || null;
   }
 
-  db.prepare(
+  await db.prepare(
     `INSERT INTO users (email, nama, role, kode_desa, kabupaten, dibuat_pada, login_terakhir)
      VALUES (?, ?, ?, ?, ?, ?, ?)`
   ).run(email, `Uji Coba (${role})`, role, kode_desa, kabupaten, now, now);

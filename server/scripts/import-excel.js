@@ -18,6 +18,18 @@ const TAHUN = 2026;
 
 const IDENTITY_RE = /^(kode desa|provinsi|kabupaten|kecamatan|^desa$|nama desa|tanggal upload kuesioner)$/i;
 
+// Values in 'Rekap Isu' that record the ABSENCE of a potensi. Every read path
+// in index.js already excludes them (see the `nilai NOT IN (...)` filters
+// around index.js:591/601/822/843), so storing them costs space and buys
+// nothing: they were 728k of 1.21M potensi_desa rows, ~60% of the largest
+// table in the database.
+//
+// '0' is deliberately NOT in this set even though most queries also exclude
+// it: the per-desa potensi list at index.js:601 filters only
+// ('Tidak Ada', '-', '') and still treats 0 as meaningful. Dropping it here
+// would silently change that endpoint's output.
+const POTENSI_KOSONG = new Set(['tidak ada', '-', '']);
+
 function isIdentityHeader(h) {
   return IDENTITY_RE.test(h.trim());
 }
@@ -81,7 +93,7 @@ function toNumberOrNull(v) {
 }
 
 function logImport(sumber, sheet, jumlah) {
-  db.prepare(
+  await db.prepare(
     'INSERT INTO import_log (sumber_file, sheet, waktu_import, jumlah_baris) VALUES (?, ?, ?, ?)'
   ).run(sumber, sheet, new Date().toISOString(), jumlah);
   console.log(`  -> ${sheet}: ${jumlah} baris`);
@@ -98,10 +110,10 @@ console.log('Selesai membaca. Memproses sheet...');
 // script was first written) - re-import deletes and re-inserts the SAME
 // kode_desa set, so FK checks are safely disabled for the duration rather
 // than needing a full CASCADE that would also wipe operator accounts.
-db.exec('PRAGMA foreign_keys = OFF;');
-db.exec('BEGIN');
+await db.exec('PRAGMA foreign_keys = OFF;');
+await db.exec('BEGIN');
 try {
-  db.exec(
+  await db.exec(
     'DELETE FROM skor_indikator; DELETE FROM jawaban_kuesioner; ' +
     'DELETE FROM potensi_desa; DELETE FROM ekosistem_desa; ' +
     'DELETE FROM import_log; DELETE FROM desa;'
@@ -241,6 +253,7 @@ try {
     'INSERT INTO potensi_desa (kode_desa, tahun, sektor, subsektor, nilai) VALUES (?, ?, ?, ?, ?)'
   );
   let potensiCount = 0;
+  let potensiKosong = 0;
   const sektorCache = new Map();
   for (const row of isuRaw.dataRows) {
     const kode = String(row[isuRaw.kodeDesaIdx]).trim();
@@ -249,16 +262,23 @@ try {
       if (!header || isIdentityHeader(header)) continue;
       const val = row[i];
       if (val === null || val === undefined || String(val).trim() === '') continue;
+      const nilai = String(val).trim();
+      // Absence is not data - see POTENSI_KOSONG at the top of this file.
+      if (POTENSI_KOSONG.has(nilai.toLowerCase())) {
+        potensiKosong++;
+        continue;
+      }
       let sektor = sektorCache.get(header);
       if (sektor === undefined) {
         sektor = categorizeSektor(header);
         sektorCache.set(header, sektor);
       }
       if (!sektor) continue; // kolom belum terkategori -> di luar cakupan v1 (lihat kamus data)
-      insertPotensi.run(kode, TAHUN, sektor, header, String(val).trim());
+      insertPotensi.run(kode, TAHUN, sektor, header, nilai);
       potensiCount++;
     }
   }
+  console.log(`  potensi_desa: ${potensiCount} baris disimpan, ${potensiKosong} baris "tidak ada" dilewati`);
   logImport('raw', 'Rekap Isu (potensi desa)', potensiCount);
 
   // ---- 5. ekosistem_desa dari raw 'Rekap Tambahan' ----
@@ -283,12 +303,12 @@ try {
   }
   logImport('raw', 'Rekap Tambahan (ekosistem)', ekosistemCount);
 
-  db.exec('COMMIT');
+  await db.exec('COMMIT');
   console.log('\nImport selesai.');
 } catch (err) {
-  db.exec('ROLLBACK');
+  await db.exec('ROLLBACK');
   console.error('Import gagal, rollback:', err);
   process.exit(1);
 } finally {
-  db.exec('PRAGMA foreign_keys = ON;');
+  await db.exec('PRAGMA foreign_keys = ON;');
 }

@@ -25,7 +25,7 @@ function notFound(msg = 'Tidak ditemukan.') {
 // kategori: 'COMPLETENESS' | 'IPKP' | 'READINESS' - same master-checklist
 // table, one Review-tab section each.
 export function listChecklistItems(kategori) {
-  return db.prepare('SELECT * FROM rpkp_completeness_item WHERE kategori = ? AND aktif = 1 ORDER BY urutan').all(kategori);
+  return await db.prepare('SELECT * FROM rpkp_completeness_item WHERE kategori = ? AND aktif = 1 ORDER BY urutan').all(kategori);
 }
 
 export function listCompletenessItems() {
@@ -33,18 +33,18 @@ export function listCompletenessItems() {
 }
 
 export function getChecklistItem(kode) {
-  return db.prepare('SELECT * FROM rpkp_completeness_item WHERE kode = ? AND aktif = 1').get(kode);
+  return await db.prepare('SELECT * FROM rpkp_completeness_item WHERE kode = ? AND aktif = 1').get(kode);
 }
 
 export function getCompletenessItem(kode) {
-  return db.prepare('SELECT * FROM rpkp_completeness_item WHERE kode = ? AND aktif = 1').get(kode);
+  return await db.prepare('SELECT * FROM rpkp_completeness_item WHERE kode = ? AND aktif = 1').get(kode);
 }
 
 function attachEvidence(findings) {
   if (findings.length === 0) return findings;
   const ids = findings.map((f) => f.id);
   const placeholders = ids.map(() => '?').join(',');
-  const evidenceRows = db.prepare(`SELECT * FROM rpkp_evidence WHERE finding_id IN (${placeholders})`).all(...ids);
+  const evidenceRows = await db.prepare(`SELECT * FROM rpkp_evidence WHERE finding_id IN (${placeholders})`).all(...ids);
   const byFinding = new Map();
   for (const e of evidenceRows) {
     if (!byFinding.has(e.finding_id)) byFinding.set(e.finding_id, []);
@@ -63,7 +63,7 @@ export function listFindings(reviewId, category) {
     clauses.push('category = ?');
     params.push(category);
   }
-  const rows = db
+  const rows = await db
     .prepare(`SELECT * FROM rpkp_finding WHERE ${clauses.join(' AND ')} ORDER BY category, item_kode`)
     .all(...params);
   return attachEvidence(rows);
@@ -78,20 +78,20 @@ export function listFindings(reviewId, category) {
 // item_kode (their whole category is "one check").
 export function upsertFinding(reviewId, category, itemKode, title, aiResult, user) {
   const now = new Date().toISOString();
-  const existing = db
+  const existing = await db
     .prepare('SELECT id FROM rpkp_finding WHERE review_id = ? AND category = ? AND item_kode = ?')
     .get(reviewId, category, itemKode);
 
   let findingId;
   if (existing) {
     findingId = existing.id;
-    db.prepare(
+    await db.prepare(
       `UPDATE rpkp_finding SET ai_status = ?, ai_summary = ?, reviewer_status = 'PENDING', reviewer_note = NULL, model = ?, prompt_version = ?, diperbarui_pada = ?
        WHERE id = ?`
     ).run(aiResult.status, aiResult.ringkasan, aiResult.model, aiResult.promptVersion, now, findingId);
-    db.prepare('DELETE FROM rpkp_evidence WHERE finding_id = ?').run(findingId);
+    await db.prepare('DELETE FROM rpkp_evidence WHERE finding_id = ?').run(findingId);
   } else {
-    const result = db
+    const result = await db
       .prepare(
         `INSERT INTO rpkp_finding (review_id, category, item_kode, title, ai_status, ai_summary, model, prompt_version, dibuat_pada, diperbarui_pada)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -100,7 +100,7 @@ export function upsertFinding(reviewId, category, itemKode, title, aiResult, use
     findingId = Number(result.lastInsertRowid);
   }
 
-  const insertEvidence = db.prepare(
+  const insertEvidence = await db.prepare(
     'INSERT INTO rpkp_evidence (finding_id, sumber_dokumen, halaman, kutipan) VALUES (?, ?, ?, ?)'
   );
   for (const e of aiResult.evidence) {
@@ -127,10 +127,10 @@ export function getFinding(findingId) {
 }
 
 function setReviewerStatus(findingId, user, status, note) {
-  const finding = db.prepare('SELECT * FROM rpkp_finding WHERE id = ?').get(findingId);
+  const finding = await db.prepare('SELECT * FROM rpkp_finding WHERE id = ?').get(findingId);
   if (!finding) throw notFound('Temuan tidak ditemukan.');
   const now = new Date().toISOString();
-  db.prepare('UPDATE rpkp_finding SET reviewer_status = ?, reviewer_note = ?, diperbarui_pada = ? WHERE id = ?').run(
+  await db.prepare('UPDATE rpkp_finding SET reviewer_status = ?, reviewer_note = ?, diperbarui_pada = ? WHERE id = ?').run(
     status,
     note || null,
     now,
@@ -167,10 +167,10 @@ export function checkBanua360CrossCheck(review, user) {
   } else {
     const kodeList = desaList.map((d) => d.kode_desa);
     const placeholders = kodeList.map(() => '?').join(',');
-    const potensiRows = db
+    const potensiRows = await db
       .prepare(`SELECT p.kode_desa, p.sektor FROM potensi_desa p WHERE ${ADA_FILTER} AND p.kode_desa IN (${placeholders})`)
       .all(...kodeList);
-    const bumRows = db
+    const bumRows = await db
       .prepare(
         `SELECT DISTINCT kode_desa FROM potensi_desa WHERE nilai = 'Ada' AND subsektor LIKE 'Terdapat BUM Desa%' AND kode_desa IN (${placeholders})`
       )
@@ -209,7 +209,7 @@ export function checkBanua360CrossCheck(review, user) {
 const KEPUTUSAN_VALUES = new Set(['DAPAT_DIREKOMENDASIKAN', 'DENGAN_CATATAN', 'BELUM_DAPAT']);
 
 export function getRecommendation(reviewId) {
-  return db.prepare('SELECT * FROM rpkp_recommendation WHERE review_id = ?').get(reviewId);
+  return await db.prepare('SELECT * FROM rpkp_recommendation WHERE review_id = ?').get(reviewId);
 }
 
 // The Recommendation Gate is deliberately a human-only decision - this
@@ -220,7 +220,7 @@ export function setRecommendation(reviewId, user, keputusan, catatan) {
   const now = new Date().toISOString();
   const existing = getRecommendation(reviewId);
   if (existing) {
-    db.prepare('UPDATE rpkp_recommendation SET keputusan = ?, catatan = ?, dibuat_oleh = ?, dibuat_pada = ? WHERE review_id = ?').run(
+    await db.prepare('UPDATE rpkp_recommendation SET keputusan = ?, catatan = ?, dibuat_oleh = ?, dibuat_pada = ? WHERE review_id = ?').run(
       keputusan,
       catatan || null,
       user.email,
@@ -228,7 +228,7 @@ export function setRecommendation(reviewId, user, keputusan, catatan) {
       reviewId
     );
   } else {
-    db.prepare(
+    await db.prepare(
       'INSERT INTO rpkp_recommendation (review_id, keputusan, catatan, dibuat_oleh, dibuat_pada) VALUES (?, ?, ?, ?, ?)'
     ).run(reviewId, keputusan, catatan || null, user.email, now);
   }

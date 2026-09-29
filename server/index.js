@@ -170,7 +170,7 @@ function googleRedirectUri(req) {
   return `${base}/api/auth/google/callback`;
 }
 
-app.get('/api/auth/google/start', (req, res) => {
+app.get('/api/auth/google/start', async (req, res) => {
   try {
     const state = createOAuthState(req.query.kode ? String(req.query.kode) : null);
     const url = buildGoogleAuthUrl({ redirectUri: googleRedirectUri(req), state });
@@ -210,22 +210,22 @@ app.get('/api/auth/google/callback', async (req, res) => {
   }
 });
 
-app.get('/api/auth/me', (req, res) => {
+app.get('/api/auth/me', async (req, res) => {
   const user = getSessionUser(req);
   if (!user) return res.status(401).json({ error: 'Belum masuk.' });
   res.json(user);
 });
 
-app.post('/api/auth/logout', (req, res) => {
+app.post('/api/auth/logout', async (req, res) => {
   clearSessionCookie(res);
   res.json({ ok: true });
 });
 
-app.get('/api/auth/dev-config', (req, res) => {
+app.get('/api/auth/dev-config', async (req, res) => {
   res.json({ devLoginEnabled: devLoginAllowed() });
 });
 
-app.post('/api/auth/dev-login', (req, res) => {
+app.post('/api/auth/dev-login', async (req, res) => {
   if (!devLoginAllowed()) return res.status(403).json({ error: 'Mode uji coba tidak tersedia.' });
   const { role } = req.body || {};
   if (!['admin', 'provinsi', 'kabupaten', 'desa'].includes(role)) {
@@ -238,8 +238,8 @@ app.post('/api/auth/dev-login', (req, res) => {
 
 // ---------- admin: manajemen pengguna ----------
 
-app.get('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), (req, res) => {
-  const rows = db
+app.get('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), async (req, res) => {
+  const rows = await db
     .prepare(
       `SELECT kr.*, u.email AS dipakai_oleh_email FROM kode_registrasi kr
        LEFT JOIN users u ON u.id = kr.dipakai_oleh_user_id
@@ -249,7 +249,7 @@ app.get('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), (req, r
   res.json(rows);
 });
 
-app.post('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), (req, res) => {
+app.post('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), async (req, res) => {
   const { role, kode_desa, kabupaten } = req.body || {};
   if (!['desa', 'kabupaten', 'provinsi', 'admin'].includes(role)) {
     return res.status(400).json({ error: 'Role tidak valid' });
@@ -258,7 +258,7 @@ app.post('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), (req, 
   if (role === 'kabupaten' && !kabupaten) return res.status(400).json({ error: 'kabupaten wajib diisi untuk role kabupaten' });
 
   const kode = generateKode();
-  db.prepare(
+  await db.prepare(
     `INSERT INTO kode_registrasi (kode, role, kode_desa, kabupaten, dibuat_oleh, dibuat_pada)
      VALUES (?, ?, ?, ?, ?, ?)`
   ).run(kode, role, role === 'desa' ? kode_desa : null, role === 'kabupaten' ? kabupaten : null, req.user.email, new Date().toISOString());
@@ -266,41 +266,41 @@ app.post('/api/admin/kode-registrasi', requireAuth, requireRole('admin'), (req, 
   res.json({ kode });
 });
 
-app.get('/api/admin/users', requireAuth, requireRole('admin'), (req, res) => {
-  const rows = db.prepare('SELECT id, email, nama, role, kode_desa, kabupaten, dibuat_pada, login_terakhir FROM users ORDER BY id DESC').all();
+app.get('/api/admin/users', requireAuth, requireRole('admin'), async (req, res) => {
+  const rows = await db.prepare('SELECT id, email, nama, role, kode_desa, kabupaten, dibuat_pada, login_terakhir FROM users ORDER BY id DESC').all();
   res.json(rows);
 });
 
 // ---------- referensi wilayah ----------
 
-app.get('/api/wilayah/kabupaten', requireAuth, (req, res) => {
+app.get('/api/wilayah/kabupaten', requireAuth, async (req, res) => {
   const scoped = mergeScope(req.user, req.query);
   const rows = scoped.kabupaten
     ? [{ kabupaten: scoped.kabupaten }]
-    : db.prepare('SELECT DISTINCT kabupaten FROM desa ORDER BY kabupaten').all();
+    : await db.prepare('SELECT DISTINCT kabupaten FROM desa ORDER BY kabupaten').all();
   res.json(rows.map((r) => r.kabupaten));
 });
 
-app.get('/api/wilayah/kecamatan', requireAuth, (req, res) => {
+app.get('/api/wilayah/kecamatan', requireAuth, async (req, res) => {
   const scoped = mergeScope(req.user, req.query);
   const rows = scoped.kabupaten
-    ? db.prepare('SELECT DISTINCT kecamatan FROM desa WHERE kabupaten = ? ORDER BY kecamatan').all(scoped.kabupaten)
-    : db.prepare('SELECT DISTINCT kecamatan FROM desa ORDER BY kecamatan').all();
+    ? await db.prepare('SELECT DISTINCT kecamatan FROM desa WHERE kabupaten = ? ORDER BY kecamatan').all(scoped.kabupaten)
+    : await db.prepare('SELECT DISTINCT kecamatan FROM desa ORDER BY kecamatan').all();
   res.json(rows.map((r) => r.kecamatan));
 });
 
 // ---------- dashboard ----------
 
-app.get('/api/dashboard/summary', requireAuth, (req, res) => {
+app.get('/api/dashboard/summary', requireAuth, async (req, res) => {
   req.query = mergeScope(req.user, req.query);
   const { sql, params } = whereFromFilters(req.query);
-  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
+  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
 
-  const statusRows = db
+  const statusRows = await db
     .prepare(`SELECT status_desa, COUNT(*) AS n FROM desa d ${sql} GROUP BY status_desa ORDER BY n DESC`)
     .all(...params);
 
-  const avgEkonomi = db
+  const avgEkonomi = await db
     .prepare(
       `SELECT AVG(${ekonomiSkorSubquery()}) AS avg_ekonomi FROM desa d ${sql}`
     )
@@ -310,7 +310,7 @@ app.get('/api/dashboard/summary', requireAuth, (req, res) => {
     `si.sub_dimensi IN ('SUB-DIMENSI PRODUKSI DESA', 'SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI')`,
     `si.nama_indikator = si.sub_dimensi`,
   ]);
-  const subDimensiRows = db
+  const subDimensiRows = await db
     .prepare(
       `SELECT si.sub_dimensi, AVG(si.skor) AS avg_skor
        FROM skor_indikator si
@@ -330,16 +330,16 @@ app.get('/api/dashboard/summary', requireAuth, (req, res) => {
 
 // ---------- indeks desa (6 dimensi, Permendesa 9/2024) ----------
 
-app.get('/api/indeks/ringkasan', requireAuth, (req, res) => {
+app.get('/api/indeks/ringkasan', requireAuth, async (req, res) => {
   req.query = mergeScope(req.user, req.query);
   const { sql, params } = whereFromFilters(req.query);
-  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
+  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
 
-  const statusRows = db
+  const statusRows = await db
     .prepare(`SELECT status_desa, COUNT(*) AS n FROM desa d ${sql} GROUP BY status_desa ORDER BY n DESC`)
     .all(...params);
 
-  const avgNilaiIndeks = db
+  const avgNilaiIndeks = await db
     .prepare(`SELECT AVG(nilai_indeks_desa) AS avg_nilai FROM desa d ${sql}`)
     .get(...params).avg_nilai;
 
@@ -347,7 +347,7 @@ app.get('/api/indeks/ringkasan', requireAuth, (req, res) => {
   // nama_indikator = dimensi (same convention as sub_dimensi's composite
   // rows, see recommendKabupaten.js's buildKabupatenContext).
   const dimensiFilter = whereFromFilters(req.query, 'd', [`si.nama_indikator = si.dimensi`]);
-  const dimensiRows = db
+  const dimensiRows = await db
     .prepare(
       `SELECT si.dimensi, AVG(si.skor) AS avg_skor
        FROM skor_indikator si
@@ -365,7 +365,7 @@ app.get('/api/indeks/ringkasan', requireAuth, (req, res) => {
   });
 });
 
-app.post('/api/indeks/narasi', requireAuth, (req, res) => {
+app.post('/api/indeks/narasi', requireAuth, async (req, res) => {
   const dimensi = req.body?.dimensi || null;
   if (dimensi && !INDEKS_DIMENSI_KEYS.has(dimensi)) {
     return res.status(400).json({ error: 'Dimensi tidak valid.' });
@@ -392,23 +392,23 @@ app.post('/api/indeks/narasi', requireAuth, (req, res) => {
 // "SKOR ..." indicators, generalizing the old Ekonomi-only page to all 6
 // dimensions. `dimensi` is a path param (arbitrary client input), so it's
 // always bound as a query parameter, never interpolated into SQL text.
-app.get('/api/indeks/dimensi/:dimensi', requireAuth, (req, res) => {
+app.get('/api/indeks/dimensi/:dimensi', requireAuth, async (req, res) => {
   const { dimensi } = req.params;
   req.query = mergeScope(req.user, req.query);
   const { sql: baseSql, params: baseParams } = whereFromFilters(req.query);
-  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d ${baseSql}`).get(...baseParams).n;
+  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${baseSql}`).get(...baseParams).n;
 
   const { clauses: scopeClauses, params: scopeParams } = filterClauses(req.query, 'd');
   const scopeAnd = scopeClauses.length ? `AND ${scopeClauses.join(' AND ')}` : '';
 
-  const avgSkorRow = db
+  const avgSkorRow = await db
     .prepare(
       `SELECT AVG(si.skor) avg_skor FROM skor_indikator si JOIN desa d ON d.kode_desa = si.kode_desa
        WHERE si.dimensi = ? AND si.nama_indikator = si.dimensi ${scopeAnd}`
     )
     .get(dimensi, ...scopeParams);
 
-  const subDimensiRows = db
+  const subDimensiRows = await db
     .prepare(
       `SELECT si.sub_dimensi, AVG(si.skor) avg_skor FROM skor_indikator si JOIN desa d ON d.kode_desa = si.kode_desa
        WHERE si.dimensi = ? AND si.nama_indikator = si.sub_dimensi ${scopeAnd}
@@ -416,7 +416,7 @@ app.get('/api/indeks/dimensi/:dimensi', requireAuth, (req, res) => {
     )
     .all(dimensi, ...scopeParams);
 
-  const indikatorRows = db
+  const indikatorRows = await db
     .prepare(
       `SELECT si.sub_dimensi, si.nama_indikator, AVG(si.skor) avg_skor, AVG(si.bobot_maks) avg_bobot
        FROM skor_indikator si JOIN desa d ON d.kode_desa = si.kode_desa
@@ -430,7 +430,7 @@ app.get('/api/indeks/dimensi/:dimensi', requireAuth, (req, res) => {
   // "desa prioritas" list (same idea as recommendKabupaten.js's priorityDesa)
   // instead of dumping every desa, which is what made this page unusable
   // for actually spotting a problem.
-  const desaTerendah = db
+  const desaTerendah = await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa,
               (SELECT skor FROM skor_indikator si2 WHERE si2.kode_desa = d.kode_desa
@@ -473,7 +473,7 @@ app.get('/api/indeks/dimensi/:dimensi', requireAuth, (req, res) => {
 // below - `coverage` here is direct COUNT queries via buildCoverage(), not
 // a byproduct of running that matching engine) ----------
 
-app.get('/api/insight/ringkasan', requireAuth, (req, res) => {
+app.get('/api/insight/ringkasan', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   const gapAnalysis = buildGapAnalysis(scope);
   const potensiPengembangan = buildPotensiPengembangan(scope);
@@ -486,19 +486,19 @@ app.get('/api/insight/ringkasan', requireAuth, (req, res) => {
   });
 });
 
-app.get('/api/insight/gap/desa', requireAuth, (req, res) => {
+app.get('/api/insight/gap/desa', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   const { indikator } = req.query;
   if (!indikator) return res.status(400).json({ error: 'Parameter indikator wajib diisi' });
   res.json(listDesaGapUntukIndikator(scope, indikator));
 });
 
-app.get('/api/insight/tanpa-koordinat', requireAuth, (req, res) => {
+app.get('/api/insight/tanpa-koordinat', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(listDesaTanpaKoordinat(scope));
 });
 
-app.get('/api/insight/naik-status', requireAuth, (req, res) => {
+app.get('/api/insight/naik-status', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(buildKandidatNaikStatus(scope));
 });
@@ -507,46 +507,46 @@ app.get('/api/insight/naik-status', requireAuth, (req, res) => {
 // server/lib/opportunity.js: one shared matching engine, 5 tabs each with
 // its own relationship rule + honest checklist, never an invented score) ----------
 
-app.get('/api/opportunity/coverage', requireAuth, (req, res) => {
+app.get('/api/opportunity/coverage', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   const { sql, params } = whereFromFilters(scope);
-  const totalDesa = db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
-  const desaDenganKoordinat = db
+  const totalDesa = await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params).n;
+  const desaDenganKoordinat = await db
     .prepare(`SELECT COUNT(*) AS n FROM desa d ${sql ? `${sql} AND` : 'WHERE'} d.lat IS NOT NULL AND d.lng IS NOT NULL`)
     .get(...params).n;
   res.json({ totalDesa, desaDenganKoordinat, desaTanpaKoordinat: totalDesa - desaDenganKoordinat });
 });
 
-app.get('/api/opportunity/kawasan', requireAuth, (req, res) => {
+app.get('/api/opportunity/kawasan', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(buildPotensiKawasan(scope));
 });
 
-app.get('/api/opportunity/potensi-potensi', requireAuth, (req, res) => {
+app.get('/api/opportunity/potensi-potensi', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(buildPotensiPotensi(scope));
 });
 
-app.get('/api/opportunity/produksi-akses-pasar', requireAuth, (req, res) => {
+app.get('/api/opportunity/produksi-akses-pasar', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(buildProduksiAksesPasar(scope));
 });
 
-app.get('/api/opportunity/desa-desa', requireAuth, (req, res) => {
+app.get('/api/opportunity/desa-desa', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(buildDesaKeDesa(scope));
 });
 
-app.get('/api/opportunity/bumdesa-potensi', requireAuth, (req, res) => {
+app.get('/api/opportunity/bumdesa-potensi', requireAuth, async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(buildBumDesaPotensi(scope));
 });
 
 // ---------- profil / list desa ----------
 
-app.get('/api/desa', requireAuth, (req, res) => {
+app.get('/api/desa', requireAuth, async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query));
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT d.kode_desa, d.kabupaten, d.kecamatan, d.nama_desa, d.status_desa, d.lat, d.lng,
               ${ekonomiSkorSubquery()} AS skor_ekonomi,
@@ -558,10 +558,10 @@ app.get('/api/desa', requireAuth, (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/desa/:kode', requireAuth, guard((req, res) => {
+app.get('/api/desa/:kode', requireAuth, guard(async (req, res) => {
   const { kode } = req.params;
   assertDesaAccess(req.user, kode);
-  const desa = db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
+  const desa = await db.prepare('SELECT * FROM desa WHERE kode_desa = ?').get(kode);
   if (!desa) return res.status(404).json({ error: 'Desa tidak ditemukan' });
 
   // Scoped to EKONOMI - the ProfilDesa page's "Skor Dimensi Ekonomi" panel
@@ -570,7 +570,7 @@ app.get('/api/desa/:kode', requireAuth, guard((req, res) => {
   // for the analogous kabupaten/provinsi-level breakdown); exposing them here
   // is deferred until ProfilDesa's UI is extended to show all 6 (roadmap
   // step 6), so this filter is intentional, not a leftover.
-  const skor = db
+  const skor = await db
     .prepare(
       `SELECT sub_dimensi, nama_indikator, skor, bobot_maks FROM skor_indikator
        WHERE kode_desa = ? AND dimensi = 'EKONOMI' ORDER BY id`
@@ -584,7 +584,7 @@ app.get('/api/desa/:kode', requireAuth, guard((req, res) => {
   // names) are administrative data, not a potensi signal, so they're
   // dropped too - same field labels categorize.js already recognizes as
   // non-potensi when grouping into "Fasilitas Perdagangan/Keuangan".
-  const potensi = db
+  const potensi = await db
     .prepare(
       `SELECT sektor, subsektor, nilai FROM potensi_desa
        WHERE kode_desa = ?
@@ -595,20 +595,20 @@ app.get('/api/desa/:kode', requireAuth, guard((req, res) => {
     )
     .all(kode);
 
-  const ekosistem = db
+  const ekosistem = await db
     .prepare(
       `SELECT komponen, nilai FROM ekosistem_desa
        WHERE kode_desa = ? AND nilai NOT IN ('Tidak Ada', '-', '') ORDER BY id`
     )
     .all(kode);
 
-  const jawaban = db
+  const jawaban = await db
     .prepare(`SELECT pertanyaan, jawaban FROM jawaban_kuesioner WHERE kode_desa = ? ORDER BY id`)
     .all(kode);
 
   // Composite score per Permendesa 9/2024 dimension (the 6 marker rows -
   // see /api/indeks/ringkasan for the same convention aggregated).
-  const indeksDimensi = db
+  const indeksDimensi = await db
     .prepare(`SELECT dimensi, skor, bobot_maks FROM skor_indikator WHERE kode_desa = ? AND nama_indikator = dimensi ORDER BY id`)
     .all(kode);
 
@@ -649,7 +649,7 @@ app.post('/api/desa/:kode/narasi', requireAuth, guard(async (req, res) => {
   }
 }));
 
-app.get('/api/kabupaten/:nama/ringkasan', requireAuth, guard((req, res) => {
+app.get('/api/kabupaten/:nama/ringkasan', requireAuth, guard(async (req, res) => {
   assertKabupatenAccess(req.user, req.params.nama);
   const ctx = buildKabupatenContext(req.params.nama);
   if (!ctx) return res.status(404).json({ error: 'Kabupaten tidak ditemukan' });
@@ -673,7 +673,7 @@ app.post('/api/kabupaten/:nama/rekomendasi', requireAuth, guard(async (req, res)
 
 // Province-wide view of the same BUM Desa analysis - same context builder
 // with kabupaten=null, only admin/provinsi may reach it.
-app.get('/api/provinsi/ringkasan', requireAuth, guard((req, res) => {
+app.get('/api/provinsi/ringkasan', requireAuth, guard(async (req, res) => {
   assertProvinsiAccess(req.user);
   const ctx = buildKabupatenContext(null);
   if (!ctx) return res.status(404).json({ error: 'Data provinsi tidak ditemukan' });
@@ -707,12 +707,12 @@ function desaKomponenList(kabupaten, req, res) {
   res.json(rows);
 }
 
-app.get('/api/kabupaten/:nama/desa-komponen', requireAuth, guard((req, res) => {
+app.get('/api/kabupaten/:nama/desa-komponen', requireAuth, guard(async (req, res) => {
   assertKabupatenAccess(req.user, req.params.nama);
   desaKomponenList(req.params.nama, req, res);
 }));
 
-app.get('/api/provinsi/desa-komponen', requireAuth, guard((req, res) => {
+app.get('/api/provinsi/desa-komponen', requireAuth, guard(async (req, res) => {
   assertProvinsiAccess(req.user);
   desaKomponenList(null, req, res);
 }));
@@ -736,10 +736,10 @@ app.get('/api/provinsi/desa-komponen', requireAuth, guard((req, res) => {
 // ".replace(/^Terdapat /i, '')" display convention used everywhere in the UI).
 const ADA_FILTER = `p.nilai = 'Ada' AND p.subsektor LIKE 'Terdapat %'`;
 
-app.get('/api/potensi/sektor', requireAuth, (req, res) => {
+app.get('/api/potensi/sektor', requireAuth, async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query), 'd');
   const extra = sql ? `${sql} AND` : 'WHERE';
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT p.sektor, COUNT(DISTINCT p.kode_desa) AS jumlah_desa
        FROM potensi_desa p
@@ -751,7 +751,7 @@ app.get('/api/potensi/sektor', requireAuth, (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/potensi/sektor/:sektor', requireAuth, (req, res) => {
+app.get('/api/potensi/sektor/:sektor', requireAuth, async (req, res) => {
   const { sektor } = req.params;
   // Optional drill-down to a single subsektor/indikator (e.g. "Terdapat
   // Peternakan Sapi") so the desa list can answer "where exactly is this
@@ -764,7 +764,7 @@ app.get('/api/potensi/sektor/:sektor', requireAuth, (req, res) => {
   // model in JS (categorizePotensiKelompok) - the split can't be expressed
   // as a simple SQL LIKE pattern per sektor, so it's done row-level here
   // rather than in the query itself.
-  const allRows = db
+  const allRows = await db
     .prepare(
       `SELECT d.kode_desa, d.kabupaten, d.kecamatan, d.nama_desa, d.status_desa, d.lat, d.lng, p.subsektor
        FROM desa d
@@ -807,21 +807,21 @@ app.get('/api/potensi/sektor/:sektor', requireAuth, (req, res) => {
 // exactly as stored in skor_indikator/potensi_desa. Fetched once by the
 // frontend and looked up client-side, so this isn't query-parameterized.
 
-app.get('/api/referensi/definisi-skor', requireAuth, (req, res) => {
+app.get('/api/referensi/definisi-skor', requireAuth, async (req, res) => {
   res.json(allDefinisiSkor());
 });
 
-app.get('/api/referensi/definisi-potensi', requireAuth, (req, res) => {
+app.get('/api/referensi/definisi-potensi', requireAuth, async (req, res) => {
   res.json(allDefinisiPotensi());
 });
 
 // ---------- ekosistem ----------
 
-app.get('/api/ekosistem/summary', requireAuth, (req, res) => {
+app.get('/api/ekosistem/summary', requireAuth, async (req, res) => {
   const filter = whereFromFilters(mergeScope(req.user, req.query), 'd', [
     `e.nilai NOT IN ('Tidak Ada', '-', '', '0')`,
   ]);
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT e.komponen, COUNT(DISTINCT e.kode_desa) AS jumlah_desa
        FROM ekosistem_desa e
@@ -836,14 +836,14 @@ app.get('/api/ekosistem/summary', requireAuth, (req, res) => {
 // Drill-down for the "Jumlah Desa per Komponen" bar chart - same nilai
 // filter as the aggregate above, scoped to one komponen (arbitrary client
 // input, always bound as a query parameter, never interpolated).
-app.get('/api/ekosistem/desa', requireAuth, (req, res) => {
+app.get('/api/ekosistem/desa', requireAuth, async (req, res) => {
   const { komponen } = req.query;
   if (!komponen) return res.status(400).json({ error: 'Parameter komponen wajib diisi.' });
   const filter = whereFromFilters(mergeScope(req.user, req.query), 'd', [
     `e.nilai NOT IN ('Tidak Ada', '-', '', '0')`,
     'e.komponen = ?',
   ]);
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT DISTINCT d.kode_desa, d.nama_desa, d.kecamatan, d.kabupaten, d.status_desa, e.nilai
        FROM ekosistem_desa e
@@ -857,7 +857,7 @@ app.get('/api/ekosistem/desa', requireAuth, (req, res) => {
 
 // ---------- peta ----------
 
-app.get('/api/peta', requireAuth, (req, res) => {
+app.get('/api/peta', requireAuth, async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query), 'd', [
     'd.lat IS NOT NULL',
     'd.lng IS NOT NULL',
@@ -869,7 +869,7 @@ app.get('/api/peta', requireAuth, (req, res) => {
     ? `, (SELECT si.skor FROM skor_indikator si WHERE si.kode_desa = d.kode_desa AND si.nama_indikator = ? LIMIT 1) AS skor_indikator,
          (SELECT si.bobot_maks FROM skor_indikator si WHERE si.kode_desa = d.kode_desa AND si.nama_indikator = ? LIMIT 1) AS bobot_indikator`
     : '';
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa, d.lat, d.lng,
               ${ekonomiSkorSubquery()} AS skor_ekonomi${indikatorSelect}
@@ -879,8 +879,8 @@ app.get('/api/peta', requireAuth, (req, res) => {
   res.json(rows);
 });
 
-app.get('/api/peta/indikator', requireAuth, (req, res) => {
-  const rows = db
+app.get('/api/peta/indikator', requireAuth, async (req, res) => {
+  const rows = await db
     .prepare(
       `SELECT DISTINCT dimensi, sub_dimensi AS subDimensi, nama_indikator AS indikator
        FROM skor_indikator WHERE nama_indikator LIKE 'SKOR %' ORDER BY dimensi, sub_dimensi, nama_indikator`
@@ -891,9 +891,9 @@ app.get('/api/peta/indikator', requireAuth, (req, res) => {
 
 // ---------- analisis kuadran (potensi x kinerja) ----------
 
-app.get('/api/analisis/kuadran', requireAuth, (req, res) => {
+app.get('/api/analisis/kuadran', requireAuth, async (req, res) => {
   const { sql, params } = whereFromFilters(mergeScope(req.user, req.query));
-  const rows = db
+  const rows = await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kabupaten, d.kecamatan, d.status_desa,
               ${ekonomiSkorSubquery()} AS skor,
@@ -913,14 +913,14 @@ app.get('/api/analisis/kuadran', requireAuth, (req, res) => {
 
 // ---------- import (admin) ----------
 
-app.get('/api/import/log', requireAuth, requireRole('admin'), (req, res) => {
-  const rows = db
+app.get('/api/import/log', requireAuth, requireRole('admin'), async (req, res) => {
+  const rows = await db
     .prepare('SELECT sumber_file, sheet, waktu_import, jumlah_baris FROM import_log ORDER BY id DESC')
     .all();
   res.json(rows);
 });
 
-app.post('/api/import/run', requireAuth, requireRole('admin'), (req, res) => {
+app.post('/api/import/run', requireAuth, requireRole('admin'), async (req, res) => {
   if (importInProgress) {
     return res.status(409).json({ error: 'Import lain sedang berjalan, coba lagi sebentar.' });
   }
@@ -963,7 +963,7 @@ const rpkpUpload = multer({
 // error page.
 function uploadSingle(field) {
   const mw = rpkpUpload.single(field);
-  return (req, res, next) => {
+  return async (req, res, next) => {
     mw(req, res, (err) => {
       if (err) return res.status(400).json({ error: err.message || 'Upload gagal.' });
       next();
@@ -1272,7 +1272,7 @@ app.post('/api/rpkp/reviews/:id/recommendation', requireAuth, requireRole('admin
 if (process.env.NODE_ENV === 'production') {
   const webDist = path.join(__dirname, '..', 'web', 'dist');
   app.use(express.static(webDist));
-  app.get(/^(?!\/api\/).*/, (req, res) => {
+  app.get(/^(?!\/api\/).*/, async (req, res) => {
     res.sendFile(path.join(webDist, 'index.html'));
   });
 }
