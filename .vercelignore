@@ -1,0 +1,24 @@
+# Apa yang TIDAK ikut diunggah ke Vercel saat deploy.
+#
+# Terpenting: rpkp-uploads (±107 MB dokumen RPKP asli dari kabupaten) yang
+# menurut keputusan memang tetap tinggal di komputer kantor, bukan di cloud.
+# Tanpa baris ini setiap deploy ikut mengunggahnya - lambat, sekaligus
+# bertentangan dengan keputusan itu.
+#
+# JANGAN kecualikan seluruh server/data: data/panduan HARUS ada saat build,
+# karena esbuild membaca kedua berkas JSON-nya untuk ditanam ke dalam bundel
+# (lihat server/lib/definisiIndikator.js). Mengecualikannya membuat build
+# gagal dengan "Could not resolve ../data/panduan/...".
+server/data/rpkp-uploads
+server/data/*.db
+
+node_modules
+server/node_modules
+web/node_modules
+
+.vercel/output
+web/dist
+
+.git
+server/.env
+*.log

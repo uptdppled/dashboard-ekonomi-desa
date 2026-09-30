@@ -211,6 +211,13 @@ export async function touchLogin(userId) {
 // GOOGLE_CLIENT_ID is unset - the moment real OAuth is configured, this
 // disappears on its own without needing to remember to remove it.
 export function devLoginAllowed() {
+  // Triple-gated, because this hands out full access with no password and so
+  // has to fail CLOSED. The two gates below both depend on a variable being
+  // present; forgetting either one on a host would put the "Admin" button on
+  // a public site, and with it every desa record and operator account. VERCEL
+  // is set by the platform itself, on every deployment, without configuration
+  // - so in the cloud this is off no matter what else is misconfigured.
+  if (process.env.VERCEL) return false;
   return process.env.NODE_ENV !== 'production' && !process.env.GOOGLE_CLIENT_ID;
 }
 

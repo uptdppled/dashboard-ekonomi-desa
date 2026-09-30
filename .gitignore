@@ -10,3 +10,5 @@ web/dist/
 server/.env.bak-*
 
 .vercel/output/
+
+.vercel
