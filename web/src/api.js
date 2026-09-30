@@ -74,7 +74,7 @@ export const api = {
   definisiPotensi: () => get('/referensi/definisi-potensi'),
   desaList: (params) => get(`/desa?${new URLSearchParams(params)}`),
   desaProfil: (kode) => get(`/desa/${kode}`),
-  potensiSektor: () => get('/potensi/sektor'),
+  potensiSektor: (params = {}) => get(`/potensi/sektor?${new URLSearchParams(params)}`),
   potensiSektorDetail: (sektor, params) => get(`/potensi/sektor/${encodeURIComponent(sektor)}?${new URLSearchParams(params)}`),
   ekosistemSummary: () => get('/ekosistem/summary'),
   ekosistemDesa: (komponen, params) => get(`/ekosistem/desa?${new URLSearchParams({ ...params, komponen })}`),
