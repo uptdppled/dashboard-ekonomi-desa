@@ -49,7 +49,7 @@ export default function Analisis() {
         <>
           <div className="panel">
             <ResponsiveContainer width="100%" height={420}>
-              <ScatterChart margin={{ top: 10, right: 20, bottom: 20, left: 10 }}>
+              <ScatterChart margin={{ top: 24, right: 20, bottom: 20, left: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   type="number"
