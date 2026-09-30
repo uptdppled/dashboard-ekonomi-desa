@@ -30,6 +30,14 @@ import pg from 'pg';
 
 dns.setDefaultResultOrder('ipv4first');
 
+// node-postgres returns bigint (int8) as a string, because it can exceed
+// Number.MAX_SAFE_INTEGER. Here every bigint is either a COUNT(*) or an
+// identity id, both far below that limit, and the app was written against
+// SQLite, which returned them as numbers. Left as strings, they broke
+// anything that does arithmetic on them - e.g. the Dashboard pie chart summed
+// "1164" + "626" + "81" and drew no slices.
+pg.types.setTypeParser(pg.types.builtins.INT8, (value) => Number.parseInt(value, 10));
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 try {
   process.loadEnvFile(path.join(__dirname, '.env'));
