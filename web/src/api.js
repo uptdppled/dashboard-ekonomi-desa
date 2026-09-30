@@ -57,7 +57,6 @@ async function postForm(path, formData) {
 export const api = {
   kabupaten: () => get('/wilayah/kabupaten'),
   kecamatan: (kabupaten) => get(`/wilayah/kecamatan${kabupaten ? `?kabupaten=${encodeURIComponent(kabupaten)}` : ''}`),
-  dashboardSummary: (params) => get(`/dashboard/summary?${new URLSearchParams(params)}`),
   indeksRingkasan: (params) => get(`/indeks/ringkasan?${new URLSearchParams(params)}`),
   indeksNarasi: (scope, forceRefresh) => post('/indeks/narasi', { ...scope, forceRefresh: !!forceRefresh }),
   indeksDimensi: (dimensi, params) => get(`/indeks/dimensi/${encodeURIComponent(dimensi)}?${new URLSearchParams(params)}`),

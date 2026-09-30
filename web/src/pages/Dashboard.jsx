@@ -7,6 +7,15 @@ import { cleanParams } from '../utils';
 import { useTheme } from '../theme';
 import { STATUS_COLORS, ACCENT } from '../colors';
 
+// Display order follows Permendesa 9/2024's own dimension sequence, not the
+// alphabetical order SQL's GROUP BY happens to return.
+const DIMENSI_ORDER = ['LAYANAN DASAR', 'SOSIAL', 'EKONOMI', 'LINGKUNGAN', 'AKSESIBILITAS', 'TATA KELOLA PEMERINTAHAN DESA'];
+
+function toChartData(rows) {
+  const byName = new Map(rows.map((r) => [r.dimensi, r.avgSkor]));
+  return DIMENSI_ORDER.filter((d) => byName.has(d)).map((d) => ({ dimensi: d, avgSkor: byName.get(d) }));
+}
+
 export default function Dashboard() {
   const navigate = useNavigate();
   const [filter, setFilter] = useState({});
@@ -18,14 +27,16 @@ export default function Dashboard() {
 
   useEffect(() => {
     setData(null);
-    api.dashboardSummary(cleanParams(filter)).then(setData).catch((e) => setError(e.message));
+    api.indeksRingkasan(cleanParams(filter)).then(setData).catch((e) => setError(e.message));
   }, [filter]);
+
+  const dimensi = data ? toChartData(data.dimensi) : [];
 
   return (
     <div>
       <div className="page-header">
-        <h1 className="page-title">Dashboard Dimensi Ekonomi Desa</h1>
-        <p className="page-desc">Ringkasan kinerja ekonomi desa se-Kalimantan Selatan, tahun 2026.</p>
+        <h1 className="page-title">Dashboard Indeks Desa</h1>
+        <p className="page-desc">Ringkasan 6 dimensi Indeks Desa (Permendesa 9/2024) se-Kalimantan Selatan, tahun 2026.</p>
       </div>
       <FilterBar value={filter} onChange={setFilter} />
 
@@ -40,8 +51,8 @@ export default function Dashboard() {
               <div className="kpi-value">{data.totalDesa.toLocaleString('id-ID')}</div>
             </div>
             <div className="kpi-card">
-              <div className="kpi-label">Rata-rata Skor Dimensi Ekonomi</div>
-              <div className="kpi-value">{data.avgEkonomi ?? '-'}</div>
+              <div className="kpi-label">Rata-rata Nilai Indeks Desa</div>
+              <div className="kpi-value">{data.avgNilaiIndeks ?? '-'}</div>
             </div>
             {data.statusDesa.map((s) => (
               <div className="kpi-card" key={s.status_desa}>
@@ -55,26 +66,20 @@ export default function Dashboard() {
 
           <div className="grid-2">
             <div className="panel">
-              <h2 className="panel-title">Komposisi Dimensi Ekonomi (rata-rata skor)</h2>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 0 }}>Klik bar untuk rincian indikator Dimensi Ekonomi.</p>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={data.subDimensi} layout="vertical" margin={{ left: 20 }}>
+              <h2 className="panel-title">Rata-rata Skor per Dimensi</h2>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 0 }}>Klik bar untuk rincian indikator dimensi itu.</p>
+              <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={dimensi} layout="vertical" margin={{ left: 20 }}>
                   <XAxis type="number" hide />
-                  <YAxis
-                    type="category"
-                    dataKey="sub_dimensi"
-                    width={220}
-                    tickFormatter={(v) => v.replace('SUB-DIMENSI ', '')}
-                    tick={{ fontSize: 11 }}
-                  />
+                  <YAxis type="category" dataKey="dimensi" width={190} tick={{ fontSize: 11 }} />
                   <Tooltip formatter={(v) => v.toFixed(2)} />
                   <Bar
-                    dataKey="avg_skor"
+                    dataKey="avgSkor"
                     fill={accent}
                     radius={[0, 4, 4, 0]}
-                    barSize={32}
+                    barSize={24}
                     cursor="pointer"
-                    onClick={() => navigate('/banua-index/EKONOMI')}
+                    onClick={(d) => navigate(`/banua-index/${encodeURIComponent(d.dimensi)}`)}
                   />
                 </BarChart>
               </ResponsiveContainer>

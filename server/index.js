@@ -319,45 +319,6 @@ app.get('/api/wilayah/kecamatan', requireAuth, guard(async (req, res) => {
   res.json(rows.map((r) => r.kecamatan));
 }));
 
-// ---------- dashboard ----------
-
-app.get('/api/dashboard/summary', requireAuth, guard(async (req, res) => {
-  req.query = mergeScope(req.user, req.query);
-  const { sql, params } = whereFromFilters(req.query);
-  const totalDesa = (await db.prepare(`SELECT COUNT(*) AS n FROM desa d ${sql}`).get(...params)).n;
-
-  const statusRows = await db
-    .prepare(`SELECT status_desa, COUNT(*) AS n FROM desa d ${sql} GROUP BY status_desa ORDER BY n DESC`)
-    .all(...params);
-
-  const avgEkonomi = (await db
-    .prepare(
-      `SELECT AVG(${ekonomiSkorSubquery()}) AS avg_ekonomi FROM desa d ${sql}`
-    )
-    .get(...params)).avg_ekonomi;
-
-  const subDimensiFilter = whereFromFilters(req.query, 'd', [
-    `si.sub_dimensi IN ('SUB-DIMENSI PRODUKSI DESA', 'SUB-DIMENSI FASILTAS PENDUKUNG EKONOMI')`,
-    `si.nama_indikator = si.sub_dimensi`,
-  ]);
-  const subDimensiRows = await db
-    .prepare(
-      `SELECT si.sub_dimensi, AVG(si.skor) AS avg_skor
-       FROM skor_indikator si
-       JOIN desa d ON d.kode_desa = si.kode_desa
-       ${subDimensiFilter.sql}
-       GROUP BY si.sub_dimensi`
-    )
-    .all(...subDimensiFilter.params);
-
-  res.json({
-    totalDesa,
-    avgEkonomi: avgEkonomi ? Math.round(avgEkonomi * 100) / 100 : null,
-    statusDesa: statusRows,
-    subDimensi: subDimensiRows,
-  });
-}));
-
 // ---------- indeks desa (6 dimensi, Permendesa 9/2024) ----------
 
 app.get('/api/indeks/ringkasan', requireAuth, guard(async (req, res) => {

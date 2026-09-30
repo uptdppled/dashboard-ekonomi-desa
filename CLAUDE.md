@@ -25,7 +25,7 @@ npm run import
 
 - **`server/`** — Express API + SQLite (modul bawaan `node:sqlite`, tanpa native build).
   - `db.js` — koneksi database + schema (`CREATE TABLE IF NOT EXISTS`).
-  - `index.js` — semua route API (`/api/desa`, `/api/potensi/*`, `/api/ekosistem/*`, `/api/peta`, `/api/analisis/kuadran`, `/api/kabupaten/:nama/*`, `/api/provinsi/*`, `/api/dashboard/summary`, `/api/import/*`).
+  - `index.js` — semua route API (`/api/desa`, `/api/potensi/*`, `/api/ekosistem/*`, `/api/peta`, `/api/analisis/kuadran`, `/api/kabupaten/:nama/*`, `/api/provinsi/*`, `/api/import/*`).
   - `lib/excel-parse.js` — parser generik sheet Excel sumber (deteksi baris header via sel "Kabupaten", deteksi baris data via pola Kode Desa 9-12 digit) + parser koordinat GPS best-effort dari field teks bebas.
   - `lib/categorize.js` — aturan regex kategorisasi sektor potensi (perikanan/peternakan/pariwisata/dst.), di-port dari kamus data.
   - `lib/llm.js` — pemanggilan LLM multi-provider bersama (Groq/Gemini/Anthropic, lihat bagian AI di bawah), dipakai oleh `recommend.js` dan `recommendKabupaten.js`.
