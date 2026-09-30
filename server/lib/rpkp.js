@@ -62,16 +62,17 @@ export async function listReviews(scope) {
     params.push(scope.status);
   }
   if (scope.q) {
-    clauses.push('(nama_kawasan LIKE ? OR kabupaten LIKE ?)');
+    clauses.push('(nama_kawasan ILIKE ? OR kabupaten ILIKE ?)');
     params.push(`%${scope.q}%`, `%${scope.q}%`);
   }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
   const rows = await db.prepare(`SELECT * FROM rpkp_review ${where} ORDER BY diperbarui_pada DESC`).all(...params);
-  const withCounts = rows.map(async (r) => {
-    const doc = await db.prepare('SELECT COUNT(*) n FROM rpkp_document WHERE review_id = ?').get(r.id);
-    return { ...r, jumlah_dokumen: doc.n };
-  });
-  return withCounts;
+  return Promise.all(
+    rows.map(async (r) => {
+      const doc = await db.prepare('SELECT COUNT(*) n FROM rpkp_document WHERE review_id = ?').get(r.id);
+      return { ...r, jumlah_dokumen: doc.n };
+    })
+  );
 }
 
 export async function getReview(id) {
@@ -219,16 +220,11 @@ export async function setReviewDesa(review, user, kodeDesaList) {
       throw badRequest(`Desa berikut bukan bagian dari kabupaten ${review.kabupaten}: ${invalid.join(', ')}`);
     }
   }
-  await db.exec('BEGIN');
-  try {
-    await db.prepare('DELETE FROM rpkp_review_desa WHERE review_id = ?').run(review.id);
-    const insert = db.prepare('INSERT INTO rpkp_review_desa (review_id, kode_desa) VALUES (?, ?)');
+  await db.transaction(async (tx) => {
+    await tx.prepare('DELETE FROM rpkp_review_desa WHERE review_id = ?').run(review.id);
+    const insert = tx.prepare('INSERT INTO rpkp_review_desa (review_id, kode_desa) VALUES (?, ?)');
     for (const kode of unique) await insert.run(review.id, kode);
-    await db.exec('COMMIT');
-  } catch (e) {
-    await db.exec('ROLLBACK');
-    throw e;
-  }
+  });
   await logHistory(review.id, 'DESA_ANGGOTA_DIPERBARUI', `${unique.length} desa ditandai sebagai anggota kawasan`, user.email);
   return listReviewDesa(review.id);
 }

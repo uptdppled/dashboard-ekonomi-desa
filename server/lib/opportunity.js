@@ -68,7 +68,7 @@ async function loadDesaWithSektor(scope) {
       `SELECT DISTINCT p.kode_desa FROM potensi_desa p
        JOIN desa d ON d.kode_desa = p.kode_desa
        WHERE p.sektor = 'Kerajinan/Industri' AND p.subsektor = ?
-         AND CAST(p.nilai AS INTEGER) > 0 ${kerajinanWhere.sql}`
+         AND COALESCE(substring(p.nilai from '^\\s*(\\d+)')::int, 0) > 0 ${kerajinanWhere.sql}`
     )
     .all(KERAJINAN_SUBSEKTOR, ...kerajinanWhere.params);
 

@@ -138,7 +138,7 @@ function filterClauses(query, alias = 'd') {
     params.push(query.status);
   }
   if (query.q) {
-    clauses.push(`${alias}.nama_desa LIKE ?`);
+    clauses.push(`${alias}.nama_desa ILIKE ?`);
     params.push(`%${query.q}%`);
   }
   return { clauses, params };
@@ -368,15 +368,15 @@ app.post('/api/indeks/narasi', requireAuth, guard(async (req, res) => {
     kecamatan: scope.kecamatan || undefined,
     status: scope.status || undefined,
   };
-  (await getNarasiIndeks(query, { forceRefresh: !!req.body?.forceRefresh }))
-    .then((result) => res.json(result))
-    .catch((err) => {
-      if (err.code === 'NO_API_KEY') {
-        return res.status(503).json({ error: err.message, code: 'NO_API_KEY' });
-      }
-      console.error('Gagal membuat narasi BANUA INDEX:', err);
-      res.status(500).json({ error: 'Gagal membuat narasi AI: ' + err.message });
-    });
+  try {
+    res.json(await getNarasiIndeks(query, { forceRefresh: !!req.body?.forceRefresh }));
+  } catch (err) {
+    if (err.code === 'NO_API_KEY') {
+      return res.status(503).json({ error: err.message, code: 'NO_API_KEY' });
+    }
+    console.error('Gagal membuat narasi BANUA INDEX:', err);
+    res.status(500).json({ error: 'Gagal membuat narasi AI: ' + err.message });
+  }
 }));
 
 // Detail for a single dimension (BANUA INDEX submenu) - down to individual
@@ -1089,7 +1089,7 @@ app.post('/api/rpkp/reviews/:id/ai/ask', requireAuth, requireRole(...RPKP_ROLES)
 // the resulting findings.
 
 app.get('/api/rpkp/completeness-items', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
-  res.json(listCompletenessItems());
+  res.json(await listCompletenessItems());
 }));
 
 app.get('/api/rpkp/reviews/:id/findings', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
@@ -1114,7 +1114,7 @@ app.post(
       console.error('Cek kelengkapan RPKP gagal:', err.cause || err);
       throw err;
     }
-    const finding = upsertCompletenessFinding(review.id, item, aiResult, req.user);
+    const finding = await upsertCompletenessFinding(review.id, item, aiResult, req.user);
     res.status(201).json(finding);
   })
 );
@@ -1149,7 +1149,7 @@ app.post(
       console.error(`Cek ${item.kategori} RPKP gagal:`, err.cause || err);
       throw err;
     }
-    const finding = upsertChecklistFinding(review.id, item, aiResult, req.user);
+    const finding = await upsertChecklistFinding(review.id, item, aiResult, req.user);
     res.status(201).json(finding);
   })
 );
@@ -1227,13 +1227,13 @@ async function assertFindingReviewAccess(user, finding) {
 app.post('/api/rpkp/findings/:findingId/verify', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
   const finding = await loadFindingOr404(req);
   await assertFindingReviewAccess(req.user, finding);
-  res.json(verifyFinding(finding.id, req.user, (req.body || {}).note));
+  res.json(await verifyFinding(finding.id, req.user, (req.body || {}).note));
 }));
 
 app.post('/api/rpkp/findings/:findingId/reject', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {
   const finding = await loadFindingOr404(req);
   await assertFindingReviewAccess(req.user, finding);
-  res.json(rejectFinding(finding.id, req.user, (req.body || {}).note));
+  res.json(await rejectFinding(finding.id, req.user, (req.body || {}).note));
 }));
 
 app.get('/api/rpkp/reviews/:id/recommendation', requireAuth, requireRole(...RPKP_ROLES), guard(async (req, res) => {

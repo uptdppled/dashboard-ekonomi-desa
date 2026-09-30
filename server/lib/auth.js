@@ -181,24 +181,21 @@ export async function registerWithKode(email, nama, kode) {
   }
 
   const now = new Date().toISOString();
-  await db.exec('BEGIN');
-  try {
-    await db.prepare(
+  // One pooled connection for the whole unit: BEGIN/COMMIT sent through the
+  // pool would each land on a different backend (see db.transaction).
+  return db.transaction(async (tx) => {
+    await tx.prepare(
       `INSERT INTO users (email, nama, role, kode_desa, kabupaten, dibuat_pada, login_terakhir)
        VALUES (?, ?, ?, ?, ?, ?, ?)`
     ).run(email, nama, kodeRow.role, kodeRow.kode_desa, kodeRow.kabupaten, now, now);
-    const user = await db.prepare('SELECT * FROM users WHERE email = ?').get(email);
-    await db.prepare('UPDATE kode_registrasi SET dipakai_oleh_user_id = ?, dipakai_pada = ? WHERE id = ?').run(
+    const user = await tx.prepare('SELECT * FROM users WHERE email = ?').get(email);
+    await tx.prepare('UPDATE kode_registrasi SET dipakai_oleh_user_id = ?, dipakai_pada = ? WHERE id = ?').run(
       user.id,
       now,
       kodeRow.id
     );
-    await db.exec('COMMIT');
     return user;
-  } catch (err) {
-    await db.exec('ROLLBACK');
-    throw err;
-  }
+  });
 }
 
 export async function touchLogin(userId) {
