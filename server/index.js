@@ -225,6 +225,25 @@ app.get('/api/auth/dev-config', (req, res) => {
   res.json({ devLoginEnabled: devLoginAllowed() });
 });
 
+// Supabase menjeda project free tier setelah 7 hari tanpa permintaan ke
+// DATABASE-nya - bukan tanpa kunjungan ke aplikasi. Dashboard pemda memang
+// bisa sepi seminggu penuh, dan project yang dijeda harus dibangunkan manual
+// dari dashboard Supabase. Cron harian di Vercel memanggil endpoint ini
+// (lihat crons di scripts/build-vercel.mjs), dan query remeh di bawah sudah
+// cukup untuk dihitung sebagai aktivitas.
+//
+// Sengaja TIDAK di belakang requireAuth: pemanggilnya cron, bukan pengguna.
+// Kalau CRON_SECRET diisi, Vercel mengirimkannya sebagai bearer token dan
+// endpoint ini menolak pemanggil lain.
+app.get('/api/keep-alive', guard(async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (secret && req.get('authorization') !== `Bearer ${secret}`) {
+    return res.status(401).json({ error: 'Tidak diizinkan.' });
+  }
+  const row = await db.prepare('SELECT 1 AS hidup').get();
+  res.json({ ok: row?.hidup === 1, waktu: new Date().toISOString() });
+}));
+
 app.post('/api/auth/dev-login', guard(async (req, res) => {
   if (!devLoginAllowed()) return res.status(403).json({ error: 'Mode uji coba tidak tersedia.' });
   const { role } = req.body || {};

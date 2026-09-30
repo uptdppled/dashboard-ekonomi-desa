@@ -110,6 +110,11 @@ writeFileSync(
   JSON.stringify(
     {
       version: 3,
+      // Menjaga project Supabase free tier tidak dijeda: ia tertidur setelah
+      // 7 hari tanpa permintaan ke database, dan harus dibangunkan manual.
+      // Sekali sehari 03:00 UTC (10:00 WITA) sudah jauh dari ambang itu, dan
+      // pas dengan batas paket Hobby Vercel yang hanya mengizinkan cron harian.
+      crons: [{ path: '/api/keep-alive', schedule: '0 3 * * *' }],
       routes: [
         { src: '^/assets/(.*)$', headers: { 'cache-control': 'public, max-age=31536000, immutable' }, continue: true },
         { src: '^/api/(.*)$', dest: '/api' },
