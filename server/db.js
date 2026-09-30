@@ -179,7 +179,23 @@ function statement(sql, executor) {
     },
     async run(...args) {
       const res = await run(text, normalizeParams(args), executor);
-      return { changes: res.rowCount ?? 0 };
+      const result = { changes: res.rowCount ?? 0 };
+
+      // node:sqlite also returned `lastInsertRowid`, which Postgres has no
+      // equivalent for. Reading it would silently yield undefined (and then
+      // NaN through Number()), so it fails loudly instead: add `RETURNING id`
+      // to the statement and use .get() rather than .run().
+      for (const name of ['lastInsertRowid', 'lastInsertRowId']) {
+        Object.defineProperty(result, name, {
+          get() {
+            throw new Error(
+              `${name} tidak ada di Postgres. Tambahkan "RETURNING id" ke INSERT-nya ` +
+                'lalu pakai .get() dan baca .id.',
+            );
+          },
+        });
+      }
+      return result;
     },
   };
 }

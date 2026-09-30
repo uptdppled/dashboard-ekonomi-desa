@@ -1,8 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Diimpor sebagai modul JSON, bukan dibaca lewat readFileSync: keduanya
+// statis dan dimuat sekali saat start, dan sebagai impor esbuild menanamkan
+// isinya ke dalam bundle Vercel. Dengan readFileSync, berkasnya tidak ikut
+// terbawa dan fungsi gagal start dengan ENOENT.
+import potensiDefinisi from '../data/panduan/potensi-definisi.json' with { type: 'json' };
+import skorDefinisi from '../data/panduan/skor-definisi.json' with { type: 'json' };
 
 // Definisi operasional + skala klasifikasi resmi, diekstrak dari "Buku
 // Panduan Indeks Desa Tahun 2026" (Kemendes) - dicocokkan by exact-name
@@ -14,8 +15,6 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // tersebut, jadi tidak semua indikator punya definisi di sini. Item yang
 // tidak ada di dataset ini sengaja TIDAK ditampilkan tooltip-nya, daripada
 // menampilkan definisi yang salah/dikarang.
-const skorDefinisi = JSON.parse(readFileSync(path.join(__dirname, '../data/panduan/skor-definisi.json'), 'utf-8'));
-const potensiDefinisi = JSON.parse(readFileSync(path.join(__dirname, '../data/panduan/potensi-definisi.json'), 'utf-8'));
 
 export function getDefinisiSkor(namaIndikator) {
   return skorDefinisi[namaIndikator] || null;

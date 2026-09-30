@@ -94,10 +94,11 @@ export async function upsertFinding(reviewId, category, itemKode, title, aiResul
     const result = await db
       .prepare(
         `INSERT INTO rpkp_finding (review_id, category, item_kode, title, ai_status, ai_summary, model, prompt_version, dibuat_pada, diperbarui_pada)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         RETURNING id`
       )
-      .run(reviewId, category, itemKode, title, aiResult.status, aiResult.ringkasan, aiResult.model, aiResult.promptVersion, now, now);
-    findingId = Number(result.lastInsertRowid);
+      .get(reviewId, category, itemKode, title, aiResult.status, aiResult.ringkasan, aiResult.model, aiResult.promptVersion, now, now);
+    findingId = Number(result.id);
   }
 
   const insertEvidence = db.prepare(

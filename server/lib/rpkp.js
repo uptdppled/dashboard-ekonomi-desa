@@ -87,10 +87,11 @@ export async function createReview(user, data) {
   const result = await db
     .prepare(
       `INSERT INTO rpkp_review (nama_kawasan, kabupaten, periode, tahun_dokumen, keterangan, status, dibuat_oleh, dibuat_pada, diperbarui_pada)
-       VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?)
+       RETURNING id`
     )
-    .run(nama_kawasan.trim(), kab.trim(), periode || null, tahun_dokumen || null, keterangan || null, user.email, now, now);
-  const id = Number(result.lastInsertRowid);
+    .get(nama_kawasan.trim(), kab.trim(), periode || null, tahun_dokumen || null, keterangan || null, user.email, now, now);
+  const id = Number(result.id);
   await logHistory(id, 'CREATED', `Review dibuat untuk kawasan "${nama_kawasan.trim()}"`, user.email);
   return getReview(id);
 }
@@ -131,15 +132,32 @@ export async function addDocument(reviewId, user, { documentType, originalFilena
   const result = await db
     .prepare(
       `INSERT INTO rpkp_document (review_id, document_type, version, original_filename, stored_filename, file_size, mime_type, diunggah_oleh, diunggah_pada)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       RETURNING id`
     )
-    .run(reviewId, documentType, version, originalFilename, storedFilename, fileSize || null, mimeType || null, user.email, now);
+    .get(reviewId, documentType, version, originalFilename, storedFilename, fileSize || null, mimeType || null, user.email, now);
   await db.prepare('UPDATE rpkp_review SET diperbarui_pada = ? WHERE id = ?').run(now, reviewId);
   await logHistory(reviewId, 'DOCUMENT_UPLOADED', `${documentType} v${version} diunggah (${originalFilename})`, user.email);
-  return { id: Number(result.lastInsertRowid), version };
+  return { id: Number(result.id), version };
 }
 
+/** Dokumen RPKP disimpan sebagai berkas di disk, bukan di database. */
+export const UPLOAD_TERSEDIA = !process.env.VERCEL;
+
 export function reviewUploadDir(reviewId) {
+  // Vercel tidak punya disk permanen: berkas yang ditulis hilang saat fungsi
+  // berakhir, dan 107 MB dokumen yang sudah ada tidak ikut ke sana. Gagal
+  // dengan pesan yang jelas lebih baik daripada EROFS atau unggahan yang
+  // seolah berhasil lalu lenyap. Modul RPKP tetap dipakai dari laptop.
+  if (!UPLOAD_TERSEDIA) {
+    const err = new Error(
+      'Unggah dan buka dokumen RPKP belum tersedia di versi online. ' +
+        'Gunakan Banua360 di komputer kantor untuk modul ini.',
+    );
+    err.code = 'UPLOAD_TIDAK_TERSEDIA';
+    err.status = 503;
+    throw err;
+  }
   const dir = path.join(UPLOAD_ROOT, String(reviewId));
   fs.mkdirSync(dir, { recursive: true });
   return dir;

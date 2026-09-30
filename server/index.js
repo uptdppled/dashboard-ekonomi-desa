@@ -1269,7 +1269,10 @@ app.post('/api/rpkp/reviews/:id/recommendation', requireAuth, requireRole('admin
 // process on one port (what Railway and similar host-by-port platforms
 // expect). Must be registered after every /api/* route above, since the SPA
 // fallback below would otherwise swallow them.
-if (process.env.NODE_ENV === 'production') {
+// Not on Vercel: there the CDN serves web/dist and only /api/* reaches this
+// function, so the fallback below would never fire and webDist would not even
+// be in the bundle.
+if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
   const webDist = path.join(__dirname, '..', 'web', 'dist');
   app.use(express.static(webDist));
   app.get(/^(?!\/api\/).*/, (req, res) => {
@@ -1282,6 +1285,13 @@ if (process.env.NODE_ENV === 'production') {
 // harness's own PORT=5502 belongs to the separate Vite process instead.
 const LISTEN_PORT = process.env.NODE_ENV === 'production' ? process.env.PORT || PORT : PORT;
 
-app.listen(LISTEN_PORT, () => {
-  console.log(`API berjalan di http://localhost:${LISTEN_PORT}`);
-});
+// On Vercel the platform owns the socket: the app is exported as the request
+// handler instead (see scripts/build-vercel.mjs). Binding a port there would
+// do nothing at best and hang the function at worst.
+if (!process.env.VERCEL) {
+  app.listen(LISTEN_PORT, () => {
+    console.log(`API berjalan di http://localhost:${LISTEN_PORT}`);
+  });
+}
+
+export default app;

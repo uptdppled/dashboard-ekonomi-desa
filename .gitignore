@@ -8,3 +8,5 @@ server/server-err.log
 server/pid.txt
 web/dist/
 server/.env.bak-*
+
+.vercel/output/
