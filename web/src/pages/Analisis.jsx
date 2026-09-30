@@ -16,6 +16,7 @@ export default function Analisis() {
   const [activeKuadran, setActiveKuadran] = useState(null);
   const { resolved } = useTheme();
   const kuadranColors = QUADRAN_COLORS[resolved];
+  const garisMedian = resolved === 'dark' ? '#d8d6cf' : '#5f5e5a';
 
   useEffect(() => {
     setData(null);
@@ -62,8 +63,19 @@ export default function Analisis() {
                   name="Skor Ekonomi"
                   label={{ value: 'Skor Dimensi Ekonomi', angle: -90, position: 'insideLeft', fontSize: 12 }}
                 />
-                <ReferenceLine x={data.potensiMedian} stroke="#9c9a92" strokeDasharray="4 4" />
-                <ReferenceLine y={data.kinerjaMedian} stroke="#9c9a92" strokeDasharray="4 4" />
+                {/* The medians split the quadrants; drawn solid and labelled so they don't read as extra grid lines. */}
+                <ReferenceLine
+                  x={data.potensiMedian}
+                  stroke={garisMedian}
+                  strokeWidth={1.5}
+                  label={{ value: `Median ${data.potensiMedian} sektor`, position: 'top', fontSize: 11, fill: garisMedian }}
+                />
+                <ReferenceLine
+                  y={data.kinerjaMedian}
+                  stroke={garisMedian}
+                  strokeWidth={1.5}
+                  label={{ value: `Median skor ${data.kinerjaMedian.toLocaleString('id-ID', { maximumFractionDigits: 1 })}`, position: 'insideTopRight', fontSize: 11, fill: garisMedian }}
+                />
                 <Tooltip
                   cursor={{ strokeDasharray: '3 3' }}
                   content={({ active, payload }) => {
