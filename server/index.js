@@ -873,7 +873,7 @@ app.get('/api/peta', requireAuth, guard(async (req, res) => {
 app.get('/api/peta/indikator', requireAuth, guard(async (req, res) => {
   const rows = await db
     .prepare(
-      `SELECT DISTINCT dimensi, sub_dimensi AS subDimensi, nama_indikator AS indikator
+      `SELECT DISTINCT dimensi, sub_dimensi AS "subDimensi", nama_indikator AS indikator
        FROM skor_indikator WHERE nama_indikator LIKE 'SKOR %' ORDER BY dimensi, sub_dimensi, nama_indikator`
     )
     .all();

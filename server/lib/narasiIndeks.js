@@ -63,7 +63,7 @@ async function buildContext(scope) {
   const dimensiFilter = scopeWhere(scope, 'd');
   const dimensiRows = await db
     .prepare(
-      `SELECT si.dimensi, AVG(si.skor) AS avgSkor, AVG(si.bobot_maks) AS avgBobot
+      `SELECT si.dimensi, AVG(si.skor) AS "avgSkor", AVG(si.bobot_maks) AS "avgBobot"
        FROM skor_indikator si
        JOIN desa d ON d.kode_desa = si.kode_desa
        ${dimensiFilter.sql ? `${dimensiFilter.sql} AND` : 'WHERE'} si.nama_indikator = si.dimensi ${dimensiClause}
@@ -74,11 +74,11 @@ async function buildContext(scope) {
   const indikatorFilter = scopeWhere(scope, 'd');
   const indikatorRows = await db
     .prepare(
-      `SELECT si.dimensi, si.sub_dimensi, si.nama_indikator, AVG(si.skor) AS avgSkor, AVG(si.bobot_maks) AS avgBobot
+      `SELECT si.dimensi, si.sub_dimensi, si.nama_indikator, AVG(si.skor) AS "avgSkor", AVG(si.bobot_maks) AS "avgBobot"
        FROM skor_indikator si
        JOIN desa d ON d.kode_desa = si.kode_desa
        ${indikatorFilter.sql ? `${indikatorFilter.sql} AND` : 'WHERE'} si.nama_indikator LIKE 'SKOR %' AND si.bobot_maks > 0 ${dimensiClause}
-       GROUP BY si.dimensi, si.nama_indikator`
+       GROUP BY si.dimensi, si.sub_dimensi, si.nama_indikator`
     )
     .all(...indikatorFilter.params, ...dimensiParam);
 

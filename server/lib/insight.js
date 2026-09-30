@@ -176,7 +176,7 @@ export async function buildKandidatNaikStatus(scope, { perTier = 30 } = {}) {
   const komposit = await db
     .prepare(
       `SELECT d.kode_desa, d.nama_desa, d.kecamatan, d.kabupaten, d.status_desa,
-              SUM(si.skor) AS totalSkor, SUM(si.bobot_maks) AS totalBobot
+              SUM(si.skor) AS "totalSkor", SUM(si.bobot_maks) AS "totalBobot"
        FROM desa d
        JOIN skor_indikator si ON si.kode_desa = d.kode_desa AND si.nama_indikator = si.dimensi
        WHERE d.status_desa IN (${placeholders}) ${where.sql}
