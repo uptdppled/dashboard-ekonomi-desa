@@ -240,8 +240,19 @@ app.get('/api/keep-alive', guard(async (req, res) => {
   if (secret && req.get('authorization') !== `Bearer ${secret}`) {
     return res.status(401).json({ error: 'Tidak diizinkan.' });
   }
+  // dbMs diukur terpisah dari total waktu request: ia jarak fungsi ke
+  // database, dan itulah angka yang menentukan region mana yang tepat -
+  // karena satu halaman menembak beberapa query berurutan, ongkos ini
+  // dikalikan, sedangkan jarak pengguna ke fungsi dibayar sekali saja.
+  const t0 = performance.now();
   const row = await db.prepare('SELECT 1 AS hidup').get();
-  res.json({ ok: row?.hidup === 1, waktu: new Date().toISOString() });
+  const dbMs = Math.round(performance.now() - t0);
+  res.json({
+    ok: row?.hidup === 1,
+    dbMs,
+    region: process.env.VERCEL_REGION ?? null,
+    waktu: new Date().toISOString(),
+  });
 }));
 
 app.post('/api/auth/dev-login', guard(async (req, res) => {

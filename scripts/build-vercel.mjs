@@ -95,6 +95,12 @@ writeFileSync(
       runtime: 'nodejs22.x',
       handler: 'index.mjs',
       launcherType: 'Nodejs',
+      // CATATAN: di paket Hobby, field ini DIABAIKAN - begitu juga "regions"
+      // di vercel.json (itu fitur Pro). Region fungsi hanya bisa diubah lewat
+      // Project Settings > Functions > Function Region di dashboard Vercel.
+      // Diukur dari sin1: satu query ke Supabase (Tokyo) makan ~71 ms; dari
+      // hnd1 seharusnya ~1-3 ms, dan itu dikalikan jumlah query per halaman.
+      regions: [process.env.VERCEL_FUNCTION_REGION ?? 'sin1'],
       shouldAddHelpers: false,
       // Beberapa endpoint agregat butuh waktu (query lintas 480 ribu baris ke
       // region database); 30 detik memberi ruang tanpa menggantung selamanya.
