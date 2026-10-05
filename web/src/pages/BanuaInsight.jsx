@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../auth';
 import { cleanParams } from '../utils';
+import RujukanIntervensi from '../components/RujukanIntervensi';
 
 const DIMENSI_OPTIONS = ['LAYANAN DASAR', 'SOSIAL', 'EKONOMI', 'LINGKUNGAN', 'AKSESIBILITAS', 'TATA KELOLA PEMERINTAHAN DESA'];
 
+const TABS = [
+  { key: 'ringkasan', label: 'Ringkasan' },
+  { key: 'rujukan', label: 'Rujukan Intervensi' },
+];
+
 export default function BanuaInsight() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = TABS.some((t) => t.key === searchParams.get('tab')) ? searchParams.get('tab') : 'ringkasan';
   const [kabupatenList, setKabupatenList] = useState([]);
   const [kecamatanList, setKecamatanList] = useState([]);
   const [filter, setFilter] = useState({ kabupaten: '', kecamatan: '', dimensi: '' });
@@ -33,17 +41,23 @@ export default function BanuaInsight() {
   }, [filter.kabupaten]);
 
   useEffect(() => {
+    if (tab !== 'ringkasan') return;
     setData(null);
     setError(null);
     setExpandedGap(null);
     setShowTanpaKoordinat(false);
     api.insightRingkasan(cleanParams(filter)).then(setData).catch((e) => setError(e.message));
-  }, [filter]);
+  }, [filter, tab]);
 
   useEffect(() => {
+    if (tab !== 'ringkasan') return;
     setNaikStatus(null);
     api.insightNaikStatus(cleanParams(filter)).then(setNaikStatus).catch(() => {});
-  }, [filter]);
+  }, [filter, tab]);
+
+  function selectTab(key) {
+    setSearchParams(key === 'ringkasan' ? {} : { tab: key }, { replace: true });
+  }
 
   function update(field, val) {
     const next = { ...filter, [field]: val };
@@ -81,6 +95,14 @@ export default function BanuaInsight() {
         </p>
       </div>
 
+      <div style={{ display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' }}>
+        {TABS.map((t) => (
+          <button key={t.key} className={t.key === tab ? 'btn' : 'btn btn-secondary'} onClick={() => selectTab(t.key)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="filter-bar">
         <select value={filter.kabupaten} onChange={(e) => update('kabupaten', e.target.value)} disabled={kabupatenLocked}>
           {!kabupatenLocked && <option value="">Semua Kabupaten</option>}
@@ -96,10 +118,14 @@ export default function BanuaInsight() {
         </select>
       </div>
 
-      {error && <div className="state-msg state-error">{error}</div>}
-      {!data && !error && <div className="state-msg">Memuat data...</div>}
+      {tab === 'rujukan' && (
+        <RujukanIntervensi filter={filter} defaultLevel={user.role === 'provinsi' ? 'prov' : 'kab'} />
+      )}
 
-      {data && (
+      {tab === 'ringkasan' && error && <div className="state-msg state-error">{error}</div>}
+      {tab === 'ringkasan' && !data && !error && <div className="state-msg">Memuat data...</div>}
+
+      {tab === 'ringkasan' && data && (
         <>
           <div className="panel">
             <h2 className="panel-title">Cakupan Data</h2>

@@ -64,6 +64,7 @@ export const api = {
   insightGapDesa: (params) => get(`/insight/gap/desa?${new URLSearchParams(params)}`),
   insightTanpaKoordinat: (params) => get(`/insight/tanpa-koordinat?${new URLSearchParams(params)}`),
   insightNaikStatus: (params) => get(`/insight/naik-status?${new URLSearchParams(params)}`),
+  insightRujukanIntervensi: (params) => get(`/insight/rujukan-intervensi?${new URLSearchParams(params)}`),
   opportunityCoverage: (params) => get(`/opportunity/coverage?${new URLSearchParams(params)}`),
   opportunityKawasan: (params) => get(`/opportunity/kawasan?${new URLSearchParams(params)}`),
   opportunityPotensiPotensi: (params) => get(`/opportunity/potensi-potensi?${new URLSearchParams(params)}`),

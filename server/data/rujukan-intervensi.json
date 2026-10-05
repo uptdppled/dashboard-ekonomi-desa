@@ -1,0 +1,1486 @@
+{
+  "sumber": "Pemetaan indikator Indeks Desa 2026 ke nomenklatur Permendagri 90/2019 & Kepmendagri 050-5889/2021 (beserta pemutakhirannya), pembagian kewenangan UU 23/2014. Draf, perlu validasi Bappeda & SKPD.",
+  "urusan": {
+    "1.01": "Pendidikan",
+    "1.02": "Kesehatan",
+    "1.03": "Pekerjaan Umum dan Penataan Ruang",
+    "1.04": "Perumahan dan Kawasan Permukiman",
+    "1.05": "Ketenteraman, Ketertiban Umum, dan Pelindungan Masyarakat",
+    "2.07": "Tenaga Kerja",
+    "2.11": "Lingkungan Hidup",
+    "2.13": "Pemberdayaan Masyarakat dan Desa",
+    "2.15": "Perhubungan",
+    "2.16": "Komunikasi dan Informatika",
+    "2.17": "Koperasi, Usaha Kecil, dan Menengah",
+    "2.19": "Kepemudaan dan Olahraga",
+    "2.22": "Kebudayaan",
+    "2.23": "Perpustakaan",
+    "3.26": "Pariwisata",
+    "3.27": "Pertanian",
+    "3.29": "Energi dan Sumber Daya Mineral",
+    "3.30": "Perdagangan",
+    "3.31": "Perindustrian",
+    "4.01": "Sekretariat Daerah (Unsur Pendukung)",
+    "8.01": "Kesatuan Bangsa dan Politik (Urusan Pemerintahan Umum)"
+  },
+  "indikator": [
+    {
+      "key": "Akses Listrik",
+      "induk": null,
+      "kab": [],
+      "prov": [
+        {
+          "kodeUrusan": "3.29",
+          "kodeProgram": "3.29.06",
+          "program": "Program Pengelolaan Ketenagalistrikan",
+          "kegiatan": "Penyediaan dana untuk kelompok masyarakat tidak mampu, pembangunan sarana penyediaan tenaga listrik belum berkembang, daerah terpencil dan perdesaan",
+          "skpd": "Dinas ESDM Provinsi",
+          "peran": "Utama",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kementerian ESDM & PLN (listrik desa, BPBL).",
+      "desa": null,
+      "catatan": "Sub-urusan ketenagalistrikan tidak menjadi kewenangan kabupaten/kota (UU 23/2014 Lampiran CC)."
+    },
+    {
+      "key": "Keberadaan Angkutan Perdesaan/Angkutan Lokal/ Sejenis",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.15",
+          "kodeProgram": "2.15.02",
+          "program": "Program Penyelenggaraan Lalu Lintas dan Angkutan Jalan (LLAJ)",
+          "kegiatan": "Penyediaan angkutan umum untuk jasa angkutan orang dan/atau barang antarkota dalam 1 (satu) Daerah Kabupaten/Kota (trayek perdesaan)",
+          "skpd": "Dinas Perhubungan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.15",
+          "kodeProgram": "2.15.02",
+          "program": "Program Penyelenggaraan Lalu Lintas dan Angkutan Jalan (LLAJ)",
+          "kegiatan": "Penyediaan angkutan umum untuk jasa angkutan orang dan/atau barang antarkota dalam 1 (satu) Daerah Provinsi (trayek AKDP penghubung)",
+          "skpd": "Dinas Perhubungan Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": null,
+      "desa": "Angkutan desa dapat dikelola BUM Desa.",
+      "catatan": null
+    },
+    {
+      "key": "Layanan Telekomunikasi",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.16",
+          "kodeProgram": "2.16.03",
+          "program": "Program Aplikasi Informatika",
+          "kegiatan": "Pengelolaan e-government di lingkup pemerintah daerah kabupaten/kota (fasilitasi usulan BTS/akses internet desa ke pusat, perizinan menara)",
+          "skpd": "Diskominfo Kab/Kota",
+          "peran": "Fasilitasi",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.16",
+          "kodeProgram": "2.16.03",
+          "program": "Program Aplikasi Informatika",
+          "kegiatan": "Pengelolaan e-government di lingkup pemerintah daerah provinsi (koordinasi titik blank spot lintas kabupaten)",
+          "skpd": "Diskominfo Provinsi",
+          "peran": "Fasilitasi",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kementerian Komdigi/BAKTI (BTS 4G, akses internet). Infrastruktur telekomunikasi adalah kewenangan pusat.",
+      "desa": "Internet desa/WiFi publik dari APBDes.",
+      "catatan": "Peran daerah sebatas pendataan blank spot dan pengusulan."
+    },
+    {
+      "key": "Kondisi Jalan di desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.03",
+          "kodeProgram": "1.03.10",
+          "program": "Program Penyelenggaraan Jalan",
+          "kegiatan": "Penyelenggaraan Jalan Kabupaten/Kota (ruas jalan kabupaten menuju/di dalam desa)",
+          "skpd": "Dinas PUPR Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "1.03",
+          "kodeProgram": "1.03.10",
+          "program": "Program Penyelenggaraan Jalan",
+          "kegiatan": "Penyelenggaraan Jalan Provinsi",
+          "skpd": "Dinas PUPR Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kementerian PU (jalan nasional, Inpres Jalan Daerah).",
+      "desa": "Jalan desa adalah kewenangan lokal berskala desa (APBDes/Dana Desa).",
+      "catatan": "Cek dulu status ruas: jalan desa vs jalan kabupaten."
+    },
+    {
+      "key": "Kondisi Penerangan Jalan Utama Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.15",
+          "kodeProgram": "2.15.02",
+          "program": "Program Penyelenggaraan Lalu Lintas dan Angkutan Jalan (LLAJ)",
+          "kegiatan": "Penyediaan perlengkapan jalan di jalan kabupaten/kota (PJU)",
+          "skpd": "Dinas Perhubungan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.15",
+          "kodeProgram": "2.15.02",
+          "program": "Program Penyelenggaraan Lalu Lintas dan Angkutan Jalan (LLAJ)",
+          "kegiatan": "Penyediaan perlengkapan jalan di jalan provinsi (PJU)",
+          "skpd": "Dinas Perhubungan Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": null,
+      "desa": "PJU jalan desa dan biaya operasional dari APBDes.",
+      "catatan": "Di sebagian daerah PJU ada di Dinas Perkim (PSU). Sesuaikan dengan SOTK."
+    },
+    {
+      "key": "Akses Terhadap Pendidikan Non-formal/Pusat Keterampilan/Kursus",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.01",
+          "kodeProgram": "1.01.02",
+          "program": "Program Pengelolaan Pendidikan",
+          "kegiatan": "Pengelolaan Pendidikan Nonformal/Kesetaraan (PKBM, LKP, kursus)",
+          "skpd": "Dinas Pendidikan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "2.07",
+          "kodeProgram": "2.07.03",
+          "program": "Program Pelatihan Kerja dan Produktivitas Tenaga Kerja",
+          "kegiatan": "Pelaksanaan pelatihan berdasarkan unit kompetensi; pembinaan lembaga pelatihan kerja swasta",
+          "skpd": "Dinas Tenaga Kerja Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.07",
+          "kodeProgram": "2.07.03",
+          "program": "Program Pelatihan Kerja dan Produktivitas Tenaga Kerja",
+          "kegiatan": "Pelaksanaan pelatihan berdasarkan klaster kompetensi (BLK/UPTD provinsi, pelatihan keliling ke desa)",
+          "skpd": "Disnakertrans Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kemnaker (BLK Komunitas), Kemendikdasmen (PKBM).",
+      "desa": "Pelatihan keterampilan warga dari Dana Desa.",
+      "catatan": null
+    },
+    {
+      "key": "Kedai/Rumah Makan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.07",
+          "program": "Program Pemberdayaan Usaha Menengah, Usaha Kecil, dan Usaha Mikro (UMKM)",
+          "kegiatan": "Pemberdayaan usaha mikro melalui pendataan, kemitraan, kemudahan perizinan, penguatan kelembagaan dan koordinasi dengan pemangku kepentingan",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": "Usaha warga/BUM Desa.",
+      "catatan": null
+    },
+    {
+      "key": "Layanan Keuangan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "4.01",
+          "kodeProgram": "4.01.03",
+          "program": "Program Perekonomian dan Pembangunan",
+          "kegiatan": "Pelaksanaan kebijakan perekonomian (Tim Percepatan Akses Keuangan Daerah/TPAKD, agen laku pandai di desa)",
+          "skpd": "Setda Kab/Kota - Bagian Perekonomian",
+          "peran": "Utama",
+          "perluCek": true
+        },
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.07",
+          "program": "Program Pemberdayaan Usaha Menengah, Usaha Kecil, dan Usaha Mikro (UMKM)",
+          "kegiatan": "Pemberdayaan usaha mikro (fasilitasi akses pembiayaan KUR)",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "4.01",
+          "kodeProgram": "4.01.03",
+          "program": "Program Perekonomian dan Pembangunan",
+          "kegiatan": "Pelaksanaan kebijakan perekonomian (TPAKD Provinsi, sinergi dengan BPD/bank daerah)",
+          "skpd": "Setda Provinsi - Biro Perekonomian",
+          "peran": "Utama",
+          "perluCek": true
+        }
+      ],
+      "pusat": "OJK, bank Himbara, Kemenko Perekonomian (KUR).",
+      "desa": "BUM Desa sebagai agen bank/laku pandai.",
+      "catatan": null
+    },
+    {
+      "key": "SKOR Keberadaan Layanan Fasilitas Kredit Berupa KKP-E",
+      "induk": "Layanan Keuangan",
+      "kab": [
+        {
+          "kodeUrusan": "3.27",
+          "kodeProgram": "3.27.07",
+          "program": "Program Penyuluhan Pertanian",
+          "kegiatan": "Pengembangan penerapan penyuluhan pertanian (pendampingan kelompok tani mengakses kredit/KUR pertanian)",
+          "skpd": "Dinas Pertanian Kab/Kota",
+          "peran": "Fasilitasi",
+          "perluCek": true
+        }
+      ],
+      "prov": [],
+      "pusat": "Kementan & Kemenkeu. KKP-E sudah banyak digantikan KUR sektor pertanian.",
+      "desa": null,
+      "catatan": "Penyuluhan pertanian adalah kewenangan kabupaten. KKP-E sudah banyak digantikan KUR sektor pertanian, jadi tafsirkan indikator ini dengan hati-hati."
+    },
+    {
+      "key": "Layanan Pos dan Logistik",
+      "induk": null,
+      "kab": [],
+      "prov": [],
+      "pusat": "Kementerian Komdigi (penyelenggaraan pos), PT Pos Indonesia, swasta.",
+      "desa": "BUM Desa dapat menjadi agen pos/logistik.",
+      "catatan": "Tidak ada nomenklatur daerah yang langsung menangani. Usulkan lewat kemitraan BUM Desa."
+    },
+    {
+      "key": "SKOR Operasional BUM Desa/BUM Desa Bersama",
+      "induk": "Lembaga Ekonomi",
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.05",
+          "program": "Program Pemberdayaan Lembaga Kemasyarakatan, Lembaga Adat dan Masyarakat Hukum Adat",
+          "kegiatan": "Pembinaan BUM Desa/BUM Desa Bersama: kelembagaan, badan hukum, unit usaha (pemberdayaan lembaga kemasyarakatan di bidang pemberdayaan desa)",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Utama",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan dan pengawasan penyelenggaraan administrasi pemerintahan desa (pembinaan BUM Desa Bersama lintas kabupaten)",
+          "skpd": "DPMD Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kemendes PDT (registrasi badan hukum BUM Desa).",
+      "desa": "Pendirian BUM Desa (Perdes) dan penyertaan modal dari APBDes.",
+      "catatan": "Selaras dengan panel Analisis BUMDes (tier Kepmendes 145/2022)."
+    },
+    {
+      "key": "SKOR Ketersediaan Lembaga Ekonomi KUD",
+      "induk": "Lembaga Ekonomi",
+      "kab": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.06",
+          "program": "Program Pemberdayaan dan Perlindungan Koperasi",
+          "kegiatan": "Pemberdayaan dan perlindungan koperasi yang keanggotaannya dalam 1 (satu) Daerah Kabupaten/Kota",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.05",
+          "program": "Program Pendidikan dan Latihan Perkoperasian",
+          "kegiatan": "Pendidikan dan latihan perkoperasian bagi koperasi yang wilayah keanggotaannya dalam Daerah Kabupaten/Kota",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.06",
+          "program": "Program Pemberdayaan dan Perlindungan Koperasi",
+          "kegiatan": "Pemberdayaan dan perlindungan koperasi yang keanggotaannya lintas Daerah Kabupaten/Kota dalam 1 (satu) Daerah Provinsi",
+          "skpd": "Dinas Koperasi dan UKM Provinsi",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kementerian Koperasi (Koperasi Desa/Kelurahan Merah Putih).",
+      "desa": "Koperasi Desa Merah Putih (KDMP).",
+      "catatan": "Pembagian kewenangan berdasarkan wilayah keanggotaan koperasi."
+    },
+    {
+      "key": "SKOR Ketersediaan Lembaga Ekonomi UMKM",
+      "induk": "Lembaga Ekonomi",
+      "kab": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.07",
+          "program": "Program Pemberdayaan Usaha Menengah, Usaha Kecil, dan Usaha Mikro (UMKM)",
+          "kegiatan": "Pemberdayaan usaha mikro melalui pendataan, kemitraan, kemudahan perizinan, penguatan kelembagaan dan koordinasi dengan pemangku kepentingan",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.08",
+          "program": "Program Pengembangan UMKM",
+          "kegiatan": "Pengembangan usaha mikro dengan orientasi peningkatan skala usaha menjadi usaha kecil",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.07",
+          "program": "Program Pemberdayaan Usaha Menengah, Usaha Kecil, dan Usaha Mikro (UMKM)",
+          "kegiatan": "Pemberdayaan usaha kecil melalui pendataan, kemitraan, kemudahan perizinan, penguatan kelembagaan dan koordinasi dengan pemangku kepentingan",
+          "skpd": "Dinas Koperasi dan UKM Provinsi",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.08",
+          "program": "Program Pengembangan UMKM",
+          "kegiatan": "Pengembangan usaha kecil dengan orientasi peningkatan skala usaha menjadi usaha menengah",
+          "skpd": "Dinas Koperasi dan UKM Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kementerian UMKM (usaha menengah).",
+      "desa": null,
+      "catatan": "Usaha mikro menjadi kewenangan kabupaten, usaha kecil kewenangan provinsi."
+    },
+    {
+      "key": "Pasar Rakyat",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "3.30",
+          "kodeProgram": "3.30.03",
+          "program": "Program Peningkatan Sarana Distribusi Perdagangan",
+          "kegiatan": "Pembangunan dan pengelolaan sarana distribusi perdagangan (pasar rakyat)",
+          "skpd": "Dinas Perdagangan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "3.30",
+          "kodeProgram": "3.30.03",
+          "program": "Program Peningkatan Sarana Distribusi Perdagangan",
+          "kegiatan": "Pembangunan dan pengelolaan pusat distribusi regional dan pusat distribusi provinsi serta pasar lelang komoditas",
+          "skpd": "Dinas Perdagangan Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kemendag (DAK/revitalisasi pasar rakyat).",
+      "desa": "Pasar desa sebagai aset desa (lihat indikator Aset Desa).",
+      "catatan": "Tidak setiap desa butuh pasar. Pakai radius ke pasar terdekat sebelum merekomendasikan pembangunan baru."
+    },
+    {
+      "key": "Penginapan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "3.26",
+          "kodeProgram": "3.26.02",
+          "program": "Program Peningkatan Daya Tarik Destinasi Pariwisata",
+          "kegiatan": "Pengelolaan daya tarik wisata kabupaten/kota (pengembangan desa wisata)",
+          "skpd": "Dinas Pariwisata Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "3.26",
+          "kodeProgram": "3.26.05",
+          "program": "Program Pengembangan Sumber Daya Pariwisata dan Ekonomi Kreatif",
+          "kegiatan": "Pelaksanaan peningkatan kapasitas SDM pariwisata dan ekonomi kreatif tingkat dasar (pengelola homestay)",
+          "skpd": "Dinas Pariwisata Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "3.26",
+          "kodeProgram": "3.26.02",
+          "program": "Program Peningkatan Daya Tarik Destinasi Pariwisata",
+          "kegiatan": "Pengelolaan daya tarik wisata provinsi",
+          "skpd": "Dinas Pariwisata Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "3.26",
+          "kodeProgram": "3.26.05",
+          "program": "Program Pengembangan Sumber Daya Pariwisata dan Ekonomi Kreatif",
+          "kegiatan": "Pelaksanaan peningkatan kapasitas SDM pariwisata dan ekonomi kreatif tingkat lanjutan",
+          "skpd": "Dinas Pariwisata Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kemenpar (Anugerah Desa Wisata).",
+      "desa": "Homestay warga/BUM Desa.",
+      "catatan": "Hanya relevan untuk desa berpotensi wisata. Filter dengan potensi Pariwisata sebelum diprioritaskan."
+    },
+    {
+      "key": "Toko/Pertokoan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.07",
+          "program": "Program Pemberdayaan Usaha Menengah, Usaha Kecil, dan Usaha Mikro (UMKM)",
+          "kegiatan": "Pemberdayaan usaha mikro (toko/warung)",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": "Usaha warga/BUM Desa/KDMP (gerai sembako).",
+      "catatan": null
+    },
+    {
+      "key": "Ekonomi Kreatif",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "3.26",
+          "kodeProgram": "3.26.04",
+          "program": "Program Pengembangan Ekonomi Kreatif melalui Pemanfaatan dan Perlindungan Hak Kekayaan Intelektual",
+          "kegiatan": "Penyediaan prasarana (zona/ruang kreatif) sebagai ruang berekspresi, berpromosi dan berinteraksi bagi insan kreatif kabupaten/kota",
+          "skpd": "Dinas Pariwisata Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "2.22",
+          "kodeProgram": "2.22.02",
+          "program": "Program Pengembangan Kebudayaan",
+          "kegiatan": "Pengelolaan kebudayaan yang masyarakat pelakunya dalam Daerah Kabupaten/Kota",
+          "skpd": "Dinas Kebudayaan Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "3.26",
+          "kodeProgram": "3.26.04",
+          "program": "Program Pengembangan Ekonomi Kreatif melalui Pemanfaatan dan Perlindungan Hak Kekayaan Intelektual",
+          "kegiatan": "Penyediaan prasarana (zona/ruang kreatif) bagi insan kreatif provinsi",
+          "skpd": "Dinas Pariwisata Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kementerian Ekonomi Kreatif.",
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "Keragaman Aktivitas Ekonomi",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.05",
+          "program": "Program Pemberdayaan Lembaga Kemasyarakatan, Lembaga Adat dan Masyarakat Hukum Adat",
+          "kegiatan": "Fasilitasi pengembangan usaha ekonomi masyarakat desa",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": "Diversifikasi usaha melalui BUM Desa.",
+      "catatan": null
+    },
+    {
+      "key": "Kerjasama Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.03",
+          "program": "Program Peningkatan Kerja Sama Desa",
+          "kegiatan": "Fasilitasi kerja sama antardesa dalam 1 (satu) Daerah Kabupaten/Kota (termasuk kerja sama desa dengan pihak ketiga)",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.03",
+          "program": "Program Peningkatan Kerja Sama Desa",
+          "kegiatan": "Fasilitasi kerja sama antardesa dari kabupaten/kota yang berbeda dalam 1 (satu) Daerah Provinsi",
+          "skpd": "DPMD Provinsi",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "pusat": null,
+      "desa": "Musyawarah antardesa, BUM Desa Bersama.",
+      "catatan": "Bisa memakai hasil BANUA OPPORTUNITY (Potensi Kawasan, Desa↔Desa) sebagai rujukan pasangan desa."
+    },
+    {
+      "key": "Produk Unggulan Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "3.30",
+          "kodeProgram": "3.30.07",
+          "program": "Program Penggunaan dan Pemasaran Produk Dalam Negeri",
+          "kegiatan": "Pelaksanaan promosi, pemasaran dan peningkatan penggunaan produk dalam negeri",
+          "skpd": "Dinas Perdagangan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "3.31",
+          "kodeProgram": "3.31.02",
+          "program": "Program Perencanaan dan Pembangunan Industri",
+          "kegiatan": "Penyusunan, penerapan dan evaluasi rencana pembangunan industri kabupaten/kota (pembinaan IKM produk unggulan)",
+          "skpd": "Dinas Perindustrian Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "3.30",
+          "kodeProgram": "3.30.05",
+          "program": "Program Pengembangan Ekspor",
+          "kegiatan": "Penyelenggaraan promosi dagang melalui pameran dagang nasional/lokal dan misi dagang bagi produk ekspor unggulan yang terdapat pada lebih dari 1 (satu) Daerah Kabupaten/Kota",
+          "skpd": "Dinas Perdagangan Provinsi",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "3.31",
+          "kodeProgram": "3.31.02",
+          "program": "Program Perencanaan dan Pembangunan Industri",
+          "kegiatan": "Penyusunan, penerapan dan evaluasi rencana pembangunan industri provinsi",
+          "skpd": "Dinas Perindustrian Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kemendag, Kemenperin.",
+      "desa": "Penetapan produk unggulan desa, BUM Desa sebagai offtaker.",
+      "catatan": "Selaras dengan panel \"Rekomendasi Produk Unggulan\" di Profil Desa."
+    },
+    {
+      "key": "SKOR Ketersediaan merek dagang",
+      "induk": "Produk Unggulan Desa",
+      "kab": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.08",
+          "program": "Program Pengembangan UMKM",
+          "kegiatan": "Pengembangan usaha mikro (fasilitasi pendaftaran merek, sertifikasi halal, PIRT)",
+          "skpd": "Dinas Koperasi dan UKM Kab/Kota",
+          "peran": "Utama",
+          "perluCek": true
+        },
+        {
+          "kodeUrusan": "3.26",
+          "kodeProgram": "3.26.04",
+          "program": "Program Pengembangan Ekonomi Kreatif melalui Pemanfaatan dan Perlindungan Hak Kekayaan Intelektual",
+          "kegiatan": "Fasilitasi pemanfaatan dan perlindungan hak kekayaan intelektual pelaku ekonomi kreatif",
+          "skpd": "Dinas Pariwisata Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.17",
+          "kodeProgram": "2.17.08",
+          "program": "Program Pengembangan UMKM",
+          "kegiatan": "Pengembangan usaha kecil (fasilitasi HKI/merek kolektif)",
+          "skpd": "Dinas Koperasi dan UKM Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "DJKI Kemenkum (merek), BPJPH (halal), BPOM.",
+      "desa": "Merek kolektif desa melalui BUM Desa.",
+      "catatan": "Intervensinya relatif murah dan cepat."
+    },
+    {
+      "key": "Aktivitas Posyandu",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.05",
+          "program": "Program Pemberdayaan Masyarakat Bidang Kesehatan",
+          "kegiatan": "Pengembangan dan pelaksanaan upaya kesehatan bersumber daya masyarakat (UKBM) tingkat daerah kabupaten/kota",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": "Kemenkes.",
+      "desa": "Posyandu sebagai Lembaga Kemasyarakatan Desa, insentif kader dari APBDes.",
+      "catatan": null
+    },
+    {
+      "key": "Fasilitas Puskesmas Pembantu (Pustu)",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.02",
+          "program": "Program Pemenuhan Upaya Kesehatan Perorangan dan Upaya Kesehatan Masyarakat",
+          "kegiatan": "Penyediaan fasilitas pelayanan kesehatan untuk UKM dan UKP kewenangan daerah kabupaten/kota",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": "Kemenkes (DAK fisik kesehatan, transformasi Pustu).",
+      "desa": "Penyediaan lahan/bangunan Poskesdes.",
+      "catatan": null
+    },
+    {
+      "key": "Jaminan Kesehatan Nasional",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.02",
+          "program": "Program Pemenuhan Upaya Kesehatan Perorangan dan Upaya Kesehatan Masyarakat",
+          "kegiatan": "Penyediaan layanan kesehatan untuk UKM dan UKP rujukan tingkat daerah kabupaten/kota (pengelolaan jaminan kesehatan masyarakat/PBI APBD)",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.02",
+          "program": "Program Pemenuhan Upaya Kesehatan Perorangan dan Upaya Kesehatan Masyarakat",
+          "kegiatan": "Penyediaan layanan kesehatan untuk UKM dan UKP rujukan tingkat daerah provinsi (pengelolaan jaminan kesehatan masyarakat/sharing PBI)",
+          "skpd": "Dinas Kesehatan Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "BPJS Kesehatan.",
+      "desa": "Sosialisasi oleh perangkat desa/kader.",
+      "catatan": null
+    },
+    {
+      "key": "Layanan Bidan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.03",
+          "program": "Program Peningkatan Kapasitas Sumber Daya Manusia Kesehatan",
+          "kegiatan": "Perencanaan kebutuhan dan pendayagunaan SDM kesehatan untuk UKP dan UKM di wilayah kabupaten/kota",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "Layanan Dokter",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.03",
+          "program": "Program Peningkatan Kapasitas Sumber Daya Manusia Kesehatan",
+          "kegiatan": "Perencanaan kebutuhan dan pendayagunaan SDM kesehatan untuk UKP dan UKM di wilayah kabupaten/kota",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.02",
+          "program": "Program Pemenuhan Upaya Kesehatan Perorangan dan Upaya Kesehatan Masyarakat",
+          "kegiatan": "Penyediaan layanan kesehatan untuk UKM dan UKP rujukan tingkat daerah kabupaten/kota (puskesmas keliling, kunjungan dokter terjadwal)",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.03",
+          "program": "Program Peningkatan Kapasitas Sumber Daya Manusia Kesehatan",
+          "kegiatan": "Perencanaan kebutuhan SDM kesehatan untuk UKM dan UKP provinsi (distribusi dokter lintas kabupaten)",
+          "skpd": "Dinas Kesehatan Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kemenkes (Nusantara Sehat, beasiswa dokter).",
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "Layanan Sarana Kesehatan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.02",
+          "program": "Program Pemenuhan Upaya Kesehatan Perorangan dan Upaya Kesehatan Masyarakat",
+          "kegiatan": "Penyediaan fasilitas pelayanan kesehatan untuk UKM dan UKP kewenangan daerah kabupaten/kota",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "Layanan Tenaga Kesehatan Lainnya",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.03",
+          "program": "Program Peningkatan Kapasitas Sumber Daya Manusia Kesehatan",
+          "kegiatan": "Perencanaan kebutuhan dan pendayagunaan SDM kesehatan untuk UKP dan UKM di wilayah kabupaten/kota",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "AKSES TERHADAP PAUD/TK/Sederajat",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.01",
+          "kodeProgram": "1.01.02",
+          "program": "Program Pengelolaan Pendidikan",
+          "kegiatan": "Pengelolaan Pendidikan Anak Usia Dini (PAUD)",
+          "skpd": "Dinas Pendidikan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": "Kemenag (RA).",
+      "desa": "PAUD desa, insentif pendidik dari APBDes.",
+      "catatan": null
+    },
+    {
+      "key": "AKSES TERHADAP SD/MI/Sederajat",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.01",
+          "kodeProgram": "1.01.02",
+          "program": "Program Pengelolaan Pendidikan",
+          "kegiatan": "Pengelolaan Pendidikan Sekolah Dasar",
+          "skpd": "Dinas Pendidikan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": "Kemenag (MI).",
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "AKSES TERHADAP SMP/MTs/Sederajat",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.01",
+          "kodeProgram": "1.01.02",
+          "program": "Program Pengelolaan Pendidikan",
+          "kegiatan": "Pengelolaan Pendidikan Sekolah Menengah Pertama",
+          "skpd": "Dinas Pendidikan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": "Kemenag (MTs).",
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "AKSES TERHADAP SMA/SMK/MA/MAK/Sederajat",
+      "induk": null,
+      "kab": [],
+      "prov": [
+        {
+          "kodeUrusan": "1.01",
+          "kodeProgram": "1.01.02",
+          "program": "Program Pengelolaan Pendidikan",
+          "kegiatan": "Pengelolaan Pendidikan Sekolah Menengah Atas",
+          "skpd": "Dinas Pendidikan Provinsi",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "1.01",
+          "kodeProgram": "1.01.02",
+          "program": "Program Pengelolaan Pendidikan",
+          "kegiatan": "Pengelolaan Pendidikan Sekolah Menengah Kejuruan",
+          "skpd": "Dinas Pendidikan Provinsi",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kemenag (MA/MAK).",
+      "desa": null,
+      "catatan": "Pendidikan menengah adalah kewenangan provinsi. Kabupaten bisa mendukung lewat angkutan pelajar (Dishub)."
+    },
+    {
+      "key": "Persentase Rumah Tidak Layak Huni",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.04",
+          "kodeProgram": "1.04.02",
+          "program": "Program Pengembangan Perumahan",
+          "kegiatan": "Penyediaan dan rehabilitasi rumah korban bencana atau relokasi program kabupaten/kota",
+          "skpd": "Dinas Perkim Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [],
+      "pusat": "Kementerian PKP (BSPS/bedah rumah).",
+      "desa": "RTLH dari Dana Desa, Baznas.",
+      "catatan": null
+    },
+    {
+      "key": "Rumah Tangga dengan Air Minum Aman",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.03",
+          "kodeProgram": "1.03.03",
+          "program": "Program Pengelolaan dan Pengembangan Sistem Penyediaan Air Minum",
+          "kegiatan": "Pengelolaan dan pengembangan Sistem Penyediaan Air Minum (SPAM) di daerah kabupaten/kota",
+          "skpd": "Dinas PUPR/Perkim Kab/Kota (+ PDAM)",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "1.03",
+          "kodeProgram": "1.03.03",
+          "program": "Program Pengelolaan dan Pengembangan Sistem Penyediaan Air Minum",
+          "kegiatan": "Pengelolaan dan pengembangan SPAM lintas kabupaten/kota (SPAM regional)",
+          "skpd": "Dinas PUPR Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kementerian PU (Pamsimas, SPAM regional).",
+      "desa": "SPAMS perdesaan/BUM Desa air bersih.",
+      "catatan": null
+    },
+    {
+      "key": "Penanggulangan Bencana",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.05",
+          "kodeProgram": "1.05.03",
+          "program": "Program Penanggulangan Bencana",
+          "kegiatan": "Pelayanan informasi rawan bencana; pelayanan pencegahan dan kesiapsiagaan terhadap bencana (Desa Tangguh Bencana); pelayanan penyelamatan dan evakuasi korban bencana. Semua di tingkat kabupaten/kota",
+          "skpd": "BPBD Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "1.05",
+          "kodeProgram": "1.05.03",
+          "program": "Program Penanggulangan Bencana",
+          "kegiatan": "Pelayanan informasi rawan bencana; pelayanan pencegahan dan kesiapsiagaan terhadap bencana; penyelamatan dan evakuasi korban bencana. Semua di tingkat provinsi",
+          "skpd": "BPBD Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "BNPB.",
+      "desa": "Destana, relawan desa, dana tak terduga APBDes.",
+      "catatan": null
+    },
+    {
+      "key": "Kearifan Lingkungan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.11",
+          "kodeProgram": "2.11.08",
+          "program": "Program Peningkatan Pendidikan, Pelatihan dan Penyuluhan Lingkungan Hidup untuk Masyarakat",
+          "kegiatan": "Penyelenggaraan pendidikan, pelatihan dan penyuluhan lingkungan hidup untuk lembaga kemasyarakatan tingkat daerah kabupaten/kota",
+          "skpd": "DLH Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "2.11",
+          "kodeProgram": "2.11.07",
+          "program": "Program Pengakuan Keberadaan Masyarakat Hukum Adat (MHA), Kearifan Lokal dan Hak MHA yang Terkait dengan PPLH",
+          "kegiatan": "Penetapan pengakuan MHA, kearifan lokal atau pengetahuan tradisional dan hak MHA terkait PPLH",
+          "skpd": "DLH Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        },
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Fasilitasi penyusunan peraturan desa (Perdes pelestarian lingkungan)",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.11",
+          "kodeProgram": "2.11.08",
+          "program": "Program Peningkatan Pendidikan, Pelatihan dan Penyuluhan Lingkungan Hidup untuk Masyarakat",
+          "kegiatan": "Penyelenggaraan pendidikan, pelatihan dan penyuluhan lingkungan hidup untuk lembaga kemasyarakatan tingkat daerah provinsi",
+          "skpd": "DLH Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "KLH (Proklim).",
+      "desa": "Perdes pelestarian lingkungan.",
+      "catatan": "Salah satu komponennya adalah regulasi desa, sehingga intervensi termurah biasanya fasilitasi Perdes pelestarian lingkungan."
+    },
+    {
+      "key": "SKOR Terdapat pemanfaatan Energi Baru Terbarukan di desa",
+      "induk": "Kearifan Lingkungan",
+      "kab": [],
+      "prov": [
+        {
+          "kodeUrusan": "3.29",
+          "kodeProgram": "3.29.05",
+          "program": "Program Pengelolaan Energi Baru Terbarukan",
+          "kegiatan": "Pengelolaan energi baru terbarukan (PLTS komunal, biogas, PLTMH di perdesaan)",
+          "skpd": "Dinas ESDM Provinsi",
+          "peran": "Utama",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kementerian ESDM (Ditjen EBTKE), DAK energi perdesaan.",
+      "desa": "PLTS/biogas skala desa dari Dana Desa/BUM Desa.",
+      "catatan": "Sub-urusan EBT ada di provinsi. Kabupaten tidak punya nomenklatur ESDM untuk EBT."
+    },
+    {
+      "key": "Rumah Tangga Dengan Akses Sanitasi (Air Limbah Domestik) Aman",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.03",
+          "kodeProgram": "1.03.05",
+          "program": "Program Pengelolaan dan Pengembangan Sistem Air Limbah",
+          "kegiatan": "Pengelolaan dan pengembangan sistem pengelolaan air limbah domestik dalam daerah kabupaten/kota",
+          "skpd": "Dinas PUPR/Perkim Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "1.02",
+          "kodeProgram": "1.02.02",
+          "program": "Program Pemenuhan Upaya Kesehatan Perorangan dan Upaya Kesehatan Masyarakat",
+          "kegiatan": "Penyediaan layanan kesehatan untuk UKM dan UKP (pengelolaan pelayanan kesehatan lingkungan/STBM)",
+          "skpd": "Dinas Kesehatan Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "1.03",
+          "kodeProgram": "1.03.05",
+          "program": "Program Pengelolaan dan Pengembangan Sistem Air Limbah",
+          "kegiatan": "Pengelolaan dan pengembangan sistem pengelolaan air limbah domestik regional",
+          "skpd": "Dinas PUPR Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kementerian PU (Sanimas), Kemenkes (STBM).",
+      "desa": "Jamban/septik komunal dari Dana Desa.",
+      "catatan": null
+    },
+    {
+      "key": "Sistem Pengelolaan Sampah",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.11",
+          "kodeProgram": "2.11.11",
+          "program": "Program Pengelolaan Persampahan",
+          "kegiatan": "Pengelolaan sampah: pengurangan dan penanganan (TPS3R, bank sampah, pengangkutan)",
+          "skpd": "DLH Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "1.03",
+          "kodeProgram": "1.03.04",
+          "program": "Program Pengembangan Sistem dan Pengelolaan Persampahan Regional",
+          "kegiatan": "Pengembangan sistem dan pengelolaan persampahan regional",
+          "skpd": "Dinas PUPR Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        },
+        {
+          "kodeUrusan": "2.11",
+          "kodeProgram": "2.11.11",
+          "program": "Program Pengelolaan Persampahan",
+          "kegiatan": "Penanganan sampah di TPA/TPST regional",
+          "skpd": "DLH Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "KLH, Kementerian PU (TPS3R).",
+      "desa": "TPS3R/bank sampah dikelola BUM Desa.",
+      "catatan": null
+    },
+    {
+      "key": "Tingkat Pencemaran Lingkungan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.11",
+          "kodeProgram": "2.11.03",
+          "program": "Program Pengendalian Pencemaran dan/atau Kerusakan Lingkungan Hidup",
+          "kegiatan": "Pencegahan, penanggulangan dan pemulihan pencemaran dan/atau kerusakan lingkungan hidup kabupaten/kota",
+          "skpd": "DLH Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.11",
+          "kodeProgram": "2.11.03",
+          "program": "Program Pengendalian Pencemaran dan/atau Kerusakan Lingkungan Hidup",
+          "kegiatan": "Pencegahan, penanggulangan dan pemulihan pencemaran lintas kabupaten/kota",
+          "skpd": "DLH Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": null,
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "Frekuensi Gotong Royong",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.05",
+          "program": "Program Pemberdayaan Lembaga Kemasyarakatan, Lembaga Adat dan Masyarakat Hukum Adat",
+          "kegiatan": "Pemberdayaan lembaga kemasyarakatan desa",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": "Padat karya tunai desa.",
+      "catatan": null
+    },
+    {
+      "key": "Kearifan Sosial/Budaya dan Keagamaan",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.22",
+          "kodeProgram": "2.22.02",
+          "program": "Program Pengembangan Kebudayaan",
+          "kegiatan": "Pengelolaan kebudayaan yang masyarakat pelakunya dalam Daerah Kabupaten/Kota",
+          "skpd": "Dinas Kebudayaan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.22",
+          "kodeProgram": "2.22.02",
+          "program": "Program Pengembangan Kebudayaan",
+          "kegiatan": "Pengelolaan kebudayaan yang masyarakat pelakunya lintas Daerah Kabupaten/Kota",
+          "skpd": "Dinas Kebudayaan Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kementerian Kebudayaan.",
+      "desa": "Lembaga adat desa.",
+      "catatan": null
+    },
+    {
+      "key": "Kegiatan Olahraga",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.19",
+          "kodeProgram": "2.19.03",
+          "program": "Program Pengembangan Kapasitas Daya Saing Keolahragaan",
+          "kegiatan": "Pembinaan dan pengembangan olahraga rekreasi",
+          "skpd": "Dinas Pemuda dan Olahraga Kab/Kota",
+          "peran": "Utama",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.19",
+          "kodeProgram": "2.19.03",
+          "program": "Program Pengembangan Kapasitas Daya Saing Keolahragaan",
+          "kegiatan": "Pembinaan dan pengembangan olahraga rekreasi tingkat provinsi",
+          "skpd": "Dinas Pemuda dan Olahraga Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kemenpora.",
+      "desa": "Kegiatan olahraga warga, karang taruna.",
+      "catatan": null
+    },
+    {
+      "key": "Mitigasi dan Penanganan Konflik Sosial",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "8.01",
+          "kodeProgram": "8.01.04",
+          "program": "Program Pembinaan dan Pengembangan Ketahanan Ekonomi, Sosial, dan Budaya",
+          "kegiatan": "Pelaksanaan kebijakan ketahanan ekonomi, sosial dan budaya (FKDM, penanganan konflik sosial)",
+          "skpd": "Badan Kesbangpol Kab/Kota",
+          "peran": "Utama",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "8.01",
+          "kodeProgram": "8.01.04",
+          "program": "Program Pembinaan dan Pengembangan Ketahanan Ekonomi, Sosial, dan Budaya",
+          "kegiatan": "Pelaksanaan kebijakan ketahanan ekonomi, sosial dan budaya tingkat provinsi",
+          "skpd": "Badan Kesbangpol Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Polri (Bhabinkamtibmas), Kemendagri.",
+      "desa": "Peran kepala desa sebagai juru damai.",
+      "catatan": null
+    },
+    {
+      "key": "Satkamling",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.05",
+          "kodeProgram": "1.05.02",
+          "program": "Program Peningkatan Ketenteraman dan Ketertiban Umum",
+          "kegiatan": "Penanganan gangguan ketenteraman dan ketertiban umum dalam 1 (satu) Daerah Kabupaten/Kota (pemberdayaan Satlinmas)",
+          "skpd": "Satpol PP Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": "Polri (Bhabinkamtibmas).",
+      "desa": "Linmas desa, honor dari APBDes.",
+      "catatan": null
+    },
+    {
+      "key": "Fasilitas Olahraga",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.19",
+          "kodeProgram": "2.19.03",
+          "program": "Program Pengembangan Kapasitas Daya Saing Keolahragaan",
+          "kegiatan": "Pembinaan dan pengembangan olahraga rekreasi (penyediaan sarana olahraga masyarakat)",
+          "skpd": "Dinas Pemuda dan Olahraga Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [],
+      "pusat": "Kemenpora.",
+      "desa": "Lapangan desa dari APBDes. Ini peran utama.",
+      "catatan": "Lazimnya dibangun desa. Peran kabupaten bersifat stimulan."
+    },
+    {
+      "key": "Keberadaan Ruang Publik Terbuka",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "1.04",
+          "kodeProgram": "1.04.05",
+          "program": "Program Peningkatan Prasarana, Sarana dan Utilitas Umum (PSU)",
+          "kegiatan": "Penyelenggaraan prasarana, sarana dan utilitas umum (taman/ruang terbuka publik)",
+          "skpd": "Dinas Perkim Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": "Taman/ruang publik desa dari APBDes. Ini peran utama.",
+      "catatan": null
+    },
+    {
+      "key": "Taman Bacaan Masyarakat/ Perpustakaan Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.23",
+          "kodeProgram": "2.23.02",
+          "program": "Program Pembinaan Perpustakaan",
+          "kegiatan": "Pengelolaan perpustakaan tingkat daerah kabupaten/kota (pembinaan perpustakaan desa); pembudayaan gemar membaca",
+          "skpd": "Dinas Perpustakaan Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.23",
+          "kodeProgram": "2.23.02",
+          "program": "Program Pembinaan Perpustakaan",
+          "kegiatan": "Pengelolaan perpustakaan tingkat daerah provinsi; pembudayaan gemar membaca",
+          "skpd": "Dinas Perpustakaan Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Perpusnas (Transformasi Perpustakaan Berbasis Inklusi Sosial).",
+      "desa": "Perpusdes dari APBDes.",
+      "catatan": null
+    },
+    {
+      "key": "Musyawarah Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan dan pengawasan penyelenggaraan administrasi pemerintahan desa",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan dan pengawasan penyelenggaraan administrasi pemerintahan desa (supervisi kabupaten/kota)",
+          "skpd": "DPMD Provinsi",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "pusat": "Kemendagri (Ditjen Bina Pemdes).",
+      "desa": "Pelaksanaan musdes oleh BPD.",
+      "catatan": null
+    },
+    {
+      "key": "Pelaksanaan Pelayanan dan Administrasi Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan dan pengawasan penyelenggaraan administrasi pemerintahan desa",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": null,
+      "catatan": null
+    },
+    {
+      "key": "Pemanfaatan Teknologi dalam Pelayanan Desa (SPBE)",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.16",
+          "kodeProgram": "2.16.03",
+          "program": "Program Aplikasi Informatika",
+          "kegiatan": "Pengelolaan e-government di lingkup pemerintah daerah kabupaten/kota (Sistem Informasi Desa)",
+          "skpd": "Diskominfo Kab/Kota",
+          "peran": "Utama",
+          "perluCek": false
+        },
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan administrasi pemerintahan desa (penerapan SID)",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": false
+        }
+      ],
+      "prov": [],
+      "pusat": "Kemendagri (Prodeskel/Epdeskel), Kemendes.",
+      "desa": "Operator SID desa.",
+      "catatan": null
+    },
+    {
+      "key": "Jumlah Kepemilikan dan Produktivitas Aset Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan dan pengawasan administrasi pemerintahan desa (fasilitasi pengelolaan dan pemanfaatan aset desa)",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Utama",
+          "perluCek": true
+        }
+      ],
+      "prov": [],
+      "pusat": null,
+      "desa": "Inventarisasi dan pendayagunaan aset desa. Ini peran utama.",
+      "catatan": null
+    },
+    {
+      "key": "Pendapatan Asli Desa (PADes) dan Dana Desa",
+      "induk": null,
+      "kab": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan dan pengawasan administrasi pemerintahan desa (fasilitasi pengelolaan keuangan desa dan pendapatan asli desa)",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Utama",
+          "perluCek": true
+        },
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.05",
+          "program": "Program Pemberdayaan Lembaga Kemasyarakatan, Lembaga Adat dan Masyarakat Hukum Adat",
+          "kegiatan": "Pembinaan BUM Desa (penyertaan modal produktif)",
+          "skpd": "Dinas PMD Kab/Kota",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "prov": [
+        {
+          "kodeUrusan": "2.13",
+          "kodeProgram": "2.13.04",
+          "program": "Program Administrasi Pemerintahan Desa",
+          "kegiatan": "Pembinaan dan pengawasan administrasi pemerintahan desa (supervisi pengelolaan keuangan desa)",
+          "skpd": "DPMD Provinsi",
+          "peran": "Pendukung",
+          "perluCek": true
+        }
+      ],
+      "pusat": "Kemenkeu (Dana Desa), Kemendes.",
+      "desa": "Optimalisasi PADes melalui BUM Desa dan aset desa. Ini peran utama.",
+      "catatan": null
+    }
+  ]
+}

@@ -24,6 +24,7 @@ import {
   buildKandidatNaikStatus,
   listDesaTanpaKoordinat,
 } from './lib/insight.js';
+import { buildRujukanIntervensi } from './lib/rujukanIntervensi.js';
 import { classifyKuadran } from './lib/kuadran.js';
 import {
   buildPotensiKawasan,
@@ -492,6 +493,14 @@ app.get('/api/insight/tanpa-koordinat', requireAuth, guard(async (req, res) => {
 app.get('/api/insight/naik-status', requireAuth, guard(async (req, res) => {
   const scope = mergeScope(req.user, req.query);
   res.json(await buildKandidatNaikStatus(scope));
+}));
+
+// Rujukan Intervensi: indikator gap -> urusan/program/kegiatan & SKPD, per
+// kewenangan kabupaten/kota (level=kab) atau provinsi (level=prov). Lihat
+// server/lib/rujukanIntervensi.js. Tanpa estimasi dana.
+app.get('/api/insight/rujukan-intervensi', requireAuth, guard(async (req, res) => {
+  const scope = mergeScope(req.user, req.query);
+  res.json(await buildRujukanIntervensi(scope, req.query.level || 'kab'));
 }));
 
 // ---------- BANUA OPPORTUNITY (deterministic, no AI - see
